@@ -19,7 +19,8 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 - Jeden zwierzak daje klucz do furtki. Jest dostępny przed zamkniętą furtką.
 - Wilk losuje od jednego do pięciu kroków oraz kierunek: w górę, w prawo, w dół lub w lewo. Gracz czyta polecenie, klika strzałkę odpowiednią liczbę razy i wybiera „Zatwierdź”. Rząd strzałek pokazuje wybrane kroki; „Cofnij” usuwa ostatni bez kary.
 - Początkowo są 3 serduszka; każde ukończone zadanie daje 1, błąd u wilka odbiera 1. Zero oznacza koniec gry.
-- Sterowanie: strzałki na klawiaturze lub przyciski pod mapą.
+- Dwa widoki tej samej przygody: mapa z góry oraz FPV — oczami Adama. Przełącznik w nagłówku i menu zachowuje cały postęp.
+- Sterowanie mapą: strzałki na klawiaturze lub przyciski pod mapą. W FPV ↑ prowadzi do przodu, ↓ do tyłu, ←/→ obracają o 90° w miejscu. Kierunek patrzenia jest podany nad sceną. Zadanie wilka zachowuje własne strzałki.
 - Menu ☰ zawiera nową grę, rozmiar mapy i odsłanianie mapy.
 - Stan gry jest przechowywany tylko w pamięci przeglądarki. Odświeżenie zaczyna nową grę.
 
@@ -27,6 +28,7 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 
 - `index.html`: interfejs, style, ilustracje SVG i logika rozgrywki.
 - `maze.js`: generator labiryntu, furtki i położenia zwierzaka z kluczem.
+- `fpv.js`: perspektywiczny widok leśnych korytarzy SVG, wyznaczany z połączeń tej samej mapy.
 
 Projekt jest statyczny: HTML, CSS i JavaScript, bez zależności zewnętrznych. Ilustracje są generowane jako SVG; przedmioty i elementy interfejsu korzystają również z emoji.
 
@@ -54,6 +56,8 @@ node --test tests/*.test.cjs
 Test sprawdza pozycjonowanie po ustawieniu pełnego komunikatu, z kluczem i bez niego, oraz blokadę i otwieranie furtki. Używa symulowanych wymiarów DOM; nie zastępuje sprawdzenia układu w przeglądarce i na telefonie.
 
 Testy przedmiotów sprawdzają wszystkie listy ulubionych rzeczy, unikalne obrazki, zgodność prośby i odpowiedzi, stałość zadania po zamknięciu dymka, jednorazową nagrodę oraz zadanie wilka: wszystkie 20 kombinacji liczby i kierunku, postęp, cofanie, ponowne otwarcie dymka, zatwierdzanie, utratę serc i reset gry.
+
+Testy FPV sprawdzają obracanie i ruch we wszystkich orientacjach, klawiaturę i przyciski, blokadę furtki, zachowanie stanu przy zmianie widoku, widoczność przejść oraz finał. Sceny SVG sprawdzono osobno; układ całego interfejsu pozostaje niesprawdzony w przeglądarce z powodu niedostępnego podglądu.
 
 ## Dokumentacja projektu
 

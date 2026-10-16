@@ -14,6 +14,8 @@ To statyczna aplikacja HTML/CSS/JavaScript uruchamiana w przeglądarce. Nie ma b
 | --- | --- |
 | `maze.js` | Generowanie grafu labiryntu, wybór domu, bramy i lokalizacji zwierzaka z kluczem. |
 | `index.html`: `start`, `move`, `target`, `addDanger` | Rozpoczęcie gry, ruch i rozmieszczanie spotkań. |
+| `fpv.js`: `neighbor`, `corridor`, `render` | Kierunki w grafie i perspektywiczna scena FPV: ścieżki, zieleń, furtka, zwierzęta i dom. |
+| `index.html`: `setView`, `handleDirection`, `renderScene`, `updateControls` | Przełączanie widoku oraz tłumaczenie ruchu względem kierunku patrzenia. |
 | `index.html`: `render` | Aktualizacja widoku, plecaka, dostępnych akcji; tworzenie obsługi odpowiedzi i nagród. |
 | `index.html`: `draw`, `terrainArt`, `characterArt`, `drawHome` | Ilustracje SVG: teren, ścieżki, postacie i finał w domu. |
 | `index.html`: `showEvent`, `paintDialogue`, `positionBubble`, `closeEvent` | Sekwencje wypowiedzi i dymek przy mówiącej postaci. |
@@ -41,6 +43,7 @@ flowchart TD
 | `maze.gate` | Dwa końce krawędzi blokowanej przez bramę. Brama nie usuwa połączenia z grafu; sprawdza ją logika ruchu. |
 | `maze.keeper`, `maze.places` | Pole zwierzaka z kluczem oraz miejsca spotkań. |
 | `pos`, `visited`, `done`, `encounters` | Pozycja Adama, odwiedzone pola, wykonane zadania i spotkania indeksowane polem. |
+| `viewMode`, `facing` | Wybrany widok (`map` lub `fpv`) i kierunek patrzenia (0 północ, 1 wschód, 2 południe, 3 zachód). |
 | `hearts`, `hasKey`, `gateOpen`, `won`, `lost` | Ekwipunek i stan zakończenia gry. |
 | `dialogueSteps`, `dialogueIndex` | Lista kwestii `{speaker, icon, name, text}` i indeks bieżącej wypowiedzi. |
 | `terrain`, `terrainCache`, `artSeed` | Dane dekoracji i przygotowany obraz terenu. Nie określają dostępności przejść. |
@@ -66,6 +69,14 @@ Parametr `random` umożliwia deterministyczne sprawdzanie generatora. Cała gra 
 - Błędna odpowiedź u przyjaznego zwierzaka nie zabiera serca. Błąd u wilka zabiera jedno; przy zerze gra się kończy. Zamknięcie dymka nie pozwala ominąć nierozwiązanego wilka.
 - Klucz pozwala otworzyć bramę. Dom uruchamia `drawHome()`: Adam przytula siostrę, a końcowe kwestie pojawiają się przy postaciach.
 
+## Widok FPV
+
+Przełącznik wybiera drugi renderer tego samego stanu, bez tworzenia nowej przygody. W FPV ↑/↓ wywołują istniejące `move()` w kierunku patrzenia lub przeciwnym, a ←/→ obracają kamerę o 90°. Ruch nadal respektuje graf, furtkę, rozmowy i nierozwiązanego wilka. W trybie mapy udany ruch ustawia kierunek patrzenia na ostatni kierunek marszu.
+
+`ForestFPV.corridor()` wyznacza do pięciu kolejnych pól przed graczem i ich boczne połączenia. Widoczność kończy się na ścianie lub zamkniętej furtce. Renderer rzutuje ścieżki, zieleń i furtkę na SVG, korzystając ze wspólnych ilustracji zwierząt i drzew. Nie wymaga WebGL ani dodatkowych bibliotek. Rozmowy w FPV są zakotwiczone w obszarze sceny, ponieważ postać Adama jest kamerą. Finał zachowuje istniejący obraz z siostrą.
+
+Zobacz [ADR-0005](decisions/0005-first-person-view.md).
+
 ## Grafika i układ
 
 Mapa jest płaska, a elementy mają styl 2,5D dzięki kształtom, cieniom i kolejności rysowania SVG. To nie jest silnik 3D. Krzywe ścieżki wynikają z połączeń grafu; dekoracje nie zmieniają zasad ruchu. Postacie na wspólnym polu są przesunięte, aby obie pozostały widoczne.
@@ -74,13 +85,13 @@ Mapa jest płaska, a elementy mają styl 2,5D dzięki kształtom, cieniom i kole
 
 ## Uruchamianie i publikacja
 
-W repozytorium GitHub `index.html` i `maze.js` leżą w katalogu głównym. Można otworzyć HTML bezpośrednio lub uruchomić `python3 -m http.server 8080`. Hosting wymaga jedynie serwowania tych plików statycznych; kod nie wymaga usług serwerowych.
+W repozytorium GitHub `index.html`, `maze.js` i `fpv.js` leżą w katalogu głównym. Można otworzyć HTML bezpośrednio lub uruchomić `python3 -m http.server 8080`. Hosting wymaga jedynie serwowania tych plików statycznych; kod nie wymaga usług serwerowych.
 
 Istniejąca publikacja Sites korzysta z osobnego repozytorium źródłowego, katalogu `dist/` oraz manifestu `.openai/hosting.json`. Zapis do GitHuba nie jest sam w sobie publikacją Sites. Repozytorium GitHub nie zawiera obecnie workflow wdrażania GitHub Pages.
 
 ## Weryfikacja i ograniczenia
 
-Zestaw `node --test tests/*.test.cjs` sprawdza furtkę i dymki, prośby zwierząt oraz zadanie wilka w symulowanym DOM. Nie ma CI. Testy logiki nie zastępują kontroli układu w przeglądarce.
+Zestaw `node --test tests/*.test.cjs` sprawdza furtkę i dymki, prośby zwierząt oraz zadanie wilka i sterowanie FPV w symulowanym DOM. Nie ma CI. Testy logiki nie zastępują kontroli układu w przeglądarce.
 
 Przy zmianach sprawdzaj: spójność grafu, dostępność klucza przed bramą, blokadę bramy, jednorazowe nagrody, serca i ponowne próby u wilka, kolejność rozmów, finał oraz reset gry. Na telefonie sprawdzaj widoczność strzałek, czytelność dymków, orientację ekranu i brak przewijania całej strony.
 
