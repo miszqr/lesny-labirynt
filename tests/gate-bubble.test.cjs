@@ -52,7 +52,7 @@ for (const [width, height] of [[304, 480], [374, 756], [724, 320]]) {
       run(`closeEvent();pos=maze.gate[0];visited.add(pos);hasKey=${key};render()`);
       const from = run('pos'), to = run('maze.gate[1]'), n = run('maze.n');
       const direction = to === from - n ? 0 : to === from + 1 ? 1 : to === from + n ? 2 : 3;
-      const message = key ? 'Otwórz bramę kluczem.' : 'Brama jest zamknięta. Znajdź klucz.';
+      const message = key ? 'Otwórz furtkę kluczem.' : 'Furtka jest zamknięta. Znajdź klucz.';
       measurements.length = 0;
       run(`move(${direction})`);
       assert.equal(run('pos'), from, 'closed gate still blocks movement');
@@ -65,7 +65,7 @@ for (const [width, height] of [[304, 480], [374, 756], [724, 320]]) {
       assert(left >= 10 && left + box.offsetWidth <= width - 10, 'horizontal bounds');
       assert(top >= 10 && top + box.offsetHeight <= height - 10, 'vertical bounds after notice wraps');
       if (key) {
-        $('#answers').children.find(b => b.textContent.includes('Otwórz bramę')).onclick();
+        $('#answers').children.find(b => b.textContent.includes('Otwórz furtkę')).onclick();
         assert.equal(run('gateOpen'), true);
         run(`closeEvent();move(${direction})`);
         assert.equal(run('pos'), to, 'opened gate allows movement');

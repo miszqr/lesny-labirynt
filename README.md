@@ -16,7 +16,7 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 
 - Losowy labirynt 4×4, 6×6 lub 8×8; cel: dotrzeć do domu.
 - Pomoc zwierzakom polega na czytaniu krótkich poleceń i wybieraniu odpowiedzi.
-- Jeden zwierzak daje klucz do bramy. Jest dostępny przed zamkniętą bramą.
+- Jeden zwierzak daje klucz do furtki. Jest dostępny przed zamkniętą furtką.
 - Wilk prosi o skok o liczbę kroków zapisaną słownie. Odpowiedzi są cyframi.
 - Początkowo są 3 serduszka; każde ukończone zadanie daje 1, błąd u wilka odbiera 1. Zero oznacza koniec gry.
 - Sterowanie: strzałki na klawiaturze lub przyciski pod mapą.
@@ -26,11 +26,11 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 ## Pliki
 
 - `index.html`: interfejs, style, ilustracje SVG i logika rozgrywki.
-- `maze.js`: generator labiryntu, bramy i położenia zwierzaka z kluczem.
+- `maze.js`: generator labiryntu, furtki i położenia zwierzaka z kluczem.
 
 Projekt jest statyczny: HTML, CSS i JavaScript, bez zależności zewnętrznych. Ilustracje są generowane jako SVG; przedmioty i elementy interfejsu korzystają również z emoji.
 
-## Test regresji dymka bramy
+## Test regresji dymka furtki
 
 Wymaga Node.js z obsługą `node:test` (sprawdzono na 24.19.0), bez dodatkowych pakietów:
 
@@ -38,7 +38,7 @@ Wymaga Node.js z obsługą `node:test` (sprawdzono na 24.19.0), bez dodatkowych 
 node --test tests/gate-bubble.test.cjs
 ```
 
-Test sprawdza pozycjonowanie po ustawieniu pełnego komunikatu, z kluczem i bez niego, oraz blokadę i otwieranie bramy. Używa symulowanych wymiarów DOM; nie zastępuje sprawdzenia układu w przeglądarce i na telefonie.
+Test sprawdza pozycjonowanie po ustawieniu pełnego komunikatu, z kluczem i bez niego, oraz blokadę i otwieranie furtki. Używa symulowanych wymiarów DOM; nie zastępuje sprawdzenia układu w przeglądarce i na telefonie.
 
 ## Dokumentacja projektu
 
