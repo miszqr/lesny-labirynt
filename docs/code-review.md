@@ -6,6 +6,14 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Aktualizacja T02 / R1 — 2026-10-16
+
+Naprawiono kolejność w `move()`: pełny komunikat bramy jest ustawiany przed `showEvent()`, więc `positionBubble()` mierzy już docelową treść. Pozostałe reguły bramy i rozmów nie zostały zmienione.
+
+Dodano `tests/gate-bubble.test.cjs`, uruchamiany przez `node --test tests/gate-bubble.test.cjs`. Wszystkie 24 przypadki przeszły: trzy rozmiary kontenera, cztery narożniki, z kluczem i bez klucza. Test sprawdza pomiar pełnego komunikatu, granice dymka po zwiększeniu jego wysokości, blokadę bramy oraz przejście po otwarciu. Ten sam test odrzuca kod sprzed poprawki.
+
+Wymiary DOM są symulowane. Próba uruchomienia podglądu przeglądarkowego została zablokowana błędem środowiska `bwrap: Can't mount proc on /newroot/proc: Operation not permitted`. Rzeczywisty układ CSS i obsługa telefonu nadal wymagają weryfikacji w ramach T03. Poniższe ustalenia i wyniki przeglądu pozostają historycznym opisem wersji wskazanej na początku raportu.
+
 ## Ocena
 
 **W wykonanych sprawdzeniach nie wykryto krytycznego błędu zasad gry ani niemożliwego do ukończenia poziomu dla rozmiarów 4, 6 i 8.** Znaleziono pominięcie aktualizacji położenia dymka po dodaniu komunikatu bramy oraz kilka problemów utrudniających bezpieczny rozwój projektu.
@@ -89,7 +97,7 @@ Sprawdzenia wykonano na niezmienionym kodzie przeglądanego commita w Node.js 24
 ### Najbliższa iteracja · P2
 
 - [ ] **T01 / R2 — Utrwalić testy generatora i reguł.** Jedno udokumentowane polecenie sprawdza wszystkie rozmiary, klucz/bramę, wilka, nagrodę tylko raz, wygraną, przegraną i pełny reset; błąd podaje ziarno.
-- [ ] **T02 / R1 — Pozycjonować dymek po ustawieniu całej treści.** Test sprawdza granice dymka po próbie przejścia przez bramę, bez klucza i z kluczem.
+- [x] **T02 / R1 — Pozycjonować dymek po ustawieniu całej treści.** Naprawiono kolejność i dodano 24 testy regresji, w tym granice dymka z symulowanymi wymiarami. Sprawdzenie w prawdziwej przeglądarce pozostaje w T03; szczegóły w aktualizacji powyżej.
 - [ ] **T03 — Dodać testy przeglądarkowe oraz kontrolę na telefonie.** Sprawdzić co najmniej 320×568, 390×844 i 844×390, krawędzie mapy, długi tekst wilka, menu, kliknięcie poza dymkiem, Escape i fokus. Strzałki mają pozostać dostępne, a cała strona nie wymagać przewijania.
 - [ ] **T04 / R2 — Uruchamiać testy w CI.** Workflow na push i pull request; komenda i ograniczenia opisane w README.
 - [ ] **T05 / R3 — Oddzielić stan i operacje gry od DOM.** Reguły dają się testować bez tworzenia elementów strony; samo renderowanie nie przyznaje nagród i nie ustala wyniku gry. Zaktualizować architekturę i ADR, jeśli zmienia się przyjęty podział modułów.

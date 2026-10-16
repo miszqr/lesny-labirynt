@@ -30,8 +30,19 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 
 Projekt jest statyczny: HTML, CSS i JavaScript, bez zależności zewnętrznych. Ilustracje są generowane jako SVG; przedmioty i elementy interfejsu korzystają również z emoji.
 
+## Test regresji dymka bramy
+
+Wymaga Node.js z obsługą `node:test` (sprawdzono na 24.19.0), bez dodatkowych pakietów:
+
+```sh
+node --test tests/gate-bubble.test.cjs
+```
+
+Test sprawdza pozycjonowanie po ustawieniu pełnego komunikatu, z kluczem i bez niego, oraz blokadę i otwieranie bramy. Używa symulowanych wymiarów DOM; nie zastępuje sprawdzenia układu w przeglądarce i na telefonie.
+
 ## Dokumentacja projektu
 
 - [Opis architektury](docs/architecture.md): moduły, stan gry, generator, dialogi, grafika i publikacja.
 - [Decyzje projektowe (ADR)](docs/decisions/README.md): rejestr przyjętych decyzji i zasady dodawania kolejnych.
 - [Szablon decyzji](docs/decisions/template.md).
+- [Przegląd kodu i lista TODO](docs/code-review.md).
