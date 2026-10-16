@@ -111,6 +111,8 @@ else if(maze.gate.includes(pos)&&!gateOpen)steps=[{speaker:'adam',icon:'👦',na
 if(!steps.length)return;dialogueSteps=steps;dialogueIndex=0;if(!$('#event').open)$('#event').show();paintDialogue();}
 $('#dialogue-next').onclick=()=>{if(dialogueIndex<dialogueSteps.length-1){dialogueIndex++;paintDialogue()}};
 window.addEventListener('resize',positionBubble);if(typeof ResizeObserver!=='undefined')new ResizeObserver(positionBubble).observe($('.mapwrap'));
+// Consume the outside click so dismissing a bubble does not also move Adam.
+document.addEventListener('click',e=>{const bubble=$('#event');if(!bubble.open||bubble.contains(e.target))return;e.preventDefault();e.stopImmediatePropagation();closeEvent()},true);
 $('#menu-toggle').onclick=()=>$('#menu').showModal();$('#menu-close').onclick=()=>$('#menu').close();$('#close').onclick=closeEvent;$('#interact').onclick=()=>{render();showEvent()};
 document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>move(Number(b.dataset.dir)));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#event').open){e.preventDefault();closeEvent();return}if($('#event').open||$('#menu').open||['SELECT','INPUT','TEXTAREA'].includes(e.target.tagName))return;let d=['ArrowUp','ArrowRight','ArrowDown','ArrowLeft'].indexOf(e.key);if(d>=0){e.preventDefault();move(d)}});$('#new').onclick=start;$('#next').onclick=start;$('#size').onchange=start;$('#reveal').onchange=()=>{if(won)drawHome();else draw()};start();
 </script></html>
