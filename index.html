@@ -54,9 +54,40 @@ return out}
 function edgePoint(a,b){const n=maze.n,low=Math.min(a,b),high=Math.max(a,b),shift=(artNoise(low,high)-.5)*12;const x=((a%n+b%n)/2)*60+30,y=((Math.floor(a/n)+Math.floor(b/n))/2)*60+30;return Math.abs(a-b)===1?[x,y+shift]:[x+shift,y]}
 function roadPath(c){const n=maze.n,x=c.id%n*60+30,y=Math.floor(c.id/n)*60+30;return c.links.map(b=>{const [ex,ey]=edgePoint(c.id,b),horizontal=Math.abs(c.id-b)===1;const dx=Math.sign(ex-x),dy=Math.sign(ey-y),bend=(artNoise(c.id,b+90)-.5)*8;const c1x=horizontal?x+dx*13:x+bend,c1y=horizontal?y+bend:y+dy*13,c2x=horizontal?ex-dx*10:ex,c2y=horizontal?ey:ey-dy*10;return `M${x} ${y}C${c1x} ${c1y} ${c2x} ${c2y} ${ex} ${ey}`}).join(' ')}
 function project(x,y){return [x,y]}
+function childFace(kind){
+ if(kind==='👦')return `<g data-face="adam">
+ <ellipse cx="-11.5" cy="-38" rx="2.2" ry="3.2" fill="#e5b79b"/><ellipse cx="11.5" cy="-38" rx="2.2" ry="3.2" fill="#d9aa91"/>
+ <path d="M-11-46Q-9-53 0-53 10-53 11.8-44L11-34Q9-26 1-25.5-7-26-10.5-33Z" fill="#e5b99f"/>
+ <path d="M-10-44Q-7-51 0-50 8-49 8-42V-33Q4-27-1-28-9-29-10-35Z" fill="#f2ceb4"/>
+ <ellipse cx="-7.5" cy="-34" rx="2.7" ry="1.4" fill="#e4a69d" opacity=".38"/><ellipse cx="7" cy="-34" rx="2.5" ry="1.4" fill="#db9c94" opacity=".3"/>
+ <path d="M-12-40L-12-47Q-11-55-1-55 10-56 12-47L12-40 9-42 8-47 5-45 3-47 1-45-1-47-3-45-5-47-7-45-9-47-10-41Z" fill="#43352e"/>
+ <path d="M-9-49Q-5-54 0-52M-4-49l1-3m6 3-1-3m5 4-1-3" stroke="#665044" stroke-width="1" stroke-linecap="round" fill="none"/>
+ <path d="M-8-41q3-1.5 5 0M3-41q3-1 5 .2" stroke="#705447" stroke-width="1" stroke-linecap="round" fill="none"/>
+ <path d="M-8-38.2q3-2.2 5 0M3-38.2q2.5-2.2 5 0" stroke="#755d50" stroke-width=".6" fill="#fff4e6"/>
+ <ellipse cx="-5.5" cy="-38" rx="1.15" ry="1.35" fill="#51483f"/><ellipse cx="5.3" cy="-38" rx="1.15" ry="1.35" fill="#51483f"/>
+ <path d="M0-37l-.8 3 2 .3" stroke="#c7947e" stroke-width=".7" fill="none" stroke-linecap="round"/>
+ <path d="M-3.8-31.5Q.5-29.5 4.1-31.8Q1-27.7-2.6-30Z" fill="#975f57"/><path d="M-2.5-31l5.1-.1-.5 1.1h-4Z" fill="#fff3df"/>
+ </g>`;
+ return `<g data-face="sister">
+ <path d="M8-39Q18-40 17-31L20-24Q12-25 10-31Z" fill="#8d7058"/><path d="M14-34q-1 6 3 8" stroke="#b89a79" stroke-width="1.2" fill="none"/>
+ <path d="M-12-36Q-16-50-6-54 6-58 12-49L14-34 9-27-11-29Z" fill="#79604c"/>
+ <ellipse cx="-11" cy="-36" rx="2" ry="3" fill="#e4b79d"/><ellipse cx="11.5" cy="-35" rx="2.2" ry="3" fill="#e1b49a"/>
+ <path d="M-11-44Q-8-51 0-51 10-50 11-41L11-34Q9-26 1-26-8-26-11-34Z" fill="#e7bda3"/>
+ <path d="M-9-43Q-7-49 0-49 8-48 8-41L8-33Q4-27-2-28-10-29-10-35Z" fill="#f5d3b9"/>
+ <path d="M-12-36Q-15-48-6-53 4-56 11-49L13-36 10-34 9-43Q7-41 5-43L4-42Q1-41 0-43Q-3-41-5-43L-7-42-9-44-10-36Z" fill="#80654f"/>
+ <path d="M-8-48q3-5 6-4M-4-47l1-5m5 6-1-6m5 6-1-4M10-43l1 6" stroke="#ad8e6d" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+ <path d="M12-34l3 1" stroke="#92b7ce" stroke-width="2" stroke-linecap="round"/>
+ <path d="M-7.5-39.8q2-1 4.5-.2M3-40q2.5-1 4.5.4" stroke="#93745d" stroke-width=".7" stroke-linecap="round" fill="none"/>
+ <ellipse cx="-5" cy="-37.5" rx="1.5" ry="1.8" fill="#51473e"/><ellipse cx="5.5" cy="-37.5" rx="1.5" ry="1.8" fill="#51473e"/>
+ <circle cx="-5.4" cy="-38" r=".45" fill="#fff7e8"/><circle cx="5.1" cy="-38" r=".45" fill="#fff7e8"/>
+ <ellipse cx="-7.5" cy="-33.3" rx="2.5" ry="1.3" fill="#e3a097" opacity=".45"/><ellipse cx="7.8" cy="-33.3" rx="2.3" ry="1.3" fill="#e3a097" opacity=".4"/>
+ <path d="M.5-36.5l-1 2.8 1.9.1M-2.8-30.8q3 2 6-.3" stroke="#be8977" stroke-width=".8" fill="none" stroke-linecap="round"/>
+ </g>`;
+}
 function characterArt(kind){
 const shadow='<ellipse cx="3" cy="1" rx="13" ry="4.5" fill="#3c5036" opacity=".23"/>';
-if(kind==='👦')return shadow+'<path d="M-9-15L-8-2H-2L0-14 2-2H8L9-15Z" fill="#41647a"/><path d="M-8-2h6v4h-9q-2-3 3-4M3-2h5q5 1 4 4H3Z" fill="#654e3c"/><path d="M-9-28Q0-33 9-28L11-13Q0-8-11-13Z" fill="#c88440"/><path d="M-9-28Q-4-31 0-30V-12Q-7-11-11-13Z" fill="#e7a955"/><path d="M-9-26l-5 11m23-11 5 11" stroke="#edbd8b" stroke-width="5" stroke-linecap="round"/><ellipse cy="-38" rx="12" ry="13" fill="#dba878"/><ellipse cx="-3" cy="-40" rx="9" ry="11" fill="#f4cca0"/><path d="M-12-40Q-15-55 0-54 15-54 12-39L8-46Q0-43-5-47L-10-39Z" fill="#71503b"/><path d="M-10-47Q-3-55 6-49" stroke="#9a7150" stroke-width="3" fill="none" stroke-linecap="round"/><g fill="#3b3933"><circle cx="-4" cy="-38" r="1.3"/><circle cx="5" cy="-38" r="1.3"/></g><path d="M-3-32Q1-29 5-33" fill="none" stroke="#a36c51" stroke-width="1.2" stroke-linecap="round"/>';
+if(kind==='👦')return shadow+'<path d="M-9-15L-8-2H-2L0-14 2-2H8L9-15Z" fill="#41647a"/><path d="M-8-2h6v4h-9q-2-3 3-4M3-2h5q5 1 4 4H3Z" fill="#654e3c"/><path d="M-9-28Q0-33 9-28L11-13Q0-8-11-13Z" fill="#c88440"/><path d="M-9-28Q-4-31 0-30V-12Q-7-11-11-13Z" fill="#e7a955"/><path d="M-9-26l-5 11m23-11 5 11" stroke="#edbd8b" stroke-width="5" stroke-linecap="round"/>'+childFace(kind);
+if(kind==='👧')return shadow+'<path d="M-7-14L-6-1M6-14L7-1" stroke="#edbd8b" stroke-width="5"/><path d="M-9-2h6v4h-8ZM4-2h6l3 4H4Z" fill="#8a514d"/><path d="M-9-28Q0-34 9-28L15-11Q0-5-14-11Z" fill="#bb7290"/><path d="M-9-28Q-5-31-1-30L-2-9-14-11Z" fill="#dfa1b7"/><path d="M-9-25l-4 12m22-12 4 12" stroke="#edbd8b" stroke-width="4" stroke-linecap="round"/>'+childFace(kind);
 const colors={'🐈':['#d8974c','#f2bb73'],'🐇':['#c1b6aa','#e7ddd1'],'🐻':['#8c6142','#b98958'],'🦔':['#825c42','#c69d76'],'🐕':['#a67246','#d3a16b'],'🦉':['#897253','#baa278'],'🐺':['#64757a','#9cabad']};const c=colors[kind];if(!c)return '';let ears='';
 if(kind==='🐇')ears='<ellipse cx="-7" cy="-40" rx="4" ry="14" fill="#c1b6aa"/><ellipse cx="7" cy="-41" rx="4" ry="14" fill="#e7ddd1"/><path d="M-7-49v14M7-50v14" stroke="#cf9c9b" stroke-width="2.5" stroke-linecap="round"/>';
 else if(kind==='🐻')ears='<circle cx="-10" cy="-35" r="6" fill="#8c6142"/><circle cx="10" cy="-35" r="6" fill="#8c6142"/><circle cx="-10" cy="-35" r="3" fill="#c29465"/><circle cx="10" cy="-35" r="3" fill="#c29465"/>';
@@ -67,8 +98,8 @@ const owl=kind==='🦉';let face=owl?'<ellipse cx="-6" cy="-27" rx="7" ry="8" fi
 if(kind==='🐈')face+='<path d="M-6-20l-9-2m9 5-9 1m21-4 9-2m-9 5 9 1" stroke="#88683e" stroke-width="1"/>';
 return shadow+spines+`<ellipse cy="-13" rx="12" ry="15" fill="${c[0]}"/><ellipse cx="-3" cy="-15" rx="8" ry="12" fill="${c[1]}"/><ellipse cx="-7" cy="-1" rx="6" ry="3" fill="${c[0]}"/><ellipse cx="7" cy="-1" rx="6" ry="3" fill="${c[0]}"/>`+ears+`<ellipse cy="-28" rx="14" ry="13" fill="${c[0]}"/><ellipse cx="-3" cy="-31" rx="10" ry="10" fill="${c[1]}"/>`+face;
 }
-function characterSprite(kind,x,y,scale=1){return `<g data-character="${kind==='👦'?'adam':'animal'}" transform="translate(${x} ${y}) scale(${scale})">${characterArt(kind)}</g>`}
-function setSceneIcon(kind){const art=characterArt(kind);if(art)$('#icon').innerHTML=`<svg viewBox="-22 -59 44 65" role="img" aria-label="${kind==='👦'?'Adam':'Zwierzak'}">${art}</svg>`;else $('#icon').textContent=kind}
+function characterSprite(kind,x,y,scale=1){return `<g data-character="${kind==='👦'?'adam':kind==='👧'?'sister':'animal'}" transform="translate(${x} ${y}) scale(${scale})">${characterArt(kind)}</g>`}
+function setSceneIcon(kind){const child=kind==='👦'||kind==='👧',art=child?childFace(kind):characterArt(kind);if(art)$('#icon').innerHTML=`<svg viewBox="${child?'-21 -59 42 36':'-22 -59 44 65'}" role="img" aria-label="${kind==='👦'?'Adam':kind==='👧'?'Siostra':'Zwierzak'}">${art}</svg>`;else $('#icon').textContent=kind}
 function treeSprite(x,y,v,k){const [sx,sy]=project(x,y);const pine=v<.5;return {depth:sy,svg:`<g transform="translate(${sx} ${sy}) scale(${k})"><ellipse cx="6" cy="2" rx="13" ry="5" fill="#3e563b" opacity=".2"/><path d="M-2 0V-17H3V0Z" fill="#806044"/><path d="M-2 0V-17H0V0Z" fill="#aa8053"/>${pine?'<path d="M0-43L-9-28H-5L-13-17H-8L-16-6Q0 0 16-6L8-17H13L5-28H9Z" fill="#426b4b"/><path d="M0-43L-9-28H-5L-13-17H-8L-16-6Q-6-4 0-5Z" fill="#71965a"/><path d="M0-33L5-25H0Z" fill="#86a563"/>':'<ellipse cx="1" cy="-22" rx="17" ry="18" fill="#48744e"/><ellipse cx="-6" cy="-27" rx="12" ry="13" fill="#7ca05e"/><ellipse cx="6" cy="-32" rx="10" ry="12" fill="#689252"/><ellipse cx="-5" cy="-35" rx="7" ry="6" fill="#95b46d"/><ellipse cx="11" cy="-20" rx="7" ry="10" fill="#3f6a4a"/>'}</g>`}}
 function wicketSprite(x,y,horizontalRoad,open){
  // Project a small wooden wicket in 3D; the ground map stays flat.
@@ -109,7 +140,7 @@ function draw(){
  sprites.sort((a,b)=>a.depth-b.depth);out+=sprites.map(s=>s.svg).join('');$('#map').innerHTML=out;
 }
 function drawHome(){
-$('#map').setAttribute('viewBox','0 0 360 300');$('#map').setAttribute('aria-label','Adam jest w domu i przytula swoją siostrę.');
+$('#map').setAttribute('viewBox','0 0 360 300');$('#map').setAttribute('aria-label','Adam jest w domu ze swoją siostrą.');
 $('#map').innerHTML=`<defs><linearGradient id="home-wall" x2="0" y2="1"><stop stop-color="#fff0cd"/><stop offset="1" stop-color="#edcea3"/></linearGradient><linearGradient id="home-floor" x2="1" y2="1"><stop stop-color="#d7ac7e"/><stop offset="1" stop-color="#ad7b56"/></linearGradient></defs>
 <rect width="360" height="300" rx="14" fill="url(#home-wall)"/><path d="M0 220L180 195 360 220V300H0Z" fill="url(#home-floor)"/><path d="M180 0V195M0 220L180 195 360 220" stroke="#b89167" stroke-width="3" fill="none"/>
 <path d="M0 260L180 221 360 260M75 300L180 195 285 300" fill="none" stroke="#a27653" opacity=".35"/>
@@ -118,11 +149,11 @@ $('#map').innerHTML=`<defs><linearGradient id="home-wall" x2="0" y2="1"><stop st
 <rect x="264" y="61" width="55" height="60" rx="4" fill="#b1875d"/><rect x="270" y="67" width="43" height="48" fill="#fff5dd"/><path d="M291 103C265 88 281 75 291 86 302 75 318 88 291 103" fill="#d37c79"/>
 <ellipse cx="182" cy="253" rx="101" ry="30" fill="#a7b58a"/><ellipse cx="182" cy="252" rx="87" ry="23" fill="#c5cea6"/>
 <g transform="translate(180 245) scale(2.25)"><ellipse cx="1" cy="2" rx="28" ry="5" fill="#56513b" opacity=".2"/>
-<g data-character="sister"><path d="M5-43Q4-62 19-58 32-55 29-30L8-28Z" fill="#79513b"/><path d="M9-13L10-1H15L16-13M21-13L22-1H27L27-16" stroke="#edbd8b" stroke-width="5"/><path d="M8-2H15V2H6ZM21-2H27L30 2H21Z" fill="#8a514d"/><path d="M8-33Q18-38 26-29L32-12Q19-6 3-13Z" fill="#bb7290"/><path d="M8-31Q13-35 17-33L15-11 3-13Z" fill="#dfa1b7"/><ellipse cx="16" cy="-44" rx="12" ry="13" fill="#f4cca0"/><path d="M4-46Q2-61 17-58 32-55 28-40L22-49Q12-45 8-51Z" fill="#79513b"/><path d="M25-53q10-8 7 3-7 5-7-3" fill="#dc9db3"/><path d="M7-43q3 3 5 0M17-43q3 3 5 0M11-36q4 3 7-1" fill="none" stroke="#8d5a44" stroke-width="1.3" stroke-linecap="round"/></g>
+<g data-character="sister" transform="translate(16 0) scale(.92)">${characterArt('👧')}</g>
 <g data-character="adam" transform="translate(-12 0) rotate(9 0 -28)">${characterArt('👦')}</g>
-<path d="M-19-27Q-8-13 17-24" fill="none" stroke="#c88440" stroke-width="8" stroke-linecap="round"/><path d="M-5-21Q5-20 17-24" fill="none" stroke="#f4cca0" stroke-width="5" stroke-linecap="round"/>
+<g transform="translate(0 5)"><path d="M-19-27Q-8-13 17-24" fill="none" stroke="#c88440" stroke-width="8" stroke-linecap="round"/><path d="M-5-21Q5-20 17-24" fill="none" stroke="#f4cca0" stroke-width="5" stroke-linecap="round"/>
 <path d="M24-28Q9-15-14-29" fill="none" stroke="#bb7290" stroke-width="8" stroke-linecap="round"/><path d="M10-22Q-3-21-14-29" fill="none" stroke="#f4cca0" stroke-width="5" stroke-linecap="round"/>
-<path d="M0-68C-13-77-6-85 0-78 7-85 14-77 0-68" fill="#d6747d"/></g>`;
+</g><path d="M0-68C-13-77-6-85 0-78 7-85 14-77 0-68" fill="#d6747d"/></g>`;
 }
 function render(){won=pos===maze.exit;if(won)drawHome();else {draw();$('#map').setAttribute('aria-label','Odkrywana mapa labiryntu')};$('#room').textContent=won?'W domu':`Polana ${pos+1}`;$('#explored').textContent=`Mapa: ${visited.size} / ${maze.cells.length}`;$('#keys').textContent=gateOpen?'🔓 Furtka otwarta':hasKey?'🔑 Masz klucz!':`🔒 Brak klucza · Pomoc: ${[...done].filter(id=>!encounters[id].danger).length} / ${Object.values(encounters).filter(e=>!e.danger).length}`;$('#items').innerHTML=`<li class="heart-item" aria-label="Serduszka: ${hearts}">❤️ × ${hearts}</li>${hasKey?'<li>🔑 Klucz</li>':''}`;$('#notice').textContent='';$('#answers').replaceChildren();$('#next').hidden=true;$('#next').textContent='Graj dalej →';const e=encounters[pos];let icon='',title='',text='';
 
@@ -144,7 +175,7 @@ if(!actor)return;actor.setAttribute('data-speaking','true');const ar=actor.getBo
 function showEvent(intro=false){const e=encounters[pos],continuing=$('#event').open;let steps=[];
 if(intro)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:'Mam na imię Adam. Chcę wrócić do domu.'},{speaker:'adam',icon:'👦',name:'Adam',text:'Pomogę zwierzakom. Zdobędę klucz do furtki.'}];
 else if(lost)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:'Nie mam już serduszek. Spróbuję od nowa.'}];
-else if(won)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:'Jestem w domu! Cześć, siostro!'},{speaker:'sister',icon:'👧',name:'Siostra',text:'Cześć, Adam! Przytul mnie!'}];
+else if(won)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:'Jestem w domu! Cześć, siostro!'},{speaker:'sister',icon:'👧',name:'Siostra',text:'Dobrze cię widzieć!'}];
 else if(e&&!done.has(pos)){const reply={speaker:'animal',icon:e.icon,name:e.danger?'Wilk':e.title,text:npcLine(e)};steps=continuing?[reply]:[{speaker:'adam',icon:'👦',name:'Adam',text:e.danger?'Ojej! To wilk! Jak go ominąć?':'Cześć! Jak ci pomóc?'},reply];}
 else if(maze.gate.includes(pos)&&!gateOpen)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:hasKey?'Mam klucz. Otworzę furtkę.':'Furtka jest zamknięta. Muszę znaleźć klucz.'}];
 if(!steps.length)return;dialogueSteps=steps;dialogueIndex=0;if(!$('#event').open)$('#event').show();paintDialogue();}
