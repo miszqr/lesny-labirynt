@@ -29,3 +29,9 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 - `maze.js`: generator labiryntu, bramy i położenia zwierzaka z kluczem.
 
 Projekt jest statyczny: HTML, CSS i JavaScript, bez zależności zewnętrznych. Ilustracje są generowane jako SVG; przedmioty i elementy interfejsu korzystają również z emoji.
+
+## Dokumentacja projektu
+
+- [Opis architektury](docs/architecture.md): moduły, stan gry, generator, dialogi, grafika i publikacja.
+- [Decyzje projektowe (ADR)](docs/decisions/README.md): rejestr przyjętych decyzji i zasady dodawania kolejnych.
+- [Szablon decyzji](docs/decisions/template.md).
