@@ -9,6 +9,7 @@ ADR (Architecture Decision Record) zapisuje problem, wybór i jego konsekwencje.
 | [0001](0001-static-browser-game.md) | Statyczna gra w przeglądarce | Przyjęta — opis istniejącego rozwiązania |
 | [0002](0002-maze-and-key.md) | Labirynt jako drzewo i klucz przed bramą | Przyjęta — opis istniejącego rozwiązania |
 | [0003](0003-dialogue-and-visuals.md) | Płaska mapa SVG i rozmowy przy postaciach | Przyjęta — opis istniejącego rozwiązania |
+| [0004](0004-wolf-directions.md) | Ucieczka przed wilkiem przez powtarzanie strzałek | Przyjęta |
 
 Początkowe wpisy dokumentują retrospektywnie aktualny kod i wcześniejsze ustalenia. Data oznacza datę ich zapisania, nie datę pierwszej implementacji.
 

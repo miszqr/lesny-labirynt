@@ -81,14 +81,89 @@ test('icon answers stay stable when reopened, and correct choice awards the key 
   }
 });
 
-test('wolf keeps numeric answers and takes one heart for a wrong number', () => {
-  const { $, run } = game();
-  run('closeEvent();pos=Number(Object.keys(encounters).find(id=>encounters[id].danger));render();showEvent()');
-  $('#dialogue-next').onclick();
-  assert.deepEqual($('#answers').children.map(b => b.textContent).sort(), ['1', '2', '3', '4', '5']);
-  const answer = run('encounters[pos].answer');
-  $('#answers').children.find(b => b.textContent !== answer).onclick();
-  assert.equal(run('hearts'), 2);
-  $('#answers').children.find(b => b.textContent === answer).onclick();
-  assert.equal(run('hearts'), 3); assert.equal(run('dangerPending()'), false);
+function wolfGame(count = 3, direction = 3) {
+  const g = game();
+  g.run(`closeEvent();pos=Number(Object.keys(encounters).find(id=>encounters[id].danger));encounters[pos].count=${count};encounters[pos].direction=${direction};render();showEvent()`);
+  const all = node => [node, ...node.children.flatMap(all)];
+  g.control = key => all(g.$('#answers')).find(b => b.dataset.wolfAction === key || b.dataset.wolfDir === String(key));
+  g.progress = () => all(g.$('#answers')).find(b => b.className === 'wolf-progress');
+  return g;
+}
+
+test('wolf draws every count and direction and spells out the matching instruction', () => {
+  const { run } = game(), seen = new Set();
+  const words = ['', 'jeden krok', 'dwa kroki', 'trzy kroki', 'cztery kroki', 'pięć kroków'];
+  const directions = ['w górę', 'w prawo', 'w dół', 'w lewo'];
+  for (let i = 0; i < 250; i++) {
+    run('start()');
+    const e = run('Object.values(encounters).find(e=>e.danger)');
+    assert(e.count >= 1 && e.count <= 5);
+    assert(e.direction >= 0 && e.direction < 4);
+    assert.equal(e.text, `To groźny wilk. Skocz ${words[e.count]} ${directions[e.direction]}.`);
+    assert.equal(e.steps.length, 0);
+    seen.add(`${e.count}:${e.direction}`);
+  }
+  assert.equal(seen.size, 20);
+});
+
+for (let direction = 0; direction < 4; direction++) for (let count = 1; count <= 5; count++) {
+  test(`wolf accepts ${count} repeated arrow clicks in direction ${direction} only after confirmation`, () => {
+    const { $, run, control, progress } = wolfGame(count, direction);
+    const originalPos = run('pos');
+    assert.equal($('#answers').hidden, true);
+    control(direction).onclick(); assert.equal(run('encounters[pos].steps.length'), 0);
+    $('#dialogue-next').onclick();
+    assert.equal(control('submit').disabled, true);
+    control('submit').onclick(); assert.equal(run('hearts'), 3);
+    for (let i = 0; i < count; i++) control(direction).onclick();
+    assert.equal(progress().children.length, count);
+    assert(progress().children.every(b => b.textContent === ['↑', '→', '↓', '←'][direction]));
+    assert.equal(run('hearts'), 3); assert.equal(run('dangerPending()'), true);
+    assert.equal(run('pos'), originalPos);
+    const submit = control('submit'); submit.onclick(); submit.onclick();
+    assert.equal(run('hearts'), 4); assert.equal(run('dangerPending()'), false);
+    assert.equal($('#event').open, false); assert.equal(run('pos'), originalPos);
+  });
+}
+
+test('wolf draft survives reopening, undo is free, and a closed dialogue still blocks movement', () => {
+  const { $, run, control, progress } = wolfGame(); $('#dialogue-next').onclick();
+  control(3).onclick(); control(1).onclick(); control('undo').onclick();
+  assert.equal(run('encounters[pos].steps.join()'), '3'); assert.equal(run('hearts'), 3);
+  const previous = control(3), originalPos = run('pos');
+  run('closeEvent()'); previous.onclick();
+  assert.equal(run('encounters[pos].steps.length'), 1);
+  run('move(0)'); assert.equal(run('pos'), originalPos); $('#dialogue-next').onclick();
+  assert.equal(progress().children[0].textContent, '←');
+  previous.onclick(); assert.equal(run('encounters[pos].steps.length'), 1);
+  control(3).onclick(); control(3).onclick(); control('submit').onclick();
+  assert.equal(run('hearts'), 4);
+});
+
+for (const sequence of [[3, 3], [3, 3, 3, 3], [1, 1, 1], [3, 1, 3]]) {
+  test(`wrong wolf sequence ${sequence} costs one heart on submit and clears the draft`, () => {
+    const { $, run, control } = wolfGame(); $('#dialogue-next').onclick();
+    sequence.forEach(direction => control(direction).onclick());
+    assert.equal(run('hearts'), 3);
+    const oldSubmit = control('submit'); oldSubmit.onclick(); oldSubmit.onclick();
+    assert.equal(run('hearts'), 2); assert.equal(run('encounters[pos].steps.length'), 0);
+    assert.equal(run('dangerPending()'), true); assert.equal(control('submit').disabled, true);
+    assert.equal($('#answers').hidden, false); assert.match($('#notice').textContent, /Spróbuj jeszcze raz/);
+    for (let i = 0; i < 3; i++) control(3).onclick(); control('submit').onclick();
+    assert.equal(run('hearts'), 3); assert.equal(run('dangerPending()'), false);
+  });
+}
+
+test('wolf loss, bounded input, undo to empty, and restarting reset the task', () => {
+  const { $, run, control } = wolfGame(); $('#dialogue-next').onclick();
+  for (let i = 0; i < 15; i++) control(0).onclick();
+  assert.equal(run('encounters[pos].steps.length'), 10); assert.equal(control(0).disabled, true);
+  for (let i = 0; i < 10; i++) control('undo').onclick();
+  assert.equal(control('submit').disabled, true); assert.equal(control(0).disabled, false);
+  for (let i = 0; i < 3; i++) { control(0).onclick(); control('submit').onclick(); }
+  assert.equal(run('hearts'), 0); assert.equal(run('lost'), true);
+  assert.equal($('#answers').children.length, 0); assert.equal($('#next').hidden, false);
+  const originalPos = run('pos'); run('closeEvent();move(0)'); assert.equal(run('pos'), originalPos);
+  run('start()'); assert.equal(run('lost'), false); assert.equal(run('hearts'), 3);
+  assert.equal(run('Object.values(encounters).find(e=>e.danger).steps.length'), 0);
 });

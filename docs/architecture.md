@@ -62,6 +62,7 @@ Parametr `random` umożliwia deterministyczne sprawdzanie generatora. Cała gra 
 - `move()` sprawdza sąsiedztwo, bramę, otwarte menu/rozmowę i nierozwiązane spotkanie z wilkiem. Po ruchu aktualizuje odwiedzone pola oraz widok.
 - Przy spotkaniu mówi Adam, potem zwierzak. Odpowiedzi pojawiają się przy ostatniej kwestii. Dymek to niemodalny element `dialog.show()`; ruch podczas rozmowy blokuje kod gry. Menu nadal używa `showModal()`.
 - Wykonanie zadania daje jedno serce tylko raz. Zadanie zwierzaka `keeper` daje dodatkowo klucz. Rozmowa zamyka się bez komunikatu o sukcesie, a zwierzak pozostaje na mapie.
+- Wilk losuje `count` (1–5) i `direction` (góra/prawo/dół/lewo). `renderWolfTask()` buduje cztery strzałki, pasek wybranych kroków, cofanie i zatwierdzanie. `steps` przechowuje kierunki kliknięć, także po zamknięciu dymka. Dopiero zatwierdzenie porównuje długość i wszystkie kierunki z poleceniem. To odpowiedź na zadanie: nie przenosi Adama przez pola labiryntu. Zobacz [ADR-0004](decisions/0004-wolf-directions.md).
 - Błędna odpowiedź u przyjaznego zwierzaka nie zabiera serca. Błąd u wilka zabiera jedno; przy zerze gra się kończy. Zamknięcie dymka nie pozwala ominąć nierozwiązanego wilka.
 - Klucz pozwala otworzyć bramę. Dom uruchamia `drawHome()`: Adam przytula siostrę, a końcowe kwestie pojawiają się przy postaciach.
 
@@ -79,8 +80,8 @@ Istniejąca publikacja Sites korzysta z osobnego repozytorium źródłowego, kat
 
 ## Weryfikacja i ograniczenia
 
-W repozytorium nie ma jeszcze utrzymywanego zestawu testów ani CI. Dotychczasowe doraźne sprawdzenia logiki nie zastępują testów przeglądarkowych.
+Zestaw `node --test tests/*.test.cjs` sprawdza furtkę i dymki, prośby zwierząt oraz zadanie wilka w symulowanym DOM. Nie ma CI. Testy logiki nie zastępują kontroli układu w przeglądarce.
 
 Przy zmianach sprawdzaj: spójność grafu, dostępność klucza przed bramą, blokadę bramy, jednorazowe nagrody, serca i ponowne próby u wilka, kolejność rozmów, finał oraz reset gry. Na telefonie sprawdzaj widoczność strzałek, czytelność dymków, orientację ekranu i brak przewijania całej strony.
 
-Możliwe dalsze usprawnienia, jeszcze niewdrożone: wydzielenie stanu i reguł z DOM, trwałe testy generatora i reguł, osobne dane dialogów, wspólne ziarno losowości, zapis postępu. Istotne zmiany tych obszarów należy poprzedzić ADR.
+Możliwe dalsze usprawnienia, jeszcze niewdrożone: wydzielenie stanu i reguł z DOM, rozszerzenie testów generatora, osobne dane dialogów, wspólne ziarno losowości, zapis postępu. Istotne zmiany tych obszarów należy poprzedzić ADR.

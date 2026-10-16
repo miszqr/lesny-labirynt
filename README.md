@@ -17,7 +17,7 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 - Losowy labirynt 4×4, 6×6 lub 8×8; cel: dotrzeć do domu.
 - Pomoc zwierzakom polega na czytaniu krótkiej prośby i wybieraniu obrazka spośród trzech odpowiedzi. Przedmiot losuje się z listy ulubionych rzeczy zwierzaka raz na przygodę; ponowne otwarcie rozmowy nie zmienia prośby ani odpowiedzi.
 - Jeden zwierzak daje klucz do furtki. Jest dostępny przed zamkniętą furtką.
-- Wilk prosi o skok o liczbę kroków zapisaną słownie. Odpowiedzi są cyframi.
+- Wilk losuje od jednego do pięciu kroków oraz kierunek: w górę, w prawo, w dół lub w lewo. Gracz czyta polecenie, klika strzałkę odpowiednią liczbę razy i wybiera „Zatwierdź”. Rząd strzałek pokazuje wybrane kroki; „Cofnij” usuwa ostatni bez kary.
 - Początkowo są 3 serduszka; każde ukończone zadanie daje 1, błąd u wilka odbiera 1. Zero oznacza koniec gry.
 - Sterowanie: strzałki na klawiaturze lub przyciski pod mapą.
 - Menu ☰ zawiera nową grę, rozmiar mapy i odsłanianie mapy.
@@ -41,7 +41,7 @@ Projekt jest statyczny: HTML, CSS i JavaScript, bez zależności zewnętrznych. 
 | Pies | ⚽ piłka, 🦴 kość, 👟 but |
 | Sowa | 🗺️ mapa, 📕 książka, 👓 okulary |
 
-Wilk zachowuje osobne zadanie z liczbą kroków i odpowiedziami 1–5. Przedmioty oraz ich poprawne formy gramatyczne są zdefiniowane w `itemCatalog`, a listy zwierząt w `bank`. Widoczna prośba i poprawna odpowiedź korzystają z tych samych danych.
+Wilk ma osobne zadanie kierunkowe opisane w [ADR-0004](docs/decisions/0004-wolf-directions.md). Przedmioty oraz ich poprawne formy gramatyczne są zdefiniowane w `itemCatalog`, a listy zwierząt w `bank`. Widoczna prośba i poprawna odpowiedź korzystają z tych samych danych.
 
 ## Testy
 
@@ -53,7 +53,7 @@ node --test tests/*.test.cjs
 
 Test sprawdza pozycjonowanie po ustawieniu pełnego komunikatu, z kluczem i bez niego, oraz blokadę i otwieranie furtki. Używa symulowanych wymiarów DOM; nie zastępuje sprawdzenia układu w przeglądarce i na telefonie.
 
-Testy przedmiotów sprawdzają wszystkie listy ulubionych rzeczy, unikalne obrazki, zgodność prośby i odpowiedzi, stałość zadania po zamknięciu dymka, jednorazową nagrodę i zachowanie wilka.
+Testy przedmiotów sprawdzają wszystkie listy ulubionych rzeczy, unikalne obrazki, zgodność prośby i odpowiedzi, stałość zadania po zamknięciu dymka, jednorazową nagrodę oraz zadanie wilka: wszystkie 20 kombinacji liczby i kierunku, postęp, cofanie, ponowne otwarcie dymka, zatwierdzanie, utratę serc i reset gry.
 
 ## Dokumentacja projektu
 
