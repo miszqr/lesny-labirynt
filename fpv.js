@@ -162,9 +162,9 @@
       if(room.cell===maze.exit) {
         const [x,y]=project(0,room.depth*2+.4),s=280/(room.depth*2+1.05)*.025;
         out+=`<g data-fpv-home="true" transform="translate(${number(x)} ${number(y)}) scale(${number(s)})"><rect x="-24" y="-37" width="48" height="37" rx="2" fill="#efd9a5"/><path d="M-31-35L0-59 31-35Z" fill="#b96846"/><rect x="-6" y="-22" width="12" height="22" rx="2" fill="#886143"/><rect x="12" y="-27" width="9" height="10" fill="#a1d7d0"/><path d="M16.5-27V-17M12-22H21" stroke="#fff0ca" stroke-width="1.5"/></g>`;
-      } else if(encounters[room.cell]) {
+      } else if(encounters[room.cell]&&(!encounters[room.cell].danger||!done.has(room.cell)||state.fleeingCell===room.cell)) {
         const e=encounters[room.cell],z=room.depth*2+.55,[x,y]=project(.1,z),s=280/(z+.65)*.024;
-        out+=`<g data-character="${room.depth===0?'animal':'distant-animal'}" transform="translate(${number(x)} ${number(y)}) scale(${number(s)})">${art.characterArt(e.icon)}${done.has(room.cell)?'<circle cx="16" cy="-48" r="6" fill="#fff8da"/><path d="M13-48l2 2 4-5" fill="none" stroke="#5b8650" stroke-width="2"/>':''}</g>`;
+        out+=`<g data-wolf="${e.danger===true}" data-character="${room.depth===0?'animal':'distant-animal'}" transform="translate(${number(x)} ${number(y)}) scale(${number(s)})">${art.characterArt(e.icon)}${done.has(room.cell)&&!e.danger?'<circle cx="16" cy="-48" r="6" fill="#fff8da"/><path d="M13-48l2 2 4-5" fill="none" stroke="#5b8650" stroke-width="2"/>':''}</g>`;
       }
       out+='</g>';
     }

@@ -73,9 +73,17 @@ Parametr `random` umożliwia deterministyczne sprawdzanie generatora. Cała gra 
 
 `startWalk()` animuje pojedynczy dozwolony ruch przez 360 ms. `roadCurve()` jest wspólnym źródłem krzywych dla rysowania ścieżki i interpolacji pozycji. Podczas kroku `requestAnimationFrame` aktualizuje tylko transformacje postaci, jej kończyn i kolejność warstw; nie odrysowuje całej mapy w każdej klatce.
 
-Pole docelowe odsłania się na początku ruchu. Pozycja logiczna zmienia się przy zakończeniu animacji; wtedy otwiera się ewentualna rozmowa lub finał. Dodatkowy ruch jest zablokowany do zakończenia kroku. Nowa gra anuluje trwającą animację, a otwarcie menu lub zmiana widoku kończy ją przed wykonaniem akcji. FPV zachowuje ruch krokowy bez tej animacji. `prefers-reduced-motion: reduce` i brak API animacji oznaczają natychmiastowe przejście.
+Okno widoczności przesuwa się razem z postacią w trakcie ruchu. Pole docelowe trafia do `visited`, a pozycja logiczna zmienia się dopiero przy zakończeniu animacji; wtedy otwiera się ewentualna rozmowa lub finał. Dodatkowy ruch jest zablokowany do zakończenia kroku. Nowa gra anuluje trwającą animację, a otwarcie menu lub zmiana widoku kończy ją przed wykonaniem akcji. FPV zachowuje ruch krokowy bez tej animacji. `prefers-reduced-motion: reduce` i brak API animacji oznaczają natychmiastowe przejście.
 
 Testy z kontrolowanym zegarem sprawdzają ruch, opóźnienie rozmów, blokady, restart, przełączanie widoków i preferencję ograniczenia ruchu. Sprawdzono także statyczne fazy chodu; płynność w prawdziwej przeglądarce pozostaje niezweryfikowana z powodu niedostępnego podglądu.
+
+## Widoczność i ucieczka wilka
+
+W 2D `sightArea()` obejmuje kwadrat 120×120 jednostek wokół środka pola Adama: aktualne pole 60×60 i dodatkowe 30 jednostek (pół pola) z każdej strony. `sightDefinitions()` łączy to okno z pełnymi odwiedzonymi polami. Maska SVG odsłania teren i ścieżki, a wspólna ścieżka przycinania ogranicza widoczność drzew, zwierząt i furtki. Podczas chodu aktualizowana jest pozycja okna bez przebudowania mapy. Opcja odsłonięcia całej mapy nadal działa, a dodatkowa widoczność nie dopisuje pól do `visited` ani do miniatury FPV.
+
+Poprawna odpowiedź wilkowi przyznaje jedno serce i zapisuje `done` jak dotychczas. `startFlee()` pokazuje przez 750 ms podskoki, ruch łap oraz oddalanie i zanikanie wilka. W 2D wilk odbiega w las, w FPV maleje w perspektywie. Ruch gracza jest zablokowany tylko do końca tej krótkiej animacji. Po niej `animalPresent()` oraz renderer FPV pomijają rozwiązanego wilka, także po ponownym wejściu na pole lub zmianie widoku. Przyjazne zwierzęta nadal zostają na mapie.
+
+Nowa gra anuluje ucieczkę. Zmiana widoku i otwarcie menu kończą ją bez ponownego przyznania serca. Przy ograniczeniu animacji lub braku API wilk znika natychmiast. Testy obejmują oba widoki, błędne odpowiedzi, jednorazową nagrodę, restart, zmianę widoku i śledzenie zasięgu widzenia podczas kroku.
 
 ## Widok FPV
 

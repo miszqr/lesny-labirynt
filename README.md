@@ -14,10 +14,10 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 
 ## Rozgrywka
 
-- Losowy labirynt 4×4, 6×6 lub 8×8; cel: dotrzeć do domu.
+- Losowy labirynt 4×4, 6×6 lub 8×8; cel: dotrzeć do domu. W 2D widać odwiedzone pola oraz dodatkowe pół pola w każdą stronę wokół Adama. Zasięg widzenia przesuwa się podczas chodzenia; samo zobaczenie fragmentu pola nie zalicza go jako odwiedzonego.
 - Pomoc zwierzakom polega na czytaniu krótkiej prośby i wybieraniu obrazka spośród trzech odpowiedzi. Przedmiot losuje się z listy ulubionych rzeczy zwierzaka raz na przygodę; ponowne otwarcie rozmowy nie zmienia prośby ani odpowiedzi.
 - Jeden zwierzak daje klucz do furtki. Jest dostępny przed zamkniętą furtką.
-- Wilk losuje od jednego do pięciu kroków oraz kierunek: w górę, w prawo, w dół lub w lewo. Gracz czyta polecenie, klika strzałkę odpowiednią liczbę razy i wybiera „Zatwierdź”. Rząd strzałek pokazuje wybrane kroki; „Cofnij” usuwa ostatni bez kary.
+- Wilk losuje od jednego do pięciu kroków oraz kierunek: w górę, w prawo, w dół lub w lewo. Gracz czyta polecenie, klika strzałkę odpowiednią liczbę razy i wybiera „Zatwierdź”. Rząd strzałek pokazuje wybrane kroki; „Cofnij” usuwa ostatni bez kary. Po poprawnej odpowiedzi wilk ucieka i znika z mapy, również w FPV.
 - Początkowo są 3 serduszka; każde ukończone zadanie daje 1, błąd u wilka odbiera 1. Zero oznacza koniec gry.
 - W widoku 2D Adam płynnie przechodzi między polami, poruszając nogami i rękami. Rozmowy zaczynają się po dojściu na miejsce. Ustawienie systemowe ograniczające animacje wyłącza ruch postaci.
 - Dwa widoki tej samej przygody: mapa z góry oraz FPV — oczami Adama. Przełącznik w nagłówku i menu zachowuje cały postęp.
