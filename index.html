@@ -161,7 +161,8 @@ function sightArea(x=pos%maze.n*60+30,y=Math.floor(pos/maze.n)*60+30){return {x:
 function sightDefinitions(){
  const L=maze.n*60,a=sightArea();
  const discovered=$('#reveal').checked?`<rect x="-60" y="-60" width="${L+120}" height="${L+120}"/>`:[...visited].map(id=>`<rect x="${id%maze.n*60}" y="${Math.floor(id/maze.n)*60}" width="60" height="60"/>`).join('');
- return `<defs><g id="seen-area">${discovered}<rect id="sight-window" x="${a.x}" y="${a.y}" width="120" height="120"/></g><clipPath id="visible-area" clipPathUnits="userSpaceOnUse"><use href="#seen-area"/></clipPath><mask id="map-fog" maskUnits="userSpaceOnUse" x="-60" y="-60" width="${L+120}" height="${L+120}" style="mask-type:luminance"><rect x="-60" y="-60" width="${L+120}" height="${L+120}" fill="white"/><use href="#seen-area" fill="black"/></mask></defs>`;
+ // Keep concrete shapes in clipPath: a use referencing a group hid every clipped sprite.
+ return `<defs><g id="seen-area">${discovered}<rect id="sight-window" x="${a.x}" y="${a.y}" width="120" height="120"/></g><clipPath id="visible-area" clipPathUnits="userSpaceOnUse">${discovered}<rect id="sight-window-clip" x="${a.x}" y="${a.y}" width="120" height="120"/></clipPath><mask id="map-fog" maskUnits="userSpaceOnUse" x="-60" y="-60" width="${L+120}" height="${L+120}" style="mask-type:luminance"><rect x="-60" y="-60" width="${L+120}" height="${L+120}" fill="white"/><use href="#seen-area" fill="black"/></mask></defs>`;
 }
 function draw(){
  const n=maze.n,L=n*60;$('#map').setAttribute('viewBox',`-12 -32 ${L+24} ${L+44}`);
@@ -273,7 +274,7 @@ function startWalk(to,d){
   const t=Math.min(1,(now-w.started)/360);
   if(t>=1){finishWalk();return}
   const p=walkPose(w.from,w.to,t),eased=t*t*(3-2*t),offset=(encounters[w.from]?14:0)*(1-eased)+(encounters[w.to]?14:0)*eased,a=sightArea(p.x+offset,p.y-12);
-  $('#sight-window')?.setAttribute('x',a.x);$('#sight-window')?.setAttribute('y',a.y);
+  for(const selector of ['#sight-window','#sight-window-clip']){const rect=$(selector);rect?.setAttribute('x',a.x);rect?.setAttribute('y',a.y)}
   actor?.setAttribute('transform',`translate(${p.x} ${p.y}) scale(${p.scale})`);
   parts.body?.setAttribute('transform',`translate(0 ${p.bob})`);
   parts['left-leg']?.setAttribute('transform',`translate(${p.stride*.15} ${p.stride})`);

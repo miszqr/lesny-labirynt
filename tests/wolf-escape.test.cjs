@@ -56,8 +56,8 @@ test('half-cell extra sight follows walking without marking the destination as v
   assert.equal(run('JSON.stringify(sightArea())'),JSON.stringify({x:30,y:30,width:120,height:120}));
   assert.equal(run('visited.size'),1);assert.match($('#map').innerHTML,/mask="url\(#map-fog\)"/);
   run('move(1)');assert.equal(run('visited.has(6)'),false);
-  tick(0);assert.equal($('#sight-window').attrs.x,30);
-  tick(180);assert.equal($('#sight-window').attrs.x,60);assert.equal(run('visited.has(6)'),false);
+  tick(0);assert.equal($('#sight-window').attrs.x,30);assert.equal($('#sight-window-clip').attrs.x,30);
+  tick(180);assert.equal($('#sight-window').attrs.x,60);assert.equal($('#sight-window-clip').attrs.x,60);assert.equal($('#sight-window-clip').attrs.y,$('#sight-window').attrs.y);assert.equal(run('visited.has(6)'),false);
   tick(360);assert.equal(run('pos'),6);assert.equal(run('visited.has(6)'),true);
   assert.match($('#map').innerHTML,/id="sight-window" x="90"/);
   $('#reveal').checked=true;$('#reveal').onchange();
