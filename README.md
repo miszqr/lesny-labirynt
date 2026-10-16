@@ -15,7 +15,7 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 ## Rozgrywka
 
 - Losowy labirynt 4×4, 6×6 lub 8×8; cel: dotrzeć do domu.
-- Pomoc zwierzakom polega na czytaniu krótkich poleceń i wybieraniu odpowiedzi.
+- Pomoc zwierzakom polega na czytaniu krótkiej prośby i wybieraniu obrazka spośród trzech odpowiedzi. Przedmiot losuje się z listy ulubionych rzeczy zwierzaka raz na przygodę; ponowne otwarcie rozmowy nie zmienia prośby ani odpowiedzi.
 - Jeden zwierzak daje klucz do furtki. Jest dostępny przed zamkniętą furtką.
 - Wilk prosi o skok o liczbę kroków zapisaną słownie. Odpowiedzi są cyframi.
 - Początkowo są 3 serduszka; każde ukończone zadanie daje 1, błąd u wilka odbiera 1. Zero oznacza koniec gry.
@@ -30,15 +30,30 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 
 Projekt jest statyczny: HTML, CSS i JavaScript, bez zależności zewnętrznych. Ilustracje są generowane jako SVG; przedmioty i elementy interfejsu korzystają również z emoji.
 
-## Test regresji dymka furtki
+## Ulubione przedmioty
+
+| Zwierzak | Możliwe prośby |
+| --- | --- |
+| Kot | 🥛 mleko, 🐟 ryba, ⚽ piłka |
+| Królik | 🥕 marchew, 🥬 kapusta, 🍎 jabłko |
+| Miś | 🍯 miód, 🫐 jagody, 🍐 gruszka |
+| Jeż | 🍂 liść, 🍄 grzyb, 🧣 szalik |
+| Pies | ⚽ piłka, 🦴 kość, 👟 but |
+| Sowa | 🗺️ mapa, 📕 książka, 👓 okulary |
+
+Wilk zachowuje osobne zadanie z liczbą kroków i odpowiedziami 1–5. Przedmioty oraz ich poprawne formy gramatyczne są zdefiniowane w `itemCatalog`, a listy zwierząt w `bank`. Widoczna prośba i poprawna odpowiedź korzystają z tych samych danych.
+
+## Testy
 
 Wymaga Node.js z obsługą `node:test` (sprawdzono na 24.19.0), bez dodatkowych pakietów:
 
 ```sh
-node --test tests/gate-bubble.test.cjs
+node --test tests/*.test.cjs
 ```
 
 Test sprawdza pozycjonowanie po ustawieniu pełnego komunikatu, z kluczem i bez niego, oraz blokadę i otwieranie furtki. Używa symulowanych wymiarów DOM; nie zastępuje sprawdzenia układu w przeglądarce i na telefonie.
+
+Testy przedmiotów sprawdzają wszystkie listy ulubionych rzeczy, unikalne obrazki, zgodność prośby i odpowiedzi, stałość zadania po zamknięciu dymka, jednorazową nagrodę i zachowanie wilka.
 
 ## Dokumentacja projektu
 
