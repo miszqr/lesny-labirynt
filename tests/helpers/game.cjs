@@ -4,8 +4,9 @@ const vm = require('node:vm');
 const root = process.env.GAME_ROOT || path.resolve(__dirname, '../..');
 
 // Minimal DOM: verifies game state and answer content, not browser layout.
-function game() {
+function game({ animation = false, reducedMotion = false } = {}) {
   const nodes = new Map(), events = {};
+  const frames = new Map(); let nextFrame = 0;
   function element() {
     return { value: '4', open: false, checked: false, hidden: false, textContent: '', children: [], dataset: {}, attrs: {},
       style: { setProperty() {} }, classList: { toggle() {} }, offsetWidth: 300, offsetHeight: 200,
@@ -19,13 +20,18 @@ function game() {
   let seed = 123;
   const math = Object.create(Math);
   math.random = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
-  const context = vm.createContext({ Math: math, Set, window: { addEventListener() {} },
+  const context = vm.createContext({ Math: math, Set, window: { addEventListener() {}, matchMedia() { return { matches: reducedMotion }; } },
     document: { querySelector: $, querySelectorAll: s => s==='[data-dir]'?buttons:[], createElement: element, addEventListener(name,fn) { events[name]=fn; } } });
+  if (animation) Object.assign(context, {
+    requestAnimationFrame(fn) { const id = ++nextFrame; frames.set(id,fn); return id; },
+    cancelAnimationFrame(id) { frames.delete(id); }
+  });
   for(const file of ['maze.js','fpv.js']) vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context);
   Object.assign(context, context.window);
   const source = fs.readFileSync(path.join(root, 'index.html'), 'utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
   vm.runInContext(source, context);
-  return { $, buttons, events, run: code => vm.runInContext(code, context) };
+  return { $, buttons, events, tick(time) { const pending=[...frames.values()];frames.clear();pending.forEach(fn=>fn(time)); },
+    pendingFrames: () => frames.size, run: code => vm.runInContext(code, context) };
 }
 
 module.exports = { game };

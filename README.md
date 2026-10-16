@@ -19,6 +19,7 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 - Jeden zwierzak daje klucz do furtki. Jest dostępny przed zamkniętą furtką.
 - Wilk losuje od jednego do pięciu kroków oraz kierunek: w górę, w prawo, w dół lub w lewo. Gracz czyta polecenie, klika strzałkę odpowiednią liczbę razy i wybiera „Zatwierdź”. Rząd strzałek pokazuje wybrane kroki; „Cofnij” usuwa ostatni bez kary.
 - Początkowo są 3 serduszka; każde ukończone zadanie daje 1, błąd u wilka odbiera 1. Zero oznacza koniec gry.
+- W widoku 2D Adam płynnie przechodzi między polami, poruszając nogami i rękami. Rozmowy zaczynają się po dojściu na miejsce. Ustawienie systemowe ograniczające animacje wyłącza ruch postaci.
 - Dwa widoki tej samej przygody: mapa z góry oraz FPV — oczami Adama. Przełącznik w nagłówku i menu zachowuje cały postęp.
 - Sterowanie mapą: strzałki na klawiaturze lub przyciski pod mapą. W FPV ↑ prowadzi do przodu, ↓ do tyłu, ←/→ obracają o 90° w miejscu. Kompas po lewej pokazuje kierunek patrzenia, a bardzo mała mapka w prawym górnym rogu — odkryte ścieżki i pozycję Adama. Północ mapki pozostaje u góry. Zadanie wilka zachowuje własne strzałki.
 - Menu ☰ zawiera nową grę, rozmiar mapy i odsłanianie mapy.

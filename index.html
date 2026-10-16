@@ -13,7 +13,7 @@
 </div>
 </main><dialog id="menu" aria-labelledby="menu-title"><div class="menu-body"><button id="menu-close" class="secondary" aria-label="Zamknij menu">Zamknij ×</button><h2 id="menu-title">Menu</h2><div class="toolbar"><label for="size">Mapa</label><select id="size"><option value="4">Mała · 4 × 4</option><option value="6">Średnia · 6 × 6</option><option value="8">Duża · 8 × 8</option></select><label class="view-label" for="view-mode">Widok</label><select id="view-mode"><option value="map">Mapa z góry</option><option value="fpv">FPV · oczami Adama</option></select><button class="secondary" id="new">↻ Nowa gra</button></div><label><input id="reveal" type="checkbox"> Pokaż całą mapę</label><div class="legend"><span>👦 Adam</span><span>✦ Spotkanie</span><span>🔒 Furtka</span><span>⌂ Dom</span></div><details><summary>Dla rodzica · jak gramy?</summary><p>Odkrywajcie mapę i pomagajcie leśnym przyjaciołom. Każdy zwierzak ma listę ulubionych przedmiotów. Na początku przygody losuje się jeden z nich. Dziecko czyta prośbę i wybiera właściwy obrazek spośród trzech. Prośba i odpowiedzi pozostają takie same do końca tej przygody. Jeden losowy zwierzak ma klucz i oddaje go za przysługę. Jego prośba zawiera obietnicę nagrody. Zwierzak z kluczem zawsze jest dostępny przed zamkniętą furtką. Klucz trafia na listę przedmiotów. Furtka blokuje losowe przejście na drodze do domu. Otwórz ją przyciskiem „Otwórz furtkę”, a następnie idź dalej do domu. Samo otwarcie furtki nie kończy gry. Pomoc pozostałym zwierzakom jest dobrowolna. Rozmowy pojawiają się w dymkach obok Adama i zwierząt. Przycisk „Dalej” pokazuje następną wypowiedź. Odpowiedzi pojawiają się przy prośbie zwierzaka. Zamknij przyciskiem „Zamknij” lub klawiszem Escape. Przy zwierzaku z niewykonanym zadaniem i zamkniętej furtce możesz ponownie otworzyć okienko przyciskiem pod sterowaniem. Po poprawnej odpowiedzi okienko zamyka się. Zwierzak zostaje na mapie, ale już nie wyświetla zadania. Nie ma limitu czasu. Przyjazne zwierzęta pozwalają poprawić błędną odpowiedź. Na drodze jest też wilk: odczytaj liczbę kroków i kierunek, kliknij strzałkę odpowiednią liczbę razy i zatwierdź. Możesz cofnąć wybrany krok przed zatwierdzeniem. Adam zaczyna z 3 serduszkami. Każde wykonane zadanie, także ominięcie wilka, daje 1 serduszko. Błąd u wilka zabiera 1 serduszko i pozwala spróbować ponownie. Przy 0 serduszek gra się kończy. Zamknięcie okienka nie pozwala ominąć tego zadania. Przycisk FPV pokazuje las oczami Adama: ↑ to krok do przodu, ↓ krok do tyłu, a ↶ i ↷ obracają w miejscu. Strzałki klawiatury działają tak samo. Polecenia wilka nadal dotyczą strzałek w jego zadaniu. Kompas pokazuje kierunek patrzenia. Mała mapka po prawej pokazuje odkryte ścieżki i twoją pozycję; północ jest zawsze u góry. Przycisk Mapa wraca do widoku z góry bez utraty postępu. W razie potrzeby odsłoń całą mapę. Nowa przygoda zaczyna grę od początku.</p></details></div></dialog>
 <script src="maze.js"></script><script src="fpv.js"></script><script>
-const $=s=>document.querySelector(s);let maze,pos,visited,done,encounters,keeper,scenery={},terrain=[],artSeed=0,terrainCache='',hasKey=false,gateOpen=false,won=false,lost=false,hearts=3,viewMode='map',facing=0;
+const $=s=>document.querySelector(s);let maze,pos,visited,done,encounters,keeper,scenery={},terrain=[],artSeed=0,terrainCache='',hasKey=false,gateOpen=false,won=false,lost=false,hearts=3,viewMode='map',facing=0,walking=null;
 const facingNames=['północ ↑','wschód →','południe ↓','zachód ←'];
 const itemCatalog={
  milk:{label:'mleko',word:'mleko',icon:'🥛'},fish:{label:'ryba',word:'rybę',icon:'🐟'},ball:{label:'piłka',word:'piłkę',icon:'⚽'},
@@ -37,7 +37,7 @@ function createEncounter(animal){
  const distractors=shuffled(Object.keys(itemCatalog).filter(id=>id!==answer)).slice(0,2);
  return {...animal,text:`Chcę ${item.word}. Daj mi ${item.word}.`,answer,options:shuffled([answer,...distractors])};
 }
-function start(){if($('#menu').open)$('#menu').close();maze=generateMaze(Number($('#size').value));pos=maze.start;facing=[0,1,2,3].find(d=>maze.cells[pos].links.includes(target(d)))??0;visited=new Set([pos]);done=new Set;encounters={};won=false;lost=false;hearts=3;hasKey=false;gateOpen=false;keeper=maze.keeper;shuffled(bank).slice(0,3).forEach((e,i)=>encounters[maze.places[i]]=createEncounter(e));addDanger();artSeed=Math.floor(Math.random()*1000000);terrain=[];for(let vy=0;vy<=maze.n;vy++)for(let vx=0;vx<=maze.n;vx++){terrain.push({x:vx*60,y:vy*60,type:Math.random()<.16?'water':Math.random()<.7?'forest':'meadow',variant:Math.random()})}terrainCache=terrainArt();$('#reveal').checked=false;closeEvent();render();showEvent(true)}
+function start(){cancelWalk();if($('#menu').open)$('#menu').close();maze=generateMaze(Number($('#size').value));pos=maze.start;facing=[0,1,2,3].find(d=>maze.cells[pos].links.includes(target(d)))??0;visited=new Set([pos]);done=new Set;encounters={};won=false;lost=false;hearts=3;hasKey=false;gateOpen=false;keeper=maze.keeper;shuffled(bank).slice(0,3).forEach((e,i)=>encounters[maze.places[i]]=createEncounter(e));addDanger();artSeed=Math.floor(Math.random()*1000000);terrain=[];for(let vy=0;vy<=maze.n;vy++)for(let vx=0;vx<=maze.n;vx++){terrain.push({x:vx*60,y:vy*60,type:Math.random()<.16?'water':Math.random()<.7?'forest':'meadow',variant:Math.random()})}terrainCache=terrainArt();$('#reveal').checked=false;closeEvent();render();showEvent(true)}
 const jumpDirections=[{icon:'↑',word:'w górę',area:'up'},{icon:'→',word:'w prawo',area:'right'},{icon:'↓',word:'w dół',area:'down'},{icon:'←',word:'w lewo',area:'left'}];
 function addDanger(){
  const parent=Array(maze.cells.length).fill(-1),queue=[maze.start];parent[maze.start]=maze.start;for(let i=0;i<queue.length;i++)for(const b of maze.cells[queue[i]].links)if(parent[b]===-1){parent[b]=queue[i];queue.push(b)}
@@ -85,7 +85,8 @@ else{out+=`<path d="${blob(x,y,17+v*5,v)}" fill="${type==='forest'?'#8ea972':'#c
 for(let i=0;i<maze.n*maze.n*14;i++){const x=artNoise(i,6)*L,y=artNoise(i,7)*L,v=artNoise(i,8);out+=v<.7?`<path d="M${x.toFixed(1)} ${y.toFixed(1)}l1-2m-1 2-1-1" stroke="${v<.3?'#789563':'#d3d6a4'}" stroke-width=".7" opacity=".55"/>`:`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${(.7+v).toFixed(1)}" ry=".8" fill="#b4ad89" opacity=".65"/>`}
 return out}
 function edgePoint(a,b){const n=maze.n,low=Math.min(a,b),high=Math.max(a,b),shift=(artNoise(low,high)-.5)*12;const x=((a%n+b%n)/2)*60+30,y=((Math.floor(a/n)+Math.floor(b/n))/2)*60+30;return Math.abs(a-b)===1?[x,y+shift]:[x+shift,y]}
-function roadPath(c){const n=maze.n,x=c.id%n*60+30,y=Math.floor(c.id/n)*60+30;return c.links.map(b=>{const [ex,ey]=edgePoint(c.id,b),horizontal=Math.abs(c.id-b)===1;const dx=Math.sign(ex-x),dy=Math.sign(ey-y),bend=(artNoise(c.id,b+90)-.5)*8;const c1x=horizontal?x+dx*13:x+bend,c1y=horizontal?y+bend:y+dy*13,c2x=horizontal?ex-dx*10:ex,c2y=horizontal?ey:ey-dy*10;return `M${x} ${y}C${c1x} ${c1y} ${c2x} ${c2y} ${ex} ${ey}`}).join(' ')}
+function roadCurve(a,b){const n=maze.n,x=a%n*60+30,y=Math.floor(a/n)*60+30,[ex,ey]=edgePoint(a,b),horizontal=Math.abs(a-b)===1,dx=Math.sign(ex-x),dy=Math.sign(ey-y),bend=(artNoise(a,b+90)-.5)*8;return [[x,y],[horizontal?x+dx*13:x+bend,horizontal?y+bend:y+dy*13],[horizontal?ex-dx*10:ex,horizontal?ey:ey-dy*10],[ex,ey]]}
+function roadPath(c){return c.links.map(b=>{const [p,a,d,e]=roadCurve(c.id,b);return `M${p.join(' ')}C${a.join(' ')} ${d.join(' ')} ${e.join(' ')}`}).join(' ')}
 function project(x,y){return [x,y]}
 function childFace(kind){
  if(kind==='👦')return `<g data-face="adam">
@@ -119,7 +120,7 @@ function childFace(kind){
 }
 function characterArt(kind){
 const shadow='<ellipse cx="3" cy="1" rx="13" ry="4.5" fill="#3c5036" opacity=".23"/>';
-if(kind==='👦')return shadow+'<path d="M-9-15L-8-2H-2L0-14 2-2H8L9-15Z" fill="#41647a"/><path d="M-8-2h6v4h-9q-2-3 3-4M3-2h5q5 1 4 4H3Z" fill="#654e3c"/><path d="M-9-28Q0-33 9-28L11-13Q0-8-11-13Z" fill="#c88440"/><path d="M-9-28Q-4-31 0-30V-12Q-7-11-11-13Z" fill="#e7a955"/><path d="M-9-26l-5 11m23-11 5 11" stroke="#edbd8b" stroke-width="5" stroke-linecap="round"/>'+childFace(kind);
+if(kind==='👦')return '<ellipse data-walk-part="shadow" cx="3" cy="1" rx="13" ry="4.5" fill="#3c5036" opacity=".23"/><g data-walk-part="body"><g data-walk-part="left-leg"><path d="M-9-15L-8-2H-2L0-14Z" fill="#41647a"/><path d="M-8-2h6v4h-9q-2-3 3-4" fill="#654e3c"/></g><g data-walk-part="right-leg"><path d="M0-14L2-2H8L9-15Z" fill="#41647a"/><path d="M3-2h5q5 1 4 4H3Z" fill="#654e3c"/></g><path d="M-9-28Q0-33 9-28L11-13Q0-8-11-13Z" fill="#c88440"/><path d="M-9-28Q-4-31 0-30V-12Q-7-11-11-13Z" fill="#e7a955"/><g data-walk-part="left-arm"><path d="M-9-26l-5 11" stroke="#edbd8b" stroke-width="5" stroke-linecap="round"/></g><g data-walk-part="right-arm"><path d="M9-26l5 11" stroke="#edbd8b" stroke-width="5" stroke-linecap="round"/></g>'+childFace(kind)+'</g>';
 if(kind==='👧')return shadow+'<path d="M-7-14L-6-1M6-14L7-1" stroke="#edbd8b" stroke-width="5"/><path d="M-9-2h6v4h-8ZM4-2h6l3 4H4Z" fill="#8a514d"/><path d="M-9-28Q0-34 9-28L15-11Q0-5-14-11Z" fill="#bb7290"/><path d="M-9-28Q-5-31-1-30L-2-9-14-11Z" fill="#dfa1b7"/><path d="M-9-25l-4 12m22-12 4 12" stroke="#edbd8b" stroke-width="4" stroke-linecap="round"/>'+childFace(kind);
 const colors={'🐈':['#d8974c','#f2bb73'],'🐇':['#c1b6aa','#e7ddd1'],'🐻':['#8c6142','#b98958'],'🦔':['#825c42','#c69d76'],'🐕':['#a67246','#d3a16b'],'🦉':['#897253','#baa278'],'🐺':['#64757a','#9cabad']};const c=colors[kind];if(!c)return '';let ears='';
 if(kind==='🐇')ears='<ellipse cx="-7" cy="-40" rx="4" ry="14" fill="#c1b6aa"/><ellipse cx="7" cy="-41" rx="4" ry="14" fill="#e7ddd1"/><path d="M-7-49v14M7-50v14" stroke="#cf9c9b" stroke-width="2.5" stroke-linecap="round"/>';
@@ -170,7 +171,7 @@ function draw(){
  const [ax,ay]=project(pos%n*60+30,Math.floor(pos/n)*60+30),sx=ax-(encounters[pos]?14:0);
  sprites.push({depth:ay+.2,svg:characterSprite('👦',sx,ay+12,encounters[pos]?.72:.85)});
  if(visited.has(ga)||visited.has(gb)||$('#reveal').checked){const [x,y]=project(gx,gy);sprites.push({depth:y+10,svg:wicketSprite(x,y,Math.abs(ga-gb)===1,gateOpen)})}
- sprites.sort((a,b)=>a.depth-b.depth);out+=sprites.map(s=>s.svg).join('');$('#map').innerHTML=out;
+ sprites.sort((a,b)=>a.depth-b.depth);out+=sprites.map(s=>`<g data-depth="${s.depth}">${s.svg}</g>`).join('');$('#map').innerHTML=out;
 }
 function drawHome(){
 $('#map').setAttribute('viewBox','0 0 360 300');$('#map').setAttribute('aria-label','Adam jest w domu ze swoją siostrą.');
@@ -207,6 +208,7 @@ function renderScene(){
  }else{draw();$('#map').setAttribute('aria-label','Odkrywana mapa labiryntu')}
 }
 function setView(mode){
+ finishWalk();
  viewMode=mode==='fpv'?'fpv':'map';$('#view-mode').value=viewMode;
  if($('#menu').open)$('#menu').close();render();if($('#event').open)paintDialogue();
 }
@@ -214,15 +216,16 @@ function updateControls(){
  const fpv=viewMode==='fpv';$('#view-mode').value=viewMode;
  $('#view-toggle').textContent=fpv?'🗺 Mapa':'👁 FPV';$('#view-toggle').setAttribute('aria-pressed',String(fpv));
  $('#view-toggle').setAttribute('aria-label',fpv?'Włącz mapę z góry':'Włącz widok z oczu Adama');
- $('#fpv-hint').hidden=!fpv||won;
+ $('#fpv-hint').hidden=!fpv||won;$('#interact').disabled=!!walking;
  document.querySelectorAll('[data-dir]').forEach(b=>{
   const d=Number(b.dataset.dir),turn=fpv&&(d===1||d===3),world=fpv?(facing+(d===2?2:0))%4:d;
   b.textContent=fpv?['↑','↷','↓','↶'][d]:['↑','→','↓','←'][d];
   b.setAttribute('aria-label',fpv?['Idź do przodu','Obróć się w prawo','Idź do tyłu','Obróć się w lewo'][d]:['Idź w górę','Idź w prawo','Idź w dół','Idź w lewo'][d]);
-  b.disabled=won||lost||dangerPending()||(!turn&&!maze.cells[pos].links.includes(target(world)));
+  b.disabled=!!walking||won||lost||dangerPending()||(!turn&&!maze.cells[pos].links.includes(target(world)));
  });
 }
 function handleDirection(d){
+ if(walking)return;
  if(viewMode!=='fpv'){move(d);return}
  if($('#event').open||$('#menu').open||won)return;
  if(lost||dangerPending()){render();showEvent();return}
@@ -230,7 +233,47 @@ function handleDirection(d){
  else move((facing+(d===2?2:0))%4);
 }
 function target(d){return [pos-maze.n,pos%maze.n<maze.n-1?pos+1:-1,pos+maze.n,pos%maze.n>0?pos-1:-1][d]}
-function move(d){if($('#event').open||$('#menu').open)return;if(lost||dangerPending()){render();showEvent();return}const t=target(d);if(!won&&maze.cells[pos].links.includes(t)){if(!gateOpen&&maze.gate.includes(pos)&&maze.gate.includes(t)){render();$('#notice').textContent=hasKey?'Otwórz furtkę kluczem.':'Furtka jest zamknięta. Znajdź klucz.';showEvent();return}pos=t;if(viewMode==='map')facing=d;visited.add(pos);render();showEvent()}}
+function move(d){if(walking)return;if($('#event').open||$('#menu').open)return;if(lost||dangerPending()){render();showEvent();return}const t=target(d);if(!won&&maze.cells[pos].links.includes(t)){if(!gateOpen&&maze.gate.includes(pos)&&maze.gate.includes(t)){render();$('#notice').textContent=hasKey?'Otwórz furtkę kluczem.':'Furtka jest zamknięta. Znajdź klucz.';showEvent();return}if(viewMode==='map'){startWalk(t,d);return}pos=t;visited.add(pos);render();showEvent()}}
+function cancelWalk(){
+ const w=walking;walking=null;
+ if(w&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(w.frame);
+}
+function finishWalk(){
+ if(!walking)return;
+ const {to,d}=walking;cancelWalk();pos=to;facing=d;visited.add(pos);render();showEvent();
+}
+function walkPose(from,to,t){
+ const eased=t*t*(3-2*t),u=eased<.5?eased*2:(1-eased)*2,curve=eased<.5?roadCurve(from,to):roadCurve(to,from),v=1-u;
+ const p=[0,1].map(axis=>v*v*v*curve[0][axis]+3*v*v*u*curve[1][axis]+3*v*u*u*curve[2][axis]+u*u*u*curve[3][axis]);
+ const fromScale=encounters[from]?.72:.85,toScale=encounters[to]?.72:.85;
+ p[0]-=(encounters[from]?14:0)*(1-eased)+(encounters[to]?14:0)*eased;p[1]+=12;
+ return {x:p[0],y:p[1],scale:fromScale+(toScale-fromScale)*eased,swing:Math.sin(t*Math.PI*4)*19,stride:Math.sin(t*Math.PI*4)*2.5,bob:-Math.abs(Math.sin(t*Math.PI*4))*1.5};
+}
+function startWalk(to,d){
+ // Respect reduced motion, and keep movement usable if animation APIs are absent.
+ if(typeof requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){pos=to;facing=d;visited.add(pos);render();showEvent();return}
+ const w=walking={from:pos,to,d,frame:0,started:null};visited.add(to);draw();updateControls();
+ const actor=$('#map [data-character="adam"]'),layer=actor?.parentElement;
+ const layers=[...document.querySelectorAll('#map > [data-depth]')].filter(el=>el!==layer);
+ const parts={};for(const name of ['body','shadow','left-leg','right-leg','left-arm','right-arm'])parts[name]=$(`#map [data-character="adam"] [data-walk-part="${name}"]`);
+ const frame=now=>{
+  if(walking!==w)return;
+  if(w.started===null)w.started=now;
+  const t=Math.min(1,(now-w.started)/360);
+  if(t>=1){finishWalk();return}
+  const p=walkPose(w.from,w.to,t);
+  actor?.setAttribute('transform',`translate(${p.x} ${p.y}) scale(${p.scale})`);
+  parts.body?.setAttribute('transform',`translate(0 ${p.bob})`);
+  parts['left-leg']?.setAttribute('transform',`translate(${p.stride*.15} ${p.stride})`);
+  parts['right-leg']?.setAttribute('transform',`translate(${-p.stride*.15} ${-p.stride})`);
+  parts['left-arm']?.setAttribute('transform',`translate(0 ${-p.stride*.6}) rotate(${-p.swing*.35} -9 -26)`);
+  parts['right-arm']?.setAttribute('transform',`translate(0 ${p.stride*.6}) rotate(${-p.swing*.35} 9 -26)`);
+  parts.shadow?.setAttribute('transform',`translate(0 ${-p.bob*.15})`);
+  if(layer){const next=layers.find(el=>Number(el.dataset.depth)>p.y-12+.2)||null;if(layer.nextElementSibling!==next)$('#map').insertBefore(layer,next)}
+  w.frame=requestAnimationFrame(frame);
+ };
+ w.frame=requestAnimationFrame(frame);
+}
 let dialogueSteps=[],dialogueIndex=0;
 function closeEvent(){if($('#event').open)$('#event').close();$('#answers').hidden=false;$('#dialogue-next').hidden=true;document.querySelectorAll('#map [data-speaking]').forEach(el=>el.removeAttribute('data-speaking'))}
 function npcLine(e){return e.danger?e.text.replace('To groźny wilk. ',''):e.text+(pos===keeper?' Dam ci klucz.':'')}
@@ -252,7 +295,7 @@ $('#dialogue-next').onclick=()=>{if(dialogueIndex<dialogueSteps.length-1){dialog
 window.addEventListener('resize',positionBubble);if(typeof ResizeObserver!=='undefined')new ResizeObserver(positionBubble).observe($('.mapwrap'));
 // Consume the outside click so dismissing a bubble does not also move Adam.
 document.addEventListener('click',e=>{const bubble=$('#event');if(!bubble.open||bubble.contains(e.target))return;e.preventDefault();e.stopImmediatePropagation();closeEvent()},true);
-$('#menu-toggle').onclick=()=>$('#menu').showModal();$('#menu-close').onclick=()=>$('#menu').close();$('#close').onclick=closeEvent;$('#interact').onclick=()=>{render();showEvent()};
+$('#menu-toggle').onclick=()=>{finishWalk();closeEvent();$('#menu').showModal()};$('#menu-close').onclick=()=>$('#menu').close();$('#close').onclick=closeEvent;$('#interact').onclick=()=>{render();showEvent()};
 $('#view-toggle').onclick=()=>setView(viewMode==='fpv'?'map':'fpv');$('#view-mode').onchange=()=>setView($('#view-mode').value);
-document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>handleDirection(Number(b.dataset.dir)));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#event').open){e.preventDefault();closeEvent();return}if($('#event').open||$('#menu').open||['SELECT','INPUT','TEXTAREA'].includes(e.target.tagName))return;let d=['ArrowUp','ArrowRight','ArrowDown','ArrowLeft'].indexOf(e.key);if(d>=0){e.preventDefault();if(viewMode==='fpv'&&e.repeat)return;handleDirection(d)}});$('#new').onclick=start;$('#next').onclick=start;$('#size').onchange=start;$('#reveal').onchange=renderScene;start();
+document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>handleDirection(Number(b.dataset.dir)));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#event').open){e.preventDefault();closeEvent();return}if($('#event').open||$('#menu').open||['SELECT','INPUT','TEXTAREA'].includes(e.target.tagName))return;let d=['ArrowUp','ArrowRight','ArrowDown','ArrowLeft'].indexOf(e.key);if(d>=0){e.preventDefault();if(viewMode==='fpv'&&e.repeat)return;handleDirection(d)}});$('#new').onclick=start;$('#next').onclick=start;$('#size').onchange=start;$('#reveal').onchange=()=>{finishWalk();renderScene()};start();
 </script></html>

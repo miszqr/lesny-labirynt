@@ -69,6 +69,14 @@ Parametr `random` umożliwia deterministyczne sprawdzanie generatora. Cała gra 
 - Błędna odpowiedź u przyjaznego zwierzaka nie zabiera serca. Błąd u wilka zabiera jedno; przy zerze gra się kończy. Zamknięcie dymka nie pozwala ominąć nierozwiązanego wilka.
 - Klucz pozwala otworzyć bramę. Dom uruchamia `drawHome()`: Adam przytula siostrę, a końcowe kwestie pojawiają się przy postaciach.
 
+## Animacja chodzenia w 2D
+
+`startWalk()` animuje pojedynczy dozwolony ruch przez 360 ms. `roadCurve()` jest wspólnym źródłem krzywych dla rysowania ścieżki i interpolacji pozycji. Podczas kroku `requestAnimationFrame` aktualizuje tylko transformacje postaci, jej kończyn i kolejność warstw; nie odrysowuje całej mapy w każdej klatce.
+
+Pole docelowe odsłania się na początku ruchu. Pozycja logiczna zmienia się przy zakończeniu animacji; wtedy otwiera się ewentualna rozmowa lub finał. Dodatkowy ruch jest zablokowany do zakończenia kroku. Nowa gra anuluje trwającą animację, a otwarcie menu lub zmiana widoku kończy ją przed wykonaniem akcji. FPV zachowuje ruch krokowy bez tej animacji. `prefers-reduced-motion: reduce` i brak API animacji oznaczają natychmiastowe przejście.
+
+Testy z kontrolowanym zegarem sprawdzają ruch, opóźnienie rozmów, blokady, restart, przełączanie widoków i preferencję ograniczenia ruchu. Sprawdzono także statyczne fazy chodu; płynność w prawdziwej przeglądarce pozostaje niezweryfikowana z powodu niedostępnego podglądu.
+
 ## Widok FPV
 
 Przełącznik wybiera drugi renderer tego samego stanu, bez tworzenia nowej przygody. W FPV ↑/↓ wywołują istniejące `move()` w kierunku patrzenia lub przeciwnym, a ←/→ obracają kamerę o 90°. Ruch nadal respektuje graf, furtkę, rozmowy i nierozwiązanego wilka. W trybie mapy udany ruch ustawia kierunek patrzenia na ostatni kierunek marszu.
