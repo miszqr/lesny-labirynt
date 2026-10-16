@@ -20,7 +20,7 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 - Wilk losuje od jednego do pięciu kroków oraz kierunek: w górę, w prawo, w dół lub w lewo. Gracz czyta polecenie, klika strzałkę odpowiednią liczbę razy i wybiera „Zatwierdź”. Rząd strzałek pokazuje wybrane kroki; „Cofnij” usuwa ostatni bez kary.
 - Początkowo są 3 serduszka; każde ukończone zadanie daje 1, błąd u wilka odbiera 1. Zero oznacza koniec gry.
 - Dwa widoki tej samej przygody: mapa z góry oraz FPV — oczami Adama. Przełącznik w nagłówku i menu zachowuje cały postęp.
-- Sterowanie mapą: strzałki na klawiaturze lub przyciski pod mapą. W FPV ↑ prowadzi do przodu, ↓ do tyłu, ←/→ obracają o 90° w miejscu. Kierunek patrzenia jest podany nad sceną. Zadanie wilka zachowuje własne strzałki.
+- Sterowanie mapą: strzałki na klawiaturze lub przyciski pod mapą. W FPV ↑ prowadzi do przodu, ↓ do tyłu, ←/→ obracają o 90° w miejscu. Kompas po lewej pokazuje kierunek patrzenia, a bardzo mała mapka w prawym górnym rogu — odkryte ścieżki i pozycję Adama. Północ mapki pozostaje u góry. Zadanie wilka zachowuje własne strzałki.
 - Menu ☰ zawiera nową grę, rozmiar mapy i odsłanianie mapy.
 - Stan gry jest przechowywany tylko w pamięci przeglądarki. Odświeżenie zaczyna nową grę.
 

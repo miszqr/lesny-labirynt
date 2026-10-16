@@ -73,7 +73,9 @@ Parametr `random` umożliwia deterministyczne sprawdzanie generatora. Cała gra 
 
 Przełącznik wybiera drugi renderer tego samego stanu, bez tworzenia nowej przygody. W FPV ↑/↓ wywołują istniejące `move()` w kierunku patrzenia lub przeciwnym, a ←/→ obracają kamerę o 90°. Ruch nadal respektuje graf, furtkę, rozmowy i nierozwiązanego wilka. W trybie mapy udany ruch ustawia kierunek patrzenia na ostatni kierunek marszu.
 
-`ForestFPV.corridor()` wyznacza do pięciu kolejnych pól przed graczem i ich boczne połączenia. Widoczność kończy się na ścianie lub zamkniętej furtce. Renderer rzutuje ścieżki, zieleń i furtkę na SVG, korzystając ze wspólnych ilustracji zwierząt i drzew. Nie wymaga WebGL ani dodatkowych bibliotek. Rozmowy w FPV są zakotwiczone w obszarze sceny, ponieważ postać Adama jest kamerą. Finał zachowuje istniejący obraz z siostrą.
+`ForestFPV.corridor()` wyznacza do pięciu kolejnych pól przed graczem i ich boczne połączenia. Widoczność kończy się na ścianie lub zamkniętej furtce. Renderer rzutuje ścieżki, zieleń i furtkę na SVG, korzystając ze wspólnych ilustracji zwierząt i drzew. Nie wymaga WebGL ani dodatkowych bibliotek. Na scenie FPV kompas zastępuje napis o kierunku patrzenia. Miniaturowa mapa w prawym górnym rogu pokazuje odwiedzone pola, ścieżki i strzałkę pozycji oraz orientacji Adama. Ustawienie „Pokaż całą mapę” odsłania także miniaturę. Północ zawsze jest na górze, niezależnie od obrotu kamery.
+
+Rozmowy w FPV są zakotwiczone w obszarze sceny, ponieważ postać Adama jest kamerą. Finał zachowuje istniejący obraz z siostrą.
 
 Zobacz [ADR-0005](decisions/0005-first-person-view.md).
 

@@ -20,6 +20,8 @@ W FPV ↑/↓ oznaczają krok do przodu/tyłu, ←/→ obrót w miejscu o 90°. 
 
 Renderer pokazuje do pięciu pól w linii wzroku, zatrzymując się przy braku przejścia lub zamkniętej furtce. Boczne otwarcia wynikają z połączeń grafu. Drzewa i krzewy oznaczają nieprzekraczalne granice. Zwierzęta używają wspólnych ilustracji. Otwarta furtka ma uchylone skrzydło i dopuszcza ruch przez istniejącą krawędź. FPV pokazuje widoczne przed graczem obiekty niezależnie od odwiedzenia ich pól; nie odkrywa przez to mapy.
 
+Nawigację uzupełniają kompas po lewej i bardzo mała mapa po prawej u góry sceny. Kompas i znacznik Adama obracają się zgodnie z kierunkiem patrzenia. Miniatura jest zorientowana północą do góry i respektuje odkrywanie mapy oraz opcję jej odsłonięcia.
+
 Dymek w FPV mieści się w obszarze sceny; nie potrzebuje widocznej sylwetki Adama. Dotarcie do domu pokazuje dotychczasowy finał i kwestię siostry „Dobrze cię widzieć!”.
 
 ## Konsekwencje i weryfikacja
