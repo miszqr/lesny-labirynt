@@ -50,16 +50,3 @@ test('switching view or opening the menu safely completes an escape',()=>{
   }
 });
 
-test('half-cell extra sight follows walking without marking the destination as visited early',()=>{
-  const {$,run,tick}=game({animation:true});
-  run('closeEvent();pos=5;maze.exit=15;maze.gate=[14,15];maze.cells[5].links=[6];encounters={};visited=new Set([5]);render()');
-  assert.equal(run('JSON.stringify(sightArea())'),JSON.stringify({x:30,y:30,width:120,height:120}));
-  assert.equal(run('visited.size'),1);assert.match($('#map').innerHTML,/mask="url\(#map-fog\)"/);
-  run('move(1)');assert.equal(run('visited.has(6)'),false);
-  tick(0);assert.equal($('#sight-window').attrs.x,30);assert.equal($('#sight-window-clip').attrs.x,30);
-  tick(180);assert.equal($('#sight-window').attrs.x,60);assert.equal($('#sight-window-clip').attrs.x,60);assert.equal($('#sight-window-clip').attrs.y,$('#sight-window').attrs.y);assert.equal(run('visited.has(6)'),false);
-  tick(360);assert.equal(run('pos'),6);assert.equal(run('visited.has(6)'),true);
-  assert.match($('#map').innerHTML,/id="sight-window" x="90"/);
-  $('#reveal').checked=true;$('#reveal').onchange();
-  assert.match($('#map').innerHTML,/<g id="seen-area"><rect x="-60" y="-60" width="360" height="360"/);
-});

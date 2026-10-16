@@ -43,6 +43,7 @@ flowchart TD
 | `maze.gate` | Dwa końce krawędzi blokowanej przez bramę. Brama nie usuwa połączenia z grafu; sprawdza ją logika ruchu. |
 | `maze.keeper`, `maze.places` | Pole zwierzaka z kluczem oraz miejsca spotkań. |
 | `pos`, `visited`, `done`, `encounters` | Pozycja Adama, odwiedzone pola, wykonane zadania i spotkania indeksowane polem. |
+| `seenSamples`, `seenPath` | Zapamiętane pozycje zasięgu i suma odsłoniętych obszarów, niezależna od licznika odwiedzonych pól. |
 | `viewMode`, `facing` | Wybrany widok (`map` lub `fpv`) i kierunek patrzenia (0 północ, 1 wschód, 2 południe, 3 zachód). |
 | `hearts`, `hasKey`, `gateOpen`, `won`, `lost` | Ekwipunek i stan zakończenia gry. |
 | `dialogueSteps`, `dialogueIndex` | Lista kwestii `{speaker, icon, name, text}` i indeks bieżącej wypowiedzi. |
@@ -73,13 +74,17 @@ Parametr `random` umożliwia deterministyczne sprawdzanie generatora. Cała gra 
 
 `startWalk()` animuje pojedynczy dozwolony ruch przez 360 ms. `roadCurve()` jest wspólnym źródłem krzywych dla rysowania ścieżki i interpolacji pozycji. Podczas kroku `requestAnimationFrame` aktualizuje tylko transformacje postaci, jej kończyn i kolejność warstw; nie odrysowuje całej mapy w każdej klatce.
 
-Okno widoczności przesuwa się razem z postacią w trakcie ruchu. Pole docelowe trafia do `visited`, a pozycja logiczna zmienia się dopiero przy zakończeniu animacji; wtedy otwiera się ewentualna rozmowa lub finał. Dodatkowy ruch jest zablokowany do zakończenia kroku. Nowa gra anuluje trwającą animację, a otwarcie menu lub zmiana widoku kończy ją przed wykonaniem akcji. FPV zachowuje ruch krokowy bez tej animacji. `prefers-reduced-motion: reduce` i brak API animacji oznaczają natychmiastowe przejście.
+Obszar widoczności powiększa się wzdłuż drogi postaci i zachowuje wszystkie odsłonięte fragmenty. Pole docelowe trafia do `visited`, a pozycja logiczna zmienia się dopiero przy zakończeniu animacji; wtedy otwiera się ewentualna rozmowa lub finał. Dodatkowy ruch jest zablokowany do zakończenia kroku. Nowa gra anuluje trwającą animację, a otwarcie menu lub zmiana widoku kończy ją przed wykonaniem akcji. FPV zachowuje ruch krokowy bez tej animacji. `prefers-reduced-motion: reduce` i brak API animacji oznaczają natychmiastowe przejście.
 
 Testy z kontrolowanym zegarem sprawdzają ruch, opóźnienie rozmów, blokady, restart, przełączanie widoków i preferencję ograniczenia ruchu. Sprawdzono także statyczne fazy chodu; płynność w prawdziwej przeglądarce pozostaje niezweryfikowana z powodu niedostępnego podglądu.
 
 ## Widoczność i ucieczka wilka
 
-W 2D `sightArea()` obejmuje kwadrat 120×120 jednostek wokół środka pola Adama: aktualne pole 60×60 i dodatkowe 30 jednostek (pół pola) z każdej strony. `sightDefinitions()` łączy to okno z pełnymi odwiedzonymi polami. Maska SVG odsłania teren i ścieżki, a wspólna ścieżka przycinania ogranicza widoczność drzew, zwierząt i furtki. Obszar przycinania zawiera bezpośrednie prostokąty; odwołanie `use` do grupy w `clipPath` powodowało ukrywanie wszystkich obiektów. Podczas chodu pozycje okien maski i obszaru przycinania są aktualizowane razem, bez przebudowania mapy. Opcja odsłonięcia całej mapy nadal działa, a dodatkowa widoczność nie dopisuje pól do `visited` ani do miniatury FPV.
+W 2D `rememberSight()` dopisuje do `seenPath` zamknięte, nieregularne obszary o promieniu około 67 jednostek wokół Adama (pole ma 60×60). Ich kształt wynika ze stałego ziarna przygody i pozycji, więc nie migocze przy odrysowaniu. Wszystkie kontury mają ten sam kierunek i tworzą sumę obszarów; pamięć tylko rośnie. `rememberWalk()` zapisuje 17 stałych próbek wzdłuż krzywej kroku, stopniowo podczas animacji i w całości przy jej zakończeniu. Identyczna droga jest zapamiętywana przy pominiętych klatkach, ograniczeniu animacji i ruchu FPV. Zbiór `seenSamples` eliminuje powtórzenia podczas wracania tą samą trasą.
+
+`sightDefinitions()` tworzy jedną maskę SVG z bezpośrednią ścieżką i rozmyciem Gaussa 3,5 jednostki. Maska obejmuje wspólną grupę terenu, ścieżek, drzew, zwierząt, furtki i Adama, zapewniając spójny miękki brzeg oraz unikając wielokrotnego nakładania masek na każdy obiekt. Nie używa `use` do grupy wewnątrz `clipPath`, co wcześniej powodowało znikanie zwierząt. Podczas chodu zmienia się tylko ścieżka maski i transformacje postaci; sortowanie warstw odbywa się wewnątrz grupy sceny.
+
+Każdy odsłonięty fragment, również części sąsiednich nieodwiedzonych pól, pozostaje widoczny do końca bieżącej gry. Pamięć działa po odejściu, powrocie i zmianie widoku. Nie dopisuje pól do `visited` ani miniatury FPV. „Pokaż całą mapę” jest tymczasowym podglądem, który nie kasuje zebranej pamięci. Nowa gra lub odświeżenie strony zeruje pamięć razem z resztą stanu.
 
 Poprawna odpowiedź wilkowi przyznaje jedno serce i zapisuje `done` jak dotychczas. `startFlee()` pokazuje przez 750 ms podskoki, ruch łap oraz oddalanie i zanikanie wilka. W 2D wilk odbiega w las, w FPV maleje w perspektywie. Ruch gracza jest zablokowany tylko do końca tej krótkiej animacji. Po niej `animalPresent()` oraz renderer FPV pomijają rozwiązanego wilka, także po ponownym wejściu na pole lub zmianie widoku. Przyjazne zwierzęta nadal zostają na mapie.
 
@@ -109,7 +114,7 @@ Istniejąca publikacja Sites korzysta z osobnego repozytorium źródłowego, kat
 
 ## Weryfikacja i ograniczenia
 
-Zestaw `node --test tests/*.test.cjs` sprawdza furtkę i dymki, prośby zwierząt oraz zadanie wilka i sterowanie FPV w symulowanym DOM. Nie ma CI. Testy logiki nie zastępują kontroli układu w przeglądarce.
+Zestaw `node --test tests/*.test.cjs` sprawdza furtkę i dymki, prośby zwierząt oraz zadanie wilka i sterowanie FPV w symulowanym DOM. Nie ma CI. Testy mgły obejmują trwałość odsłoniętych fragmentów, niezależność od animacji i FPV, blokady ruchu oraz reset. Osobny raster SVG potwierdził miękkie krawędzie, widoczność zwierzaka i furtki oraz brak ponownego zasłaniania pikseli po odejściu. Testy logiki i rastrów nie zastępują kontroli układu w przeglądarce.
 
 Przy zmianach sprawdzaj: spójność grafu, dostępność klucza przed bramą, blokadę bramy, jednorazowe nagrody, serca i ponowne próby u wilka, kolejność rozmów, finał oraz reset gry. Na telefonie sprawdzaj widoczność strzałek, czytelność dymków, orientację ekranu i brak przewijania całej strony.
 

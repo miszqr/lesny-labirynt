@@ -15,7 +15,7 @@
 </div>
 </main><dialog id="menu" aria-labelledby="menu-title"><div class="menu-body"><button id="menu-close" class="secondary" aria-label="Zamknij menu">Zamknij ×</button><h2 id="menu-title">Menu</h2><div class="toolbar"><label for="size">Mapa</label><select id="size"><option value="4">Mała · 4 × 4</option><option value="6">Średnia · 6 × 6</option><option value="8">Duża · 8 × 8</option></select><label class="view-label" for="view-mode">Widok</label><select id="view-mode"><option value="map">Mapa z góry</option><option value="fpv">FPV · oczami Adama</option></select><button class="secondary" id="new">↻ Nowa gra</button></div><label><input id="reveal" type="checkbox"> Pokaż całą mapę</label><div class="legend"><span>👦 Adam</span><span>✦ Spotkanie</span><span>🔒 Furtka</span><span>⌂ Dom</span></div><details><summary>Dla rodzica · jak gramy?</summary><p>Odkrywajcie mapę i pomagajcie leśnym przyjaciołom. Każdy zwierzak ma listę ulubionych przedmiotów. Na początku przygody losuje się jeden z nich. Dziecko czyta prośbę i wybiera właściwy obrazek spośród trzech. Prośba i odpowiedzi pozostają takie same do końca tej przygody. Jeden losowy zwierzak ma klucz i oddaje go za przysługę. Jego prośba zawiera obietnicę nagrody. Zwierzak z kluczem zawsze jest dostępny przed zamkniętą furtką. Klucz trafia na listę przedmiotów. Furtka blokuje losowe przejście na drodze do domu. Otwórz ją przyciskiem „Otwórz furtkę”, a następnie idź dalej do domu. Samo otwarcie furtki nie kończy gry. Pomoc pozostałym zwierzakom jest dobrowolna. Rozmowy pojawiają się w dymkach obok Adama i zwierząt. Przycisk „Dalej” pokazuje następną wypowiedź. Odpowiedzi pojawiają się przy prośbie zwierzaka. Zamknij dymek kliknięciem obok niego lub klawiszem Escape. Przy zwierzaku z niewykonanym zadaniem i zamkniętej furtce możesz ponownie otworzyć okienko przyciskiem pod sterowaniem. Po poprawnej odpowiedzi okienko zamyka się. Zwierzak zostaje na mapie, ale już nie wyświetla zadania. Nie ma limitu czasu. Przyjazne zwierzęta pozwalają poprawić błędną odpowiedź. Na drodze jest też wilk: odczytaj liczbę kroków i kierunek, kliknij strzałkę odpowiednią liczbę razy i zatwierdź. Możesz cofnąć wybrany krok przed zatwierdzeniem. Adam zaczyna z 3 serduszkami. Każde wykonane zadanie, także ominięcie wilka, daje 1 serduszko. Błąd u wilka zabiera 1 serduszko i pozwala spróbować ponownie. Przy 0 serduszek gra się kończy. Zamknięcie okienka nie pozwala ominąć tego zadania. Przycisk FPV pokazuje las oczami Adama: ↑ to krok do przodu, ↓ krok do tyłu, a ↶ i ↷ obracają w miejscu. Strzałki klawiatury działają tak samo. Polecenia wilka nadal dotyczą strzałek w jego zadaniu. Kompas pokazuje kierunek patrzenia. Mała mapka po prawej pokazuje odkryte ścieżki i twoją pozycję; północ jest zawsze u góry. Przycisk Mapa wraca do widoku z góry bez utraty postępu. W razie potrzeby odsłoń całą mapę. Nowa przygoda zaczyna grę od początku.</p></details></div></dialog>
 <script src="maze.js"></script><script src="fpv.js"></script><script>
-const $=s=>document.querySelector(s);let maze,pos,visited,done,encounters,keeper,scenery={},terrain=[],artSeed=0,terrainCache='',hasKey=false,gateOpen=false,won=false,lost=false,hearts=3,viewMode='map',facing=0,walking=null,fleeing=null;
+const $=s=>document.querySelector(s);let maze,pos,visited,done,encounters,keeper,scenery={},terrain=[],artSeed=0,terrainCache='',seenSamples=new Set,seenPath='',hasKey=false,gateOpen=false,won=false,lost=false,hearts=3,viewMode='map',facing=0,walking=null,fleeing=null;
 const facingNames=['północ ↑','wschód →','południe ↓','zachód ←'];
 const itemCatalog={
  milk:{label:'mleko',word:'mleko',icon:'🥛'},fish:{label:'ryba',word:'rybę',icon:'🐟'},ball:{label:'piłka',word:'piłkę',icon:'⚽'},
@@ -39,7 +39,7 @@ function createEncounter(animal){
  const distractors=shuffled(Object.keys(itemCatalog).filter(id=>id!==answer)).slice(0,2);
  return {...animal,text:`Chcę ${item.word}. Daj mi ${item.word}.`,answer,options:shuffled([answer,...distractors])};
 }
-function start(){cancelWalk();cancelFlee();if($('#menu').open)$('#menu').close();maze=generateMaze(Number($('#size').value));pos=maze.start;facing=[0,1,2,3].find(d=>maze.cells[pos].links.includes(target(d)))??0;visited=new Set([pos]);done=new Set;encounters={};won=false;lost=false;hearts=3;hasKey=false;gateOpen=false;keeper=maze.keeper;shuffled(bank).slice(0,3).forEach((e,i)=>encounters[maze.places[i]]=createEncounter(e));addDanger();artSeed=Math.floor(Math.random()*1000000);terrain=[];for(let vy=0;vy<=maze.n;vy++)for(let vx=0;vx<=maze.n;vx++){terrain.push({x:vx*60,y:vy*60,type:Math.random()<.16?'water':Math.random()<.7?'forest':'meadow',variant:Math.random()})}terrainCache=terrainArt();$('#reveal').checked=false;closeEvent();render();showEvent(true)}
+function start(){cancelWalk();cancelFlee();if($('#menu').open)$('#menu').close();maze=generateMaze(Number($('#size').value));pos=maze.start;facing=[0,1,2,3].find(d=>maze.cells[pos].links.includes(target(d)))??0;visited=new Set([pos]);done=new Set;encounters={};won=false;lost=false;hearts=3;hasKey=false;gateOpen=false;keeper=maze.keeper;shuffled(bank).slice(0,3).forEach((e,i)=>encounters[maze.places[i]]=createEncounter(e));addDanger();artSeed=Math.floor(Math.random()*1000000);seenSamples=new Set;seenPath='';terrain=[];for(let vy=0;vy<=maze.n;vy++)for(let vx=0;vx<=maze.n;vx++){terrain.push({x:vx*60,y:vy*60,type:Math.random()<.16?'water':Math.random()<.7?'forest':'meadow',variant:Math.random()})}terrainCache=terrainArt();$('#reveal').checked=false;closeEvent();render();showEvent(true)}
 const jumpDirections=[{icon:'↑',word:'w górę',area:'up'},{icon:'→',word:'w prawo',area:'right'},{icon:'↓',word:'w dół',area:'down'},{icon:'←',word:'w lewo',area:'left'}];
 function addDanger(){
  const parent=Array(maze.cells.length).fill(-1),queue=[maze.start];parent[maze.start]=maze.start;for(let i=0;i<queue.length;i++)for(const b of maze.cells[queue[i]].links)if(parent[b]===-1){parent[b]=queue[i];queue.push(b)}
@@ -157,23 +157,46 @@ function wicketSprite(x,y,horizontalRoad,open){
  art+=post(16);return art+'</g>';
 }
 function animalPresent(id){const e=encounters[id];return !!e&&(!e.danger||!done.has(id)||fleeing?.cell===id)}
-function sightArea(x=pos%maze.n*60+30,y=Math.floor(pos/maze.n)*60+30){return {x:x-60,y:y-60,width:120,height:120}}
+// Append-only, same-winding footprints form a union: no previously seen pixel is covered again.
+function rememberSight(x=pos%maze.n*60+30,y=Math.floor(pos/maze.n)*60+30){
+ x=Math.round(x*10)/10;y=Math.round(y*10)/10;
+ const key=`${x},${y}`;if(seenSamples.has(key))return false;
+ seenSamples.add(key);
+ const phase=artNoise(71)*Math.PI*2,points=Array.from({length:16},(_,i)=>{
+  const a=i*Math.PI/8,r=67+6*Math.sin(a*3+phase+x/110)+4*Math.cos(a*5-phase+y/130);
+  return [x+Math.cos(a)*r,y+Math.sin(a)*r];
+ });
+ const pair=p=>p.map(v=>v.toFixed(1)).join(' '),mid=(a,b)=>a.map((v,i)=>(v+b[i])/2);
+ seenPath+=`M${pair(mid(points[15],points[0]))}`+points.map((p,i)=>`Q${pair(p)} ${pair(mid(p,points[(i+1)%16]))}`).join('')+'Z';
+ return true;
+}
+function rememberWalk(from,to,t=1){
+ // Fixed samples retain the whole curved route, even with skipped frames or reduced motion.
+ let changed=false;
+ for(let i=0;i<=Math.floor(Math.min(1,t)*16);i++){
+  const progress=i/16,p=walkPose(from,to,progress),eased=progress*progress*(3-2*progress);
+  const offset=(encounters[from]?14:0)*(1-eased)+(encounters[to]?14:0)*eased;
+  changed=rememberSight(p.x+offset,p.y-12)||changed;
+ }
+ return changed;
+}
 function sightDefinitions(){
- const L=maze.n*60,a=sightArea();
- const discovered=$('#reveal').checked?`<rect x="-60" y="-60" width="${L+120}" height="${L+120}"/>`:[...visited].map(id=>`<rect x="${id%maze.n*60}" y="${Math.floor(id/maze.n)*60}" width="60" height="60"/>`).join('');
- // Keep concrete shapes in clipPath: a use referencing a group hid every clipped sprite.
- return `<defs><g id="seen-area">${discovered}<rect id="sight-window" x="${a.x}" y="${a.y}" width="120" height="120"/></g><clipPath id="visible-area" clipPathUnits="userSpaceOnUse">${discovered}<rect id="sight-window-clip" x="${a.x}" y="${a.y}" width="120" height="120"/></clipPath><mask id="map-fog" maskUnits="userSpaceOnUse" x="-60" y="-60" width="${L+120}" height="${L+120}" style="mask-type:luminance"><rect x="-60" y="-60" width="${L+120}" height="${L+120}" fill="white"/><use href="#seen-area" fill="black"/></mask></defs>`;
+ const L=maze.n*60,bounds=`x="-80" y="-80" width="${L+160}" height="${L+160}"`;
+ const area=$('#reveal').checked?`<rect ${bounds} fill="white"/>`:`<path id="seen-shape" d="${seenPath}" fill="white" fill-rule="nonzero" filter="url(#sight-feather)"/>`;
+ // One mask fades terrain and every sprite together; no use-to-group in a clipPath.
+ return `<defs><filter id="sight-feather" filterUnits="userSpaceOnUse" ${bounds}><feGaussianBlur stdDeviation="3.5"/></filter><mask id="visible-area" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" ${bounds} style="mask-type:luminance">${area}</mask></defs>`;
 }
 function draw(){
  const n=maze.n,L=n*60;$('#map').setAttribute('viewBox',`-12 -32 ${L+24} ${L+44}`);
  let out=`<defs><linearGradient id="soil" x2="0" y2="1"><stop stop-color="#ab855a"/><stop offset="1" stop-color="#715d40"/></linearGradient><clipPath id="ground"><rect width="${L}" height="${L}" rx="3"/></clipPath></defs>`;
  out+=sightDefinitions();
+ out+=`<g clip-path="url(#ground)"><rect width="${L}" height="${L}" fill="#d4dec8"/>`;
+ for(const c of maze.cells)out+=`<circle cx="${c.id%n*60+30}" cy="${Math.floor(c.id/n)*60+30}" r="1.5" fill="#b1bfa2"/>`;
+ out+='</g><g id="revealed-scene" mask="url(#visible-area)">';
  out+=`<g clip-path="url(#ground)"><rect width="${L}" height="${L}" fill="#a8bd83"/>`+terrainCache;
  const paths=maze.cells.map(roadPath).join(' ');out+=`<path d="${paths}" fill="none" stroke="#91a06e" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/><path d="${paths}" fill="none" stroke="#e4ce97" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="${paths}" fill="none" stroke="#f1dfac" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/>`;
  const [ga,gb]=maze.gate;const [gx,gy]=edgePoint(ga,gb);
- out+='<g mask="url(#map-fog)">';
- for(const c of maze.cells)if(!visited.has(c.id)&&!$('#reveal').checked){const x=c.id%n*60,y=Math.floor(c.id/n)*60;out+=`<rect x="${x}" y="${y}" width="60" height="60" fill="#d4dec8"/><circle cx="${x+30}" cy="${y+30}" r="1.5" fill="#b1bfa2"/>`}
- out+='</g></g>';
+ out+='</g>';
  const sprites=[];
  for(const t of terrain)if(t.type==='forest'){for(let i=0;i<3;i++){const dx=[-10,9,-2][i]+(t.variant-.5)*5,dy=[-7,-4,10][i],x=Math.max(6,Math.min(L-6,t.x+dx)),y=Math.max(6,Math.min(L-6,t.y+dy));sprites.push(treeSprite(x,y,(t.variant+i*.31)%1,.46+t.variant*.16+(i===2?.08:0)))}}
  for(const c of maze.cells){const [x,y]=project(c.id%n*60+30,Math.floor(c.id/n)*60+30);
@@ -183,7 +206,7 @@ function draw(){
  const [ax,ay]=project(pos%n*60+30,Math.floor(pos/n)*60+30),sx=ax-(encounters[pos]?14:0);
  sprites.push({depth:ay+.2,player:true,svg:characterSprite('👦',sx,ay+12,encounters[pos]?.72:.85)});
  {const [x,y]=project(gx,gy);sprites.push({depth:y+10,svg:wicketSprite(x,y,Math.abs(ga-gb)===1,gateOpen)})}
- sprites.sort((a,b)=>a.depth-b.depth);out+=sprites.map(s=>`<g data-depth="${s.depth}"${s.player?'':' clip-path="url(#visible-area)"'}>${s.svg}</g>`).join('');$('#map').innerHTML=out;
+ sprites.sort((a,b)=>a.depth-b.depth);out+=sprites.map(s=>`<g data-depth="${s.depth}">${s.svg}</g>`).join('');$('#map').innerHTML=out+'</g>';
 }
 function drawHome(){
 $('#map').setAttribute('viewBox','0 0 360 300');$('#map').setAttribute('aria-label','Adam jest w domu ze swoją siostrą.');
@@ -211,6 +234,7 @@ if(pos===maze.exit){icon='🏡';title='Adam jest w domu!';text='Brawo! Adam jest
 if(lost){icon='🐺';title='Koniec gry';text='Nie masz już serduszek. Zagraj od nowa.';$('#answers').replaceChildren();$('#next').hidden=false;$('#next').textContent='Zagraj od nowa';}$('.scene').classList.toggle('at-gate',atGate);$('.scene').classList.toggle('gate-open',gateOpen);
 const canInteract=lost||(!!e&&!done.has(pos))||(atGate&&!gateOpen)||pos===maze.exit;$('#interact').hidden=!canInteract;$('#interact').textContent=lost?'Koniec gry':e?.danger?'Omiń wilka':pos===maze.exit?'Meta':atGate?'Furtka':'Pomóż';setSceneIcon(icon);$('#title').textContent=title;$('#description').textContent=text;updateControls();}
 function renderScene(){
+ rememberSight();
  $('.map-card').dataset.view=won?'map':viewMode;
  if(won)drawHome();
  else if(viewMode==='fpv'){
@@ -245,14 +269,14 @@ function handleDirection(d){
  else move((facing+(d===2?2:0))%4);
 }
 function target(d){return [pos-maze.n,pos%maze.n<maze.n-1?pos+1:-1,pos+maze.n,pos%maze.n>0?pos-1:-1][d]}
-function move(d){if(walking||fleeing)return;if($('#event').open||$('#menu').open)return;if(lost||dangerPending()){render();showEvent();return}const t=target(d);if(!won&&maze.cells[pos].links.includes(t)){if(!gateOpen&&maze.gate.includes(pos)&&maze.gate.includes(t)){render();$('#notice').textContent=hasKey?'Otwórz furtkę kluczem.':'Furtka jest zamknięta. Znajdź klucz.';showEvent();return}if(viewMode==='map'){startWalk(t,d);return}pos=t;visited.add(pos);render();showEvent()}}
+function move(d){if(walking||fleeing)return;if($('#event').open||$('#menu').open)return;if(lost||dangerPending()){render();showEvent();return}const t=target(d);if(!won&&maze.cells[pos].links.includes(t)){if(!gateOpen&&maze.gate.includes(pos)&&maze.gate.includes(t)){render();$('#notice').textContent=hasKey?'Otwórz furtkę kluczem.':'Furtka jest zamknięta. Znajdź klucz.';showEvent();return}if(viewMode==='map'){startWalk(t,d);return}rememberWalk(pos,t);pos=t;visited.add(pos);render();showEvent()}}
 function cancelWalk(){
  const w=walking;walking=null;
  if(w&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(w.frame);
 }
 function finishWalk(){
  if(!walking)return;
- const {to,d}=walking;cancelWalk();pos=to;facing=d;visited.add(pos);render();showEvent();
+ const {from,to,d}=walking;rememberWalk(from,to);cancelWalk();pos=to;facing=d;visited.add(pos);render();showEvent();
 }
 function walkPose(from,to,t){
  const eased=t*t*(3-2*t),u=eased<.5?eased*2:(1-eased)*2,curve=eased<.5?roadCurve(from,to):roadCurve(to,from),v=1-u;
@@ -263,18 +287,18 @@ function walkPose(from,to,t){
 }
 function startWalk(to,d){
  // Respect reduced motion, and keep movement usable if animation APIs are absent.
- if(typeof requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){pos=to;facing=d;visited.add(pos);render();showEvent();return}
+ if(typeof requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){rememberWalk(pos,to);pos=to;facing=d;visited.add(pos);render();showEvent();return}
  const w=walking={from:pos,to,d,frame:0,started:null};draw();updateControls();
  const actor=$('#map [data-character="adam"]'),layer=actor?.parentElement;
- const layers=[...document.querySelectorAll('#map > [data-depth]')].filter(el=>el!==layer);
+ const layers=[...document.querySelectorAll('#revealed-scene > [data-depth]')].filter(el=>el!==layer);
  const parts={};for(const name of ['body','shadow','left-leg','right-leg','left-arm','right-arm'])parts[name]=$(`#map [data-character="adam"] [data-walk-part="${name}"]`);
  const frame=now=>{
   if(walking!==w)return;
   if(w.started===null)w.started=now;
   const t=Math.min(1,(now-w.started)/360);
   if(t>=1){finishWalk();return}
-  const p=walkPose(w.from,w.to,t),eased=t*t*(3-2*t),offset=(encounters[w.from]?14:0)*(1-eased)+(encounters[w.to]?14:0)*eased,a=sightArea(p.x+offset,p.y-12);
-  for(const selector of ['#sight-window','#sight-window-clip']){const rect=$(selector);rect?.setAttribute('x',a.x);rect?.setAttribute('y',a.y)}
+  const p=walkPose(w.from,w.to,t);
+  if(rememberWalk(w.from,w.to,t)&&!$('#reveal').checked)$('#seen-shape')?.setAttribute('d',seenPath);
   actor?.setAttribute('transform',`translate(${p.x} ${p.y}) scale(${p.scale})`);
   parts.body?.setAttribute('transform',`translate(0 ${p.bob})`);
   parts['left-leg']?.setAttribute('transform',`translate(${p.stride*.15} ${p.stride})`);
@@ -282,7 +306,7 @@ function startWalk(to,d){
   parts['left-arm']?.setAttribute('transform',`translate(0 ${-p.stride*.6}) rotate(${-p.swing*.35} -9 -26)`);
   parts['right-arm']?.setAttribute('transform',`translate(0 ${p.stride*.6}) rotate(${-p.swing*.35} 9 -26)`);
   parts.shadow?.setAttribute('transform',`translate(0 ${-p.bob*.15})`);
-  if(layer){const next=layers.find(el=>Number(el.dataset.depth)>p.y-12+.2)||null;if(layer.nextElementSibling!==next)$('#map').insertBefore(layer,next)}
+  if(layer){const next=layers.find(el=>Number(el.dataset.depth)>p.y-12+.2)||null;if(layer.nextElementSibling!==next)$('#revealed-scene').insertBefore(layer,next)}
   w.frame=requestAnimationFrame(frame);
  };
  w.frame=requestAnimationFrame(frame);
