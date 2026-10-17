@@ -30,8 +30,9 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 - `index.html`: interfejs, style, ilustracje SVG i logika rozgrywki.
 - `maze.js`: generator labiryntu, furtki i położenia zwierzaka z kluczem.
 - `fpv.js`: perspektywiczny widok leśnych korytarzy SVG, wyznaczany z połączeń tej samej mapy.
+- `assets/home-reunion.png`: zaakceptowana ilustracja finałowa — brat i siostra radośnie idą ku sobie.
 
-Projekt jest statyczny: HTML, CSS i JavaScript, bez zależności zewnętrznych. Ilustracje są generowane jako SVG; przedmioty i elementy interfejsu korzystają również z emoji.
+Projekt jest statyczny: HTML, CSS i JavaScript, bez zależności zewnętrznych. Mapa i postacie korzystają z SVG, finał z ilustracji PNG, a przedmioty i elementy interfejsu również z emoji.
 
 ## Ulubione przedmioty
 

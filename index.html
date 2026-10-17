@@ -209,20 +209,12 @@ function draw(){
  sprites.sort((a,b)=>a.depth-b.depth);out+=sprites.map(s=>`<g data-depth="${s.depth}">${s.svg}</g>`).join('');$('#map').innerHTML=out+'</g>';
 }
 function drawHome(){
-$('#map').setAttribute('viewBox','0 0 360 300');$('#map').setAttribute('aria-label','Adam jest w domu ze swoją siostrą.');
-$('#map').innerHTML=`<defs><linearGradient id="home-wall" x2="0" y2="1"><stop stop-color="#fff0cd"/><stop offset="1" stop-color="#edcea3"/></linearGradient><linearGradient id="home-floor" x2="1" y2="1"><stop stop-color="#d7ac7e"/><stop offset="1" stop-color="#ad7b56"/></linearGradient></defs>
-<rect width="360" height="300" rx="14" fill="url(#home-wall)"/><path d="M0 220L180 195 360 220V300H0Z" fill="url(#home-floor)"/><path d="M180 0V195M0 220L180 195 360 220" stroke="#b89167" stroke-width="3" fill="none"/>
-<path d="M0 260L180 221 360 260M75 300L180 195 285 300" fill="none" stroke="#a27653" opacity=".35"/>
-<rect x="24" y="39" width="79" height="93" rx="5" fill="#9b7251"/><rect x="30" y="45" width="67" height="81" fill="#b9dfdc"/><path d="M32 112L48 75 64 112 76 85 95 117" fill="#78a47b"/><path d="M63 44V128M30 86H98" stroke="#fff1d4" stroke-width="5"/>
-<path d="M19 35H54L36 102H19ZM75 35H109V102H93Z" fill="#d88e6b"/>
-<rect x="264" y="61" width="55" height="60" rx="4" fill="#b1875d"/><rect x="270" y="67" width="43" height="48" fill="#fff5dd"/><path d="M291 103C265 88 281 75 291 86 302 75 318 88 291 103" fill="#d37c79"/>
-<ellipse cx="182" cy="253" rx="101" ry="30" fill="#a7b58a"/><ellipse cx="182" cy="252" rx="87" ry="23" fill="#c5cea6"/>
-<g transform="translate(180 245) scale(2.25)"><ellipse cx="1" cy="2" rx="28" ry="5" fill="#56513b" opacity=".2"/>
-<g data-character="sister" transform="translate(16 0) scale(.92)">${characterArt('👧')}</g>
-<g data-character="adam" transform="translate(-12 0) rotate(9 0 -28)">${characterArt('👦')}</g>
-<g transform="translate(0 5)"><path d="M-19-27Q-8-13 17-24" fill="none" stroke="#c88440" stroke-width="8" stroke-linecap="round"/><path d="M-5-21Q5-20 17-24" fill="none" stroke="#f4cca0" stroke-width="5" stroke-linecap="round"/>
-<path d="M24-28Q9-15-14-29" fill="none" stroke="#bb7290" stroke-width="8" stroke-linecap="round"/><path d="M10-22Q-3-21-14-29" fill="none" stroke="#f4cca0" stroke-width="5" stroke-linecap="round"/>
-</g><path d="M0-68C-13-77-6-85 0-78 7-85 14-77 0-68" fill="#d6747d"/></g>`;
+ $('#map').setAttribute('viewBox','0 0 360 300');
+ $('#map').setAttribute('aria-label','Adam jest w domu ze swoją siostrą. Dzieci z radością idą ku sobie.');
+ // The approved illustration is kept intact. Invisible bounds anchor each child's dialogue.
+ $('#map').innerHTML=`<image href="assets/home-reunion.png" x="0" y="0" width="360" height="300" preserveAspectRatio="xMidYMid meet"/>
+ <g data-character="adam" aria-hidden="true" pointer-events="none"><rect x="80" y="103" width="89" height="148" fill="transparent"/></g>
+ <g data-character="sister" aria-hidden="true" pointer-events="none"><rect x="197" y="124" width="85" height="127" fill="transparent"/></g>`;
 }
 function render(){won=pos===maze.exit;renderScene();$('#room').textContent=won?'W domu':viewMode==='fpv'?'':`Polana ${pos+1}`;$('#explored').textContent=`Mapa: ${visited.size} / ${maze.cells.length}`;$('#keys').textContent=gateOpen?'🔓 Furtka otwarta':hasKey?'🔑 Masz klucz!':`🔒 Brak klucza · Pomoc: ${[...done].filter(id=>!encounters[id].danger).length} / ${Object.values(encounters).filter(e=>!e.danger).length}`;$('#items').innerHTML=`<li class="heart-item" aria-label="Serduszka: ${hearts}">❤️ × ${hearts}</li>${hasKey?'<li>🔑 Klucz</li>':''}`;$('#notice').textContent='';$('#answers').replaceChildren();$('#next').hidden=true;$('#next').textContent='Graj dalej →';const e=encounters[pos];let icon='',title='',text='';
 

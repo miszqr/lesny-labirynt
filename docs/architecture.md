@@ -17,7 +17,7 @@ To statyczna aplikacja HTML/CSS/JavaScript uruchamiana w przeglądarce. Nie ma b
 | `fpv.js`: `neighbor`, `corridor`, `render` | Kierunki w grafie i perspektywiczna scena FPV: ścieżki, zieleń, furtka, zwierzęta i dom. |
 | `index.html`: `setView`, `handleDirection`, `renderScene`, `updateControls` | Przełączanie widoku oraz tłumaczenie ruchu względem kierunku patrzenia. |
 | `index.html`: `render` | Aktualizacja widoku, plecaka, dostępnych akcji; tworzenie obsługi odpowiedzi i nagród. |
-| `index.html`: `draw`, `terrainArt`, `characterArt`, `drawHome` | Ilustracje SVG: teren, ścieżki, postacie i finał w domu. |
+| `index.html`: `draw`, `terrainArt`, `characterArt`, `drawHome` | Ilustracje SVG: teren, ścieżki i postacie; finał wyświetla ilustrację PNG w SVG. |
 | `index.html`: `showEvent`, `paintDialogue`, `positionBubble`, `closeEvent` | Sekwencje wypowiedzi i dymek przy mówiącej postaci. |
 | `index.html`: HTML i CSS | Układ ekranu, przyciski, plecak i menu. |
 
@@ -68,7 +68,7 @@ Parametr `random` umożliwia deterministyczne sprawdzanie generatora. Cała gra 
 - Wykonanie zadania daje jedno serce tylko raz. Zadanie zwierzaka `keeper` daje dodatkowo klucz. Rozmowa zamyka się bez komunikatu o sukcesie, a zwierzak pozostaje na mapie.
 - Wilk losuje `count` (1–5) i `direction` (góra/prawo/dół/lewo). `renderWolfTask()` buduje cztery strzałki, pasek wybranych kroków, cofanie i zatwierdzanie. `steps` przechowuje kierunki kliknięć, także po zamknięciu dymka. Dopiero zatwierdzenie porównuje długość i wszystkie kierunki z poleceniem. To odpowiedź na zadanie: nie przenosi Adama przez pola labiryntu. Zobacz [ADR-0004](decisions/0004-wolf-directions.md).
 - Błędna odpowiedź u przyjaznego zwierzaka nie zabiera serca. Błąd u wilka zabiera jedno; przy zerze gra się kończy. Zamknięcie dymka nie pozwala ominąć nierozwiązanego wilka.
-- Klucz pozwala otworzyć bramę. Dom uruchamia `drawHome()`: Adam przytula siostrę, a końcowe kwestie pojawiają się przy postaciach.
+- Klucz pozwala otworzyć bramę. Dom uruchamia `drawHome()`: Adam i siostra z radością idą ku sobie, a końcowe kwestie pojawiają się przy postaciach. Finał używa zaakceptowanej ilustracji `assets/home-reunion.png`; przezroczyste obszary SVG nad każdą postacią wyznaczają pozycje dymków. Powitanie siostry brzmi „Dobrze cię widzieć!”.
 
 ## Animacja chodzenia w 2D
 
