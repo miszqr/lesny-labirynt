@@ -18,10 +18,11 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 - Krajobraz urozmaicają trawiaste pagórki z cieniowanymi stokami, kamieniami i drobnymi kwiatami. W FPV widać wzgórza w oddali. Pagórki nie zmieniają przejść labiryntu.
 - Pomoc zwierzakom polega na czytaniu krótkiej prośby i wybieraniu obrazka spośród trzech odpowiedzi. Przedmiot losuje się z listy ulubionych rzeczy zwierzaka raz na przygodę; ponowne otwarcie rozmowy nie zmienia prośby ani odpowiedzi.
 - Jeden zwierzak daje klucz do furtki. Jest dostępny przed zamkniętą furtką. Jego prośba zaczyna się od „Dam ci klucz, jeśli…” i wskazuje wylosowany przedmiot.
+- Po dojściu do przyjaznego zwierzaka z niewykonanym zadaniem pojawia się przy nim mała chmurka z trzema kropkami. Kliknięcie chmurki otwiera rozmowę; działa też Tab i Enter. Chmurka jest dostępna w mapie i FPV, wraca po zamknięciu nieukończonej rozmowy i znika po wykonaniu zadania lub odejściu.
 - Przycisk „Dalej” przechodzi do kolejnej wypowiedzi, a przy ostatniej zamyka rozmowę. Kliknięcie poza dymkiem nie zamyka go ani nie wykonuje innej akcji. Escape pozostaje skrótem zamknięcia. Zadanie można otworzyć ponownie przyciskiem pod mapą.
 - Wilk losuje od jednego do pięciu kroków oraz kierunek: w górę, w prawo, w dół lub w lewo. Gracz czyta polecenie, klika strzałkę odpowiednią liczbę razy i wybiera „Skaczę”. Rząd strzałek pokazuje wybrane kroki; „Cofnij” usuwa ostatni bez kary. Po poprawnej odpowiedzi wilk ucieka i znika z mapy, również w FPV.
 - Początkowo są 3 serduszka; każde ukończone zadanie daje 1, błąd u wilka odbiera 1. Zero oznacza koniec gry.
-- W widoku 2D Adam płynnie przechodzi między polami, poruszając nogami i rękami. Rozmowy zaczynają się po dojściu na miejsce. Ustawienie systemowe ograniczające animacje wyłącza ruch postaci.
+- W widoku 2D Adam płynnie przechodzi między polami, poruszając nogami i rękami. Chmurka rozmowy pojawia się po dojściu na miejsce; spotkanie z wilkiem otwiera się automatycznie. Ustawienie systemowe ograniczające animacje wyłącza ruch postaci.
 - Dwa widoki tej samej przygody: mapa z góry oraz FPV — oczami Adama. Przełącznik w nagłówku i menu zachowuje cały postęp.
 - Sterowanie mapą: strzałki na klawiaturze lub przyciski pod mapą. W FPV ↑ prowadzi do przodu, ↓ do tyłu, ←/→ obracają o 90° w miejscu. Kompas po lewej pokazuje kierunek patrzenia, a bardzo mała mapka w prawym górnym rogu — odkryte ścieżki i pozycję Adama. Północ mapki pozostaje u góry. Zadanie wilka zachowuje własne strzałki.
 - Menu ☰ zawiera nową grę, rozmiar mapy i odsłanianie mapy.

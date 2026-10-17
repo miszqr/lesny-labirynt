@@ -128,3 +128,10 @@ Możliwe dalsze usprawnienia, jeszcze niewdrożone: wydzielenie stanu i reguł z
 „Dalej” przechodzi przez wypowiedzi, a po ostatniej wywołuje `closeEvent()`. Przycisk jest dostępny także na etapie wyboru odpowiedzi; samo zamknięcie nie rozwiązuje zadania, nie daje klucza i nie kasuje szkicu kroków wilka. Kliknięcia poza otwartym dymkiem są pochłaniane, bez zamykania go i bez działania na elementy pod nim. Escape nadal zamyka rozmowę. Strzałki klawiatury pozostają zablokowane podczas rozmowy i menu, a po ich zamknięciu sterują mapą lub FPV zgodnie z aktualnym widokiem. Pola formularzy zachowują własną obsługę klawiatury.
 
 `npcLine()` tworzy także prośbę posiadacza klucza: „Dam ci klucz, jeśli dasz mi …”, z formą gramatyczną z `itemCatalog`. Wilk zatwierdza kroki przyciskiem „Skaczę”. Reguły nagród i ruchu pozostają wspólne dla przycisków i klawiatury.
+
+
+### Chmurka przy przyjaznym zwierzaku — 2026-10-17
+
+`#talk` jest przyciskiem HTML nad sceną, z małą chmurką SVG i obszarem dotyku 44×44 px. `positionTalk()` kotwiczy go przy `data-encounter` równym aktualnemu polu i ogranicza do obszaru mapy. Oba renderery oznaczają zwierzęta identyfikatorem pola; odległe postacie nie otrzymują przycisku. Położenie aktualizuje się po renderowaniu i zmianie rozmiaru. Ikona jest ukryta podczas dialogu/menu, chodzenia, ucieczki wilka, po wykonaniu zadania i po końcu gry.
+
+Po wejściu na pole przyjaznego zwierzaka `showArrivalEvent()` pozostawia rozmowę do otwarcia chmurką lub dotychczasowym przyciskiem pod mapą. Wilk, furtka i finał zachowują dotychczasową obsługę. „Dalej” bez rozwiązania zadania przywraca dostęp do chmurki. Ukończone zadanie usuwa ją; ponowne otwarcie nie daje nagrody. `tests/conversation-icon.test.cjs` i test chodzenia sprawdzają te przejścia w mapie oraz FPV. Przypadki dotyku, klawiatury i granic mapy dodano do oczekującego zestawu przeglądarkowego T03.

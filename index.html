@@ -9,11 +9,17 @@
 .map-card[data-view="fpv"] .cardtop{display:none}
 #map .animal-idle{transform-box:fill-box;transform-origin:50% 100%;animation:animal-breathe 3.6s ease-in-out infinite;animation-delay:var(--idle-delay,0s)}@keyframes animal-breathe{0%,100%{transform:rotate(-.6deg) scaleY(1)}50%{transform:rotate(.6deg) scaleY(1.016)}}@media(prefers-reduced-motion:reduce){#map .animal-idle{animation:none;transform:none}}
 #map .wolf-fleeing .animal-idle{animation:none}
+
+.mapwrap{position:relative}
+#talk{position:absolute;z-index:3;width:44px;height:44px;padding:5px;background:transparent;border-radius:12px;touch-action:manipulation}
+#talk svg{width:34px;height:34px;overflow:visible;filter:drop-shadow(0 2px 2px #20392035);pointer-events:none}
+#talk:hover svg{filter:drop-shadow(0 2px 3px #20392060)}
+body:has(dialog[open]) #talk{visibility:hidden;pointer-events:none}
 </style>
 <header><div class="brand">👦 Adam w lesie</div><div class="header-actions"><button id="view-toggle" class="secondary" aria-pressed="false" aria-label="Włącz widok z oczu Adama">👁 FPV</button><button id="menu-toggle" class="secondary" aria-label="Otwórz menu" aria-haspopup="dialog" aria-controls="menu">☰</button></div></header>
-<main><div class="layout"><section class="map-card" aria-label="Mapa labiryntu"><div class="cardtop"><span id="room">Twoja mapa</span><span id="explored"></span></div><div class="mapwrap"><svg id="map" role="img" aria-label="Odkrywana mapa labiryntu"></svg></div><dialog id="event" class="speech-bubble" aria-labelledby="speaker-name" aria-describedby="description"><div class="bubble-scroll"><div class="bubble-heading"><span id="icon" aria-hidden="true"></span><strong id="speaker-name">Adam</strong></div><div class="scene" hidden></div><h2 id="title" hidden></h2><p id="description" aria-live="polite"></p><div class="answers" id="answers"></div><p id="notice" class="notice" role="status" aria-live="polite"></p><button class="primary" id="dialogue-next">Dalej</button><button class="primary" id="next" hidden>Graj dalej →</button></div></dialog><div class="controls"><div class="directions"><button class="up" data-dir="0" aria-label="Idź w górę">↑</button><button class="left" data-dir="3" aria-label="Idź w lewo">←</button><button class="down" data-dir="2" aria-label="Idź w dół">↓</button><button class="right" data-dir="1" aria-label="Idź w prawo">→</button></div><p id="fpv-hint" hidden>↑ przód · ↓ tył · ↶ ↷ obrót</p></div><button class="secondary" id="interact" hidden>Porozmawiaj</button><div class="bottom"><span class="progress" id="keys"></span></div><section class="inventory" aria-label="Lista przedmiotów"><strong>🎒 Plecak</strong><ul id="items" aria-live="polite"></ul></section></section>
+<main><div class="layout"><section class="map-card" aria-label="Mapa labiryntu"><div class="cardtop"><span id="room">Twoja mapa</span><span id="explored"></span></div><div class="mapwrap"><svg id="map" role="img" aria-label="Odkrywana mapa labiryntu"></svg><button id="talk" type="button" aria-label="Porozmawiaj ze zwierzakiem" aria-haspopup="dialog" aria-controls="event" title="Porozmawiaj" hidden><svg viewBox="0 0 34 34" aria-hidden="true"><path d="M8 3H26A6 6 0 0 1 32 9V20A6 6 0 0 1 26 26H16L8 32V26A6 6 0 0 1 2 20V9A6 6 0 0 1 8 3Z" fill="#fffdf2" stroke="#476b45" stroke-width="2" stroke-linejoin="round"/><g fill="#476b45"><circle cx="10" cy="15" r="2"/><circle cx="17" cy="15" r="2"/><circle cx="24" cy="15" r="2"/></g></svg></button></div><dialog id="event" class="speech-bubble" aria-labelledby="speaker-name" aria-describedby="description"><div class="bubble-scroll"><div class="bubble-heading"><span id="icon" aria-hidden="true"></span><strong id="speaker-name">Adam</strong></div><div class="scene" hidden></div><h2 id="title" hidden></h2><p id="description" aria-live="polite"></p><div class="answers" id="answers"></div><p id="notice" class="notice" role="status" aria-live="polite"></p><button class="primary" id="dialogue-next">Dalej</button><button class="primary" id="next" hidden>Graj dalej →</button></div></dialog><div class="controls"><div class="directions"><button class="up" data-dir="0" aria-label="Idź w górę">↑</button><button class="left" data-dir="3" aria-label="Idź w lewo">←</button><button class="down" data-dir="2" aria-label="Idź w dół">↓</button><button class="right" data-dir="1" aria-label="Idź w prawo">→</button></div><p id="fpv-hint" hidden>↑ przód · ↓ tył · ↶ ↷ obrót</p></div><button class="secondary" id="interact" hidden>Porozmawiaj</button><div class="bottom"><span class="progress" id="keys"></span></div><section class="inventory" aria-label="Lista przedmiotów"><strong>🎒 Plecak</strong><ul id="items" aria-live="polite"></ul></section></section>
 </div>
-</main><dialog id="menu" aria-labelledby="menu-title"><div class="menu-body"><button id="menu-close" class="secondary" aria-label="Zamknij menu">Zamknij ×</button><h2 id="menu-title">Menu</h2><div class="toolbar"><label for="size">Mapa</label><select id="size"><option value="4">Mała · 4 × 4</option><option value="6">Średnia · 6 × 6</option><option value="8">Duża · 8 × 8</option></select><label class="view-label" for="view-mode">Widok</label><select id="view-mode"><option value="map">Mapa z góry</option><option value="fpv">FPV · oczami Adama</option></select><button class="secondary" id="new">↻ Nowa gra</button></div><label><input id="reveal" type="checkbox"> Pokaż całą mapę</label><div class="legend"><span>👦 Adam</span><span>✦ Spotkanie</span><span>🔒 Furtka</span><span>⌂ Dom</span></div><details><summary>Dla rodzica · jak gramy?</summary><p>Odkrywajcie mapę i pomagajcie leśnym przyjaciołom. Każdy zwierzak ma listę ulubionych przedmiotów. Na początku przygody losuje się jeden z nich. Dziecko czyta prośbę i wybiera właściwy obrazek spośród trzech. Prośba i odpowiedzi pozostają takie same do końca tej przygody. Jeden losowy zwierzak ma klucz i oddaje go za przysługę. Jego prośba zawiera obietnicę nagrody. Zwierzak z kluczem zawsze jest dostępny przed zamkniętą furtką. Klucz trafia na listę przedmiotów. Furtka blokuje losowe przejście na drodze do domu. Otwórz ją przyciskiem „Otwórz furtkę”, a następnie idź dalej do domu. Samo otwarcie furtki nie kończy gry. Pomoc pozostałym zwierzakom jest dobrowolna. Rozmowy pojawiają się w dymkach obok Adama i zwierząt. Przycisk „Dalej” pokazuje następną wypowiedź. Odpowiedzi pojawiają się przy prośbie zwierzaka. Zamknij dymek kliknięciem obok niego lub klawiszem Escape. Przy zwierzaku z niewykonanym zadaniem i zamkniętej furtce możesz ponownie otworzyć okienko przyciskiem pod sterowaniem. Po poprawnej odpowiedzi okienko zamyka się. Zwierzak zostaje na mapie, ale już nie wyświetla zadania. Nie ma limitu czasu. Przyjazne zwierzęta pozwalają poprawić błędną odpowiedź. Na drodze jest też wilk: odczytaj liczbę kroków i kierunek, kliknij strzałkę odpowiednią liczbę razy i zatwierdź. Możesz cofnąć wybrany krok przed zatwierdzeniem. Adam zaczyna z 3 serduszkami. Każde wykonane zadanie, także ominięcie wilka, daje 1 serduszko. Błąd u wilka zabiera 1 serduszko i pozwala spróbować ponownie. Przy 0 serduszek gra się kończy. Zamknięcie okienka nie pozwala ominąć tego zadania. Przycisk FPV pokazuje las oczami Adama: ↑ to krok do przodu, ↓ krok do tyłu, a ↶ i ↷ obracają w miejscu. Strzałki klawiatury działają tak samo. Polecenia wilka nadal dotyczą strzałek w jego zadaniu. Kompas pokazuje kierunek patrzenia. Mała mapka po prawej pokazuje odkryte ścieżki i twoją pozycję; północ jest zawsze u góry. Przycisk Mapa wraca do widoku z góry bez utraty postępu. W razie potrzeby odsłoń całą mapę. Nowa przygoda zaczyna grę od początku.</p></details></div></dialog>
+</main><dialog id="menu" aria-labelledby="menu-title"><div class="menu-body"><button id="menu-close" class="secondary" aria-label="Zamknij menu">Zamknij ×</button><h2 id="menu-title">Menu</h2><div class="toolbar"><label for="size">Mapa</label><select id="size"><option value="4">Mała · 4 × 4</option><option value="6">Średnia · 6 × 6</option><option value="8">Duża · 8 × 8</option></select><label class="view-label" for="view-mode">Widok</label><select id="view-mode"><option value="map">Mapa z góry</option><option value="fpv">FPV · oczami Adama</option></select><button class="secondary" id="new">↻ Nowa gra</button></div><label><input id="reveal" type="checkbox"> Pokaż całą mapę</label><div class="legend"><span>👦 Adam</span><span>✦ Spotkanie</span><span>🔒 Furtka</span><span>⌂ Dom</span></div><details><summary>Dla rodzica · jak gramy?</summary><p>Odkrywajcie mapę i pomagajcie leśnym przyjaciołom. Każdy zwierzak ma listę ulubionych przedmiotów. Na początku przygody losuje się jeden z nich. Dziecko czyta prośbę i wybiera właściwy obrazek spośród trzech. Prośba i odpowiedzi pozostają takie same do końca tej przygody. Jeden losowy zwierzak ma klucz i oddaje go za przysługę. Jego prośba zawiera obietnicę nagrody. Zwierzak z kluczem zawsze jest dostępny przed zamkniętą furtką. Klucz trafia na listę przedmiotów. Furtka blokuje losowe przejście na drodze do domu. Otwórz ją przyciskiem „Otwórz furtkę”, a następnie idź dalej do domu. Samo otwarcie furtki nie kończy gry. Pomoc pozostałym zwierzakom jest dobrowolna. Rozmowy pojawiają się w dymkach obok Adama i zwierząt. Przy przyjaznym zwierzaku pojawia się mała chmurka z trzema kropkami. Kliknij ją, aby rozpocząć rozmowę. Przycisk „Dalej” pokazuje następną wypowiedź, a po ostatniej zamyka rozmowę. Odpowiedzi pojawiają się przy prośbie zwierzaka. Kliknięcie obok dymka niczego nie zmienia. Możesz też zamknąć rozmowę klawiszem Escape. Przy zwierzaku z niewykonanym zadaniem i zamkniętej furtce możesz ponownie otworzyć okienko przyciskiem pod sterowaniem. Po poprawnej odpowiedzi okienko zamyka się. Zwierzak zostaje na mapie, ale już nie wyświetla zadania. Nie ma limitu czasu. Przyjazne zwierzęta pozwalają poprawić błędną odpowiedź. Na drodze jest też wilk: odczytaj liczbę kroków i kierunek, kliknij strzałkę odpowiednią liczbę razy i wybierz „Skaczę”. Możesz cofnąć wybrany krok przed zatwierdzeniem. Adam zaczyna z 3 serduszkami. Każde wykonane zadanie, także ominięcie wilka, daje 1 serduszko. Błąd u wilka zabiera 1 serduszko i pozwala spróbować ponownie. Przy 0 serduszek gra się kończy. Zamknięcie okienka nie pozwala ominąć tego zadania. Przycisk FPV pokazuje las oczami Adama: ↑ to krok do przodu, ↓ krok do tyłu, a ↶ i ↷ obracają w miejscu. Strzałki klawiatury działają tak samo. Polecenia wilka nadal dotyczą strzałek w jego zadaniu. Kompas pokazuje kierunek patrzenia. Mała mapka po prawej pokazuje odkryte ścieżki i twoją pozycję; północ jest zawsze u góry. Przycisk Mapa wraca do widoku z góry bez utraty postępu. W razie potrzeby odsłoń całą mapę. Nowa przygoda zaczyna grę od początku.</p></details></div></dialog>
 <script src="maze.js"></script><script src="fpv.js"></script><script>
 const $=s=>document.querySelector(s);let maze,pos,visited,done,encounters,keeper,scenery={},terrain=[],artSeed=0,terrainCache='',seenSamples=new Set,seenPath='',hasKey=false,gateOpen=false,won=false,lost=false,hearts=3,viewMode='map',facing=0,walking=null,fleeing=null;
 const facingNames=['północ ↑','wschód →','południe ↓','zachód ←'];
@@ -222,7 +228,7 @@ function draw(){
  for(const t of terrain)if(t.type==='forest'){for(let i=0;i<3;i++){const dx=[-10,9,-2][i]+(t.variant-.5)*5,dy=[-7,-4,10][i],x=Math.max(6,Math.min(L-6,t.x+dx)),y=Math.max(6,Math.min(L-6,t.y+dy));sprites.push(treeSprite(x,y,(t.variant+i*.31)%1,.46+t.variant*.16+(i===2?.08:0)))}}
  for(const c of maze.cells){const [x,y]=project(c.id%n*60+30,Math.floor(c.id/n)*60+30);
  if(c.id===maze.exit)sprites.push({depth:y,svg:`<g transform="translate(${x} ${y})"><ellipse cy="6" rx="20" ry="7" fill="#526d45" opacity=".23"/><path d="M-14-14L5-9V9L-14 3Z" fill="#f1d8a1"/><path d="M5-9L16-18V1L5 9Z" fill="#c2a573"/><path d="M-19-13L-3-29 21-19 5-4Z" fill="#b96745"/><path d="M-19-13L-3-29 0-13 5-4Z" fill="#d88d5e"/><path d="M-7 5V-7L-1-5V7Z" fill="#755e45"/><path d="M8-7L13-11V-4L8-1Z" fill="#8ab7b4"/></g>`});
- else if(animalPresent(c.id)){sprites.push({depth:y+.1,svg:characterSprite(encounters[c.id].icon,x+13,y+11,.72)})}
+ else if(animalPresent(c.id)){sprites.push({depth:y+.1,svg:`<g data-encounter="${c.id}">${characterSprite(encounters[c.id].icon,x+13,y+11,.72)}</g>`})}
  }
  const [ax,ay]=project(pos%n*60+30,Math.floor(pos/n)*60+30),sx=ax-(encounters[pos]?14:0);
  sprites.push({depth:ay+.2,player:true,svg:characterSprite('👦',sx,ay+12,encounters[pos]?.72:.85)});
@@ -246,6 +252,20 @@ if(atGate){icon='🌿';title=gateOpen?'Furtka otwarta!':'Leśna furtka';text=gat
 if(pos===maze.exit){icon='🏡';title='Adam jest w domu!';text='Brawo! Adam jest w domu. Dziękuje za pomoc.';won=true;$('#next').hidden=false}
 if(lost){icon='🐺';title='Koniec gry';text='Nie masz już serduszek. Zagraj od nowa.';$('#answers').replaceChildren();$('#next').hidden=false;$('#next').textContent='Zagraj od nowa';}$('.scene').classList.toggle('at-gate',atGate);$('.scene').classList.toggle('gate-open',gateOpen);
 const canInteract=lost||(!!e&&!done.has(pos))||(atGate&&!gateOpen)||pos===maze.exit;$('#interact').hidden=!canInteract;$('#interact').textContent=lost?'Koniec gry':e?.danger?'Omiń wilka':pos===maze.exit?'Meta':atGate?'Furtka':'Pomóż';setSceneIcon(icon);$('#title').textContent=title;$('#description').textContent=text;updateControls();}
+function canTalk(){const e=encounters[pos];return !!e&&!e.danger&&!done.has(pos)&&!won&&!lost&&!walking&&!fleeing}
+function showArrivalEvent(){if(!canTalk())showEvent()}
+function positionTalk(){
+ const button=$('#talk');button.hidden=true;
+ if(!canTalk())return;
+ const actor=$(`#map [data-encounter="${pos}"]`);if(!actor)return;
+ const area=$('.mapwrap').getBoundingClientRect(),r=actor.getBoundingClientRect();
+ if(area.width<44||area.height<44||r.width<=0||r.height<=0)return;
+ const left=Math.max(0,Math.min(area.width-44,r.left+r.width-area.left-8));
+ const top=Math.max(0,Math.min(area.height-44,r.top-area.top-38));
+ button.style.left=left+'px';button.style.top=top+'px';
+ button.setAttribute('aria-label',`Porozmawiaj ze zwierzakiem: ${encounters[pos].title}`);
+ button.hidden=false;
+}
 function renderScene(){
  rememberSight();
  $('.map-card').dataset.view=won?'map':viewMode;
@@ -255,6 +275,7 @@ function renderScene(){
   $('#map').setAttribute('aria-label',`Widok z oczu Adama. Patrzysz: ${facingNames[facing]}.`);
   $('#map').innerHTML=ForestFPV.render({maze,pos,facing,gateOpen,encounters,done,visited,fleeingCell:fleeing?.cell,reveal:$('#reveal').checked},{characterArt,treeSprite,noise:artNoise});
  }else{draw();$('#map').setAttribute('aria-label','Odkrywana mapa labiryntu')}
+ positionTalk();
 }
 function setView(mode){
  finishWalk();finishFlee();
@@ -265,7 +286,7 @@ function updateControls(){
  const fpv=viewMode==='fpv';$('#view-mode').value=viewMode;
  $('#view-toggle').textContent=fpv?'🗺 Mapa':'👁 FPV';$('#view-toggle').setAttribute('aria-pressed',String(fpv));
  $('#view-toggle').setAttribute('aria-label',fpv?'Włącz mapę z góry':'Włącz widok z oczu Adama');
- $('#fpv-hint').hidden=!fpv||won;$('#interact').disabled=!!walking||!!fleeing;
+ $('#fpv-hint').hidden=!fpv||won;$('#interact').disabled=!!walking||!!fleeing;positionTalk();
  document.querySelectorAll('[data-dir]').forEach(b=>{
   const d=Number(b.dataset.dir),turn=fpv&&(d===1||d===3),world=fpv?(facing+(d===2?2:0))%4:d;
   b.textContent=fpv?['↑','↷','↓','↶'][d]:['↑','→','↓','←'][d];
@@ -282,14 +303,14 @@ function handleDirection(d){
  else move((facing+(d===2?2:0))%4);
 }
 function target(d){return [pos-maze.n,pos%maze.n<maze.n-1?pos+1:-1,pos+maze.n,pos%maze.n>0?pos-1:-1][d]}
-function move(d){if(walking||fleeing)return;if($('#event').open||$('#menu').open)return;if(lost||dangerPending()){render();showEvent();return}const t=target(d);if(!won&&maze.cells[pos].links.includes(t)){if(!gateOpen&&maze.gate.includes(pos)&&maze.gate.includes(t)){render();$('#notice').textContent=hasKey?'Otwórz furtkę kluczem.':'Furtka jest zamknięta. Znajdź klucz.';showEvent();return}if(viewMode==='map'){startWalk(t,d);return}rememberWalk(pos,t);pos=t;visited.add(pos);render();showEvent()}}
+function move(d){if(walking||fleeing)return;if($('#event').open||$('#menu').open)return;if(lost||dangerPending()){render();showEvent();return}const t=target(d);if(!won&&maze.cells[pos].links.includes(t)){if(!gateOpen&&maze.gate.includes(pos)&&maze.gate.includes(t)){render();$('#notice').textContent=hasKey?'Otwórz furtkę kluczem.':'Furtka jest zamknięta. Znajdź klucz.';showEvent();return}if(viewMode==='map'){startWalk(t,d);return}rememberWalk(pos,t);pos=t;visited.add(pos);render();showArrivalEvent()}}
 function cancelWalk(){
  const w=walking;walking=null;
  if(w&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(w.frame);
 }
 function finishWalk(){
  if(!walking)return;
- const {from,to,d}=walking;rememberWalk(from,to);cancelWalk();pos=to;facing=d;visited.add(pos);render();showEvent();
+ const {from,to,d}=walking;rememberWalk(from,to);cancelWalk();pos=to;facing=d;visited.add(pos);render();showArrivalEvent();
 }
 function walkPose(from,to,t){
  const eased=t*t*(3-2*t),u=eased<.5?eased*2:(1-eased)*2,curve=eased<.5?roadCurve(from,to):roadCurve(to,from),v=1-u;
@@ -300,7 +321,7 @@ function walkPose(from,to,t){
 }
 function startWalk(to,d){
  // Respect reduced motion, and keep movement usable if animation APIs are absent.
- if(typeof requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){rememberWalk(pos,to);pos=to;facing=d;visited.add(pos);render();showEvent();return}
+ if(typeof requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){rememberWalk(pos,to);pos=to;facing=d;visited.add(pos);render();showArrivalEvent();return}
  const w=walking={from:pos,to,d,frame:0,started:null};draw();updateControls();
  const actor=$('#map [data-character="adam"]'),layer=actor?.parentElement;
  const layers=[...document.querySelectorAll('#revealed-scene > [data-depth]')].filter(el=>el!==layer);
@@ -365,10 +386,12 @@ else if(e&&!done.has(pos)){const reply={speaker:'animal',icon:e.icon,name:e.dang
 else if(maze.gate.includes(pos)&&!gateOpen)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:hasKey?'Mam klucz. Otworzę furtkę.':'Furtka jest zamknięta. Muszę znaleźć klucz.'}];
 if(!steps.length)return;dialogueSteps=steps;dialogueIndex=0;if(!$('#event').open)$('#event').show();paintDialogue();}
 $('#dialogue-next').onclick=()=>{if(!$('#event').open)return;if(dialogueIndex<dialogueSteps.length-1){dialogueIndex++;paintDialogue()}else closeEvent()};
-window.addEventListener('resize',positionBubble);if(typeof ResizeObserver!=='undefined')new ResizeObserver(positionBubble).observe($('.mapwrap'));
+function positionOverlays(){positionBubble();positionTalk()}
+window.addEventListener('resize',positionOverlays);if(typeof ResizeObserver!=='undefined')new ResizeObserver(positionOverlays).observe($('.mapwrap'));
 // Keep the conversation open and consume outside clicks; use Dalej or Escape.
 document.addEventListener('click',e=>{const bubble=$('#event');if(!bubble.open||bubble.contains(e.target))return;e.preventDefault();e.stopImmediatePropagation()},true);
 $('#menu-toggle').onclick=()=>{finishWalk();finishFlee();closeEvent();$('#menu').showModal()};$('#menu-close').onclick=()=>$('#menu').close();$('#interact').onclick=()=>{render();showEvent()};
+$('#talk').onclick=()=>{if(!canTalk()||$('#event').open||$('#menu').open)return;render();showEvent()};
 $('#view-toggle').onclick=()=>setView(viewMode==='fpv'?'map':'fpv');$('#view-mode').onchange=()=>setView($('#view-mode').value);
 document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>handleDirection(Number(b.dataset.dir)));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#event').open){e.preventDefault();closeEvent();return}if($('#event').open||$('#menu').open||['SELECT','INPUT','TEXTAREA'].includes(e.target.tagName))return;let d=['ArrowUp','ArrowRight','ArrowDown','ArrowLeft'].indexOf(e.key);if(d>=0){e.preventDefault();if(viewMode==='fpv'&&e.repeat)return;handleDirection(d)}});$('#new').onclick=start;$('#next').onclick=start;$('#size').onchange=start;$('#reveal').onchange=()=>{finishWalk();finishFlee();renderScene()};start();
 </script></html>

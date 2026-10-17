@@ -52,6 +52,7 @@ Zakres:
 - Dotykowe wpisywanie kroków wilka, postęp, cofanie, zachowanie odpowiedzi po zamknięciu i ponownym otwarciu oraz zatwierdzenie przyciskiem „Skaczę”.
 - Menu, rozmiar mapy, przełączanie FPV, zmiana orientacji, Tab wewnątrz menu, Escape i powrót fokusu. Klawiaturowy wybór obrazka przez Tab i Enter oraz ruch strzałką po zakończeniu rozmowy przez „Dalej”.
 - Pełny komunikat zamkniętej furtki, z kluczem i bez klucza, oraz jej otwarcie.
+- Chmurka rozmowy przy przyjaznym zwierzaku: granice mapy, trafienie dotykiem, otwieranie przez Tab i Enter, ukrywanie podczas rozmowy i po poprawnej odpowiedzi, w mapie i FPV.
 - Nieobsłużone wyjątki JavaScript powodują błąd testu.
 
 Testy nie pomijają niepotwierdzonych problemów. Jeśli geometria, fokus lub obsługa dotyku nie spełniają opisanych warunków, trzeba zweryfikować zachowanie i poprawić grę, zamiast oznaczać przypadek jako zaliczony bez sprawdzenia.
@@ -80,4 +81,4 @@ Po uruchomieniu automatu obejrzyj jego zrzuty. Następnie sprawdź grę na prawd
 
 Zarządzany podgląd Sites pozostaje zatrzymany po wcześniejszym błędzie `bwrap: Can't mount proc on /newroot/proc: Operation not permitted`. Instrukcja Sites wymaga naprawy lub konkretnej oznaki przywrócenia infrastruktury przed ponowieniem. Nie uruchamiano zastępczego serwera ani przeglądarki z pominięciem tego ograniczenia.
 
-Sprawdzono składnię i wyliczenie **63 scenariuszy**; wszystkie **102 testy logiki** przeszły. Nie sprawdzono wyniku scenariuszy w przeglądarce. **T03 pozostaje otwarte** do wykonania automatu, poprawienia ewentualnych błędów i zapisania rzeczywistej kontroli telefonu.
+Sprawdzono składnię i wyliczenie **69 scenariuszy**; wszystkie **106 testów logiki** przeszło. Nie sprawdzono wyniku scenariuszy w przeglądarce. **T03 pozostaje otwarte** do wykonania automatu, poprawienia ewentualnych błędów i zapisania rzeczywistej kontroli telefonu.

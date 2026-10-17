@@ -89,6 +89,29 @@ test('menu: rozmiar mapy, FPV i orientacja ekranu', async ({ page }) => {
 });
 
 for (const mode of ['map', 'fpv']) {
+  test(`${mode}: chmurka rozmowy jest przy zwierzaku, działa dotykiem i klawiaturą`, async ({ page }) => {
+    await encounterFixture(page, { mode });
+    await page.locator('#dialogue-next').tap();
+    await page.locator('#dialogue-next').tap();
+    const icon = page.getByRole('button', { name: 'Porozmawiaj ze zwierzakiem: Kot', exact: true });
+    await expect(icon).toBeVisible();
+    await inside(icon, page.locator('.mapwrap'));
+    await hitTarget(icon);
+    await icon.tap();
+    await expect(page.locator('#event')).toBeVisible();
+    await expect(icon).not.toBeVisible();
+    await page.locator('#dialogue-next').tap();
+    await page.locator('#dialogue-next').tap();
+    await tabTo(page, '#talk');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#event')).toBeVisible();
+    await page.locator('#dialogue-next').tap();
+    await page.locator('[data-item="milk"]').tap();
+    await expect(page.locator('#event')).not.toBeVisible();
+    await expect(icon).not.toBeVisible();
+    await controlsFit(page);
+  });
+
   for (const [corner, name] of ['góra-lewo', 'góra-prawo', 'dół-lewo', 'dół-prawo'].entries()) {
     test(`${mode}: długi dymek wilka przy krawędzi ${name}`, async ({ page }, testInfo) => {
       await encounterFixture(page, { mode, corner, wolf: true });

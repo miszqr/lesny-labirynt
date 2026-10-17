@@ -6,6 +6,12 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Ikona rozmowy — 2026-10-17
+
+Po dojściu do przyjaznego zwierzaka z niewykonanym zadaniem pojawia się mała chmurka z trzema kropkami. Otwiera rozmowę dotykiem, kliknięciem lub Enterem. Jest przypisana do aktualnego pola i działa w mapie oraz FPV. Chowa się podczas rozmowy, chodzenia, po wykonaniu zadania i po odejściu. Przyjazne spotkanie czeka teraz na wybranie chmurki lub dotychczasowego przycisku pod mapą. Obsługa wilka, furtki i finału pozostaje bez zmian.
+
+**106 testów logiki przeszło**, w tym nowe sprawdzenia ikony i dojścia do zwierzaka. Zestaw przeglądarkowy zawiera teraz **69 przypadków**, z dodatkowymi scenariuszami dotyku i klawiatury dla chmurki. Potwierdzono tylko ich wyliczenie; wykonanie w przeglądarce i kontrola telefonu w T03 nadal oczekują na sprawny podgląd.
+
 ## Zmiany dialogów i sterowania — 2026-10-17
 
 Zgodnie z nowszym poleceniem użytkownika kliknięcie poza dymkiem nie zamyka go i nie wykonuje akcji w tle. „Dalej” przechodzi do kolejnej wypowiedzi i zamyka ostatnią; Escape pozostaje dostępny. Wilk ma przycisk „Skaczę”, a zwierzak z kluczem zaczyna prośbę od „Dam ci klucz, jeśli…” z nazwą wylosowanego przedmiotu. Istniejące sterowanie strzałkami klawiatury zachowano i objęto dodatkowymi testami dla wszystkich kierunków mapy. Zaktualizowano scenariusze T03 do tych zasad. Starsze opisy zamykania kliknięciem poniżej dotyczą historycznej wersji. Wynik weryfikacji: **102 testy logiki przeszły**. Playwright poprawnie wyliczył **63 scenariusze**, ale nie uruchamiano ich w przeglądarce.
