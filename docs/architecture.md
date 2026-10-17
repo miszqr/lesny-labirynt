@@ -158,3 +158,14 @@ Porównano rendery SVG mapy i FPV przed i po zmianie. Wszystkie 23 istniejące t
 `wicketSprites()` zwraca osobne warstwy cienia, obu słupków i skrzydła. Głębokość każdego elementu wynika z jego położenia przy ziemi po projekcji, dzięki czemu otwarte skrzydło na poziomej ścieżce znajduje się za Adamem. Wcześniej cała furtka miała jedną głębokość i zasłaniała twarz chłopca. Istniejąca animacja chodzenia porządkuje postać między tymi warstwami w trakcie kroku. Geometria furtki, blokowanie przejścia i FPV nie zmieniły się.
 
 Osiem przypadków w `tests/gate-depth.test.cjs` sprawdza ustawienie po obu stronach poziomej i pionowej furtki oraz przechodzenie w czterech kierunkach. Cztery z nich odtwarzają błąd w poprzednim kodzie. Porównano też rastry SVG przed i po zmianie dla czterech ustawień. Wszystkie 49 testów furtki, dymków, chodzenia i FPV przeszły. Kontrola interfejsu w przeglądarce pozostaje niewykonana z powodu niedostępnego podglądu.
+
+
+### Płynne zakręty i zmienna szerokość dróg — 2026-10-17
+
+Na polach z dwoma połączeniami `roadCurve()` wyznacza wspólną styczną obu odcinków. Łuki przechodzą płynnie przez środek polany, także przy zmianie kierunku o 90°. Połówki drogi nadal spotykają się w tym samym `edgePoint()`, więc furtka pozostaje na trasie. `walkPose()` i zapamiętywanie odsłoniętej mgły korzystają z tej samej geometrii.
+
+`roadHalfWidth()` łagodnie zmienia szerokość według ziarna przygody. Wspólne wartości na polanach i granicach pól zapobiegają uskokom. `roadStrip()` tworzy wypełnione pasy z zaokrąglonymi końcami, a dotychczasowe filtry zmiękczają pobocze oraz środek. `roadArt()` przechowuje gotową grafikę dla danego ziarna i układu połączeń; ruch nie zmienia kształtu ścieżek.
+
+FPV rzutuje te same krzywe i profil szerokości na widok gracza, z poszerzeniem dostosowanym do perspektywy. Wielokąty są przycinane przed kamerą przed rzutowaniem. Kamienie leżą wzdłuż łuków, a roślinność, furtki i reguły widoczności pozostają osobnymi elementami.
+
+Trzy nowe testy `road-geometry.test.cjs` kontrolują ciągłość kierunku, zgodność szerokości na połączeniach, bezpieczne granice pasów oraz odwracalność trasy chodzenia i przecięcie środka furtki. Łącznie przeszły 34 testy geometrii, mgły, chodzenia, warstw furtki i FPV. Porównano rastry mapy oraz widoku FPV; testów w przeglądarce nie wykonano, ponieważ podgląd pozostaje niedostępny.

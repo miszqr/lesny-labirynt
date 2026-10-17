@@ -138,20 +138,36 @@
       }
       return svg+'</g>';
     }
-    // Merge the floor pieces before feathering, so junctions have no hard seams.
-    // The shared screen-space gradient keeps the same color across adjoining rooms.
-    let floor='',pebbles='';
-    for (const room of [...rooms].reverse()) {
-      const near=Math.max(.06,room.depth*2-1),far=room.depth*2+1;
-      floor+=polygon([[-1,near,0],[1,near,0],[1,far,0],[-1,far,0]],'url(#fpv-path)');
-      for (const side of [-1,1]) if(side<0?room.leftOpen:room.rightOpen) {
-        floor+=polygon([[side,near,0],[side*3,near,0],[side*3,far,0],[side,far,0]],'url(#fpv-path)');
+    // Project the map's curved, variable-width roads into the current view.
+    // Clip at the camera before projection to keep near curves finite.
+    let floor='',pebbles='';const strips=new Set(),forward=vectors[facing],right=vectors[(facing+1)%4];
+    const local=([x,y])=>{const dx=(x-(pos%maze.n*60+30))/30,dy=(y-(Math.floor(pos/maze.n)*60+30))/30;return [dx*right[0]+dy*right[1],dx*forward[0]+dy*forward[1],0]};
+    function clipNear(vertices){
+      const clipped=[];
+      for(let i=0;i<vertices.length;i++){
+        const a=vertices[i],b=vertices[(i+1)%vertices.length],insideA=a[1]>=.06,insideB=b[1]>=.06;
+        if(insideA)clipped.push(a);
+        if(insideA!==insideB){const t=(.06-a[1])/(b[1]-a[1]);clipped.push([a[0]+(b[0]-a[0])*t,.06,0])}
       }
-      for(let i=0;i<5;i++) {
-        const z=near+(far-near)*(i+.5)/5,x=(art.noise(room.cell*19+i)-.5)*1.4;
-        const [sx,sy]=project(x,z),r=280/(z+.65)*.022;
+      return clipped;
+    }
+    function road(a,b){
+      const key=a+':'+b;if(strips.has(key))return;strips.add(key);
+      const vertices=clipNear(art.roadStrip(a,b,0,2.2).map(local));
+      if(vertices.length<3)return;
+      floor+=polygon(vertices,'url(#fpv-path)');
+      const curve=art.roadCurve(a,b);
+      for(const t of [.3,.7]){
+        const [x,z]=local(art.roadPoint(curve,t));if(z<.08)continue;
+        const [sx,sy]=project(x+(art.noise(a*19+b+t)-.5)*.2,z),r=280/(z+.65)*.022;
         pebbles+=`<ellipse cx="${number(sx)}" cy="${number(sy)}" rx="${number(r*1.5)}" ry="${number(r*.4)}" fill="#b89c6c" opacity=".5"/>`;
       }
+    }
+    for(const room of [...rooms].reverse()){
+      for(const next of maze.cells[room.cell].links)road(room.cell,next);
+      // Show the continuation around a side bend, without revealing another room.
+      if(room.leftOpen)road(room.left,room.cell);
+      if(room.rightOpen)road(room.right,room.cell);
     }
     out+=`<g data-scenery="soft-path" filter="url(#fpv-path-soft)">${floor}</g>${pebbles}`;
     // Barriers, inhabitants and interface stay outside the path filter.

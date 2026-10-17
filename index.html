@@ -114,8 +114,38 @@ for(let i=0;i<maze.n*maze.n*14;i++){const x=artNoise(i,6)*L,y=artNoise(i,7)*L,v=
 for(const t of terrain)if(t.type==='hill')out+=hillArt(t.x,t.y,t.variant);
 return out}
 function edgePoint(a,b){const n=maze.n,low=Math.min(a,b),high=Math.max(a,b),shift=(artNoise(low,high)-.5)*12;const x=((a%n+b%n)/2)*60+30,y=((Math.floor(a/n)+Math.floor(b/n))/2)*60+30;return Math.abs(a-b)===1?[x,y+shift]:[x+shift,y]}
-function roadCurve(a,b){const n=maze.n,x=a%n*60+30,y=Math.floor(a/n)*60+30,[ex,ey]=edgePoint(a,b),horizontal=Math.abs(a-b)===1,dx=Math.sign(ex-x),dy=Math.sign(ey-y),bend=(artNoise(a,b+90)-.5)*8;return [[x,y],[horizontal?x+dx*13:x+bend,horizontal?y+bend:y+dy*13],[horizontal?ex-dx*10:ex,horizontal?ey:ey-dy*10],[ex,ey]]}
-function roadPath(c){return c.links.map(b=>{const [p,a,d,e]=roadCurve(c.id,b);return `M${p.join(' ')}C${a.join(' ')} ${d.join(' ')} ${e.join(' ')}`}).join(' ')}
+function roadCurve(a,b){
+ const n=maze.n,x=a%n*60+30,y=Math.floor(a/n)*60+30,[ex,ey]=edgePoint(a,b),horizontal=Math.abs(a-b)===1;
+ let tx=ex-x,ty=ey-y;
+ // Both halves of a bend share one tangent through the clearing, including 90° turns.
+ const links=maze.cells[a].links;
+ if(links.length===2&&links.includes(b)){const [ox,oy]=edgePoint(a,links.find(id=>id!==b));tx=ex-ox;ty=ey-oy}
+ const length=Math.hypot(tx,ty),handle=15;
+ return [[x,y],[x+tx/length*handle,y+ty/length*handle],[horizontal?ex-Math.sign(ex-x)*11:ex,horizontal?ey:ey-Math.sign(ey-y)*11],[ex,ey]];
+}
+function roadPoint(curve,t){const v=1-t;return [0,1].map(axis=>v*v*v*curve[0][axis]+3*v*v*t*curve[1][axis]+3*v*t*t*curve[2][axis]+t*t*t*curve[3][axis])}
+function roadHalfWidth(a,b,t){
+ const blend=t*t*(3-2*t),node=4.5+artNoise(a,431)*2.6,edge=3.4+artNoise(Math.min(a,b)+719,Math.max(a,b))*2.8;
+ return node+(edge-node)*blend+Math.sin(Math.PI*t)**2*(artNoise(a,b+937)-.5)*1.4;
+}
+function roadStrip(a,b,extra=0,scale=1){
+ const curve=roadCurve(a,b),left=[],right=[],frames=[];
+ for(let i=0;i<=16;i++){
+  const t=i/16,v=1-t,p=roadPoint(curve,t),d=[0,1].map(k=>3*v*v*(curve[1][k]-curve[0][k])+6*v*t*(curve[2][k]-curve[1][k])+3*t*t*(curve[3][k]-curve[2][k]));
+  const length=Math.hypot(...d),normal=[-d[1]/length,d[0]/length],width=roadHalfWidth(a,b,t)*scale+extra;
+  left.push([p[0]+normal[0]*width,p[1]+normal[1]*width]);right.push([p[0]-normal[0]*width,p[1]-normal[1]*width]);frames.push({p,normal,width});
+ }
+ const cap=(frame,start)=>Array.from({length:7},(_,i)=>{const angle=Math.atan2(frame.normal[1],frame.normal[0])-(start?Math.PI:0)-Math.PI*i/6;return [frame.p[0]+Math.cos(angle)*frame.width,frame.p[1]+Math.sin(angle)*frame.width]});
+ return [...left,...cap(frames[16],false),...right.reverse(),...cap(frames[0],true)];
+}
+let roadArtCache={key:'',svg:''};
+function roadArt(){
+ const key=artSeed+':'+maze.n+':'+maze.cells.map(c=>c.links.join(',')).join('|');
+ if(roadArtCache.key===key)return roadArtCache.svg;
+ const shape=(extra,scale)=>maze.cells.flatMap(c=>c.links.map(b=>'M'+roadStrip(c.id,b,extra,scale).map(p=>p.map(v=>Number(v.toFixed(2))).join(' ')).join('L')+'Z')).join(' ');
+ const svg=`<path d="${shape(3.5,1)}" fill="#c7bd8b" opacity=".65" filter="url(#path-shoulder)"/><g filter="url(#path-soft)"><path d="${shape(0,1)}" fill="#e4ce97"/><path d="${shape(0,.38)}" fill="#f1dfac" opacity=".45"/></g>`;
+ roadArtCache={key,svg};return svg;
+}
 function project(x,y){return [x,y]}
 function childFace(kind){
  if(kind==='👦')return `<g data-face="adam">
@@ -243,14 +273,11 @@ function draw(){
  for(const c of maze.cells)out+=`<circle cx="${c.id%n*60+30}" cy="${Math.floor(c.id/n)*60+30}" r="1.5" fill="#b1bfa2"/>`;
  out+='</g><g id="revealed-scene" mask="url(#visible-area)">';
  out+=`<g clip-path="url(#ground)"><rect width="${L}" height="${L}" fill="#a8bd83"/>`+terrainCache;
- const paths=maze.cells.map(roadPath).join(' ');
  // Blur only the path layers; keep characters, gates and vegetation crisp.
  out+=`<defs>
  <filter id="path-shoulder" filterUnits="userSpaceOnUse" x="-16" y="-16" width="${L+32}" height="${L+32}" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="2.4"/></filter>
  <filter id="path-soft" filterUnits="userSpaceOnUse" x="-16" y="-16" width="${L+32}" height="${L+32}" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="1.2"/></filter>
- </defs><g data-scenery="soft-path" fill="none" stroke-linecap="round" stroke-linejoin="round">
- <path d="${paths}" stroke="#c7bd8b" stroke-width="17" opacity=".65" filter="url(#path-shoulder)"/>
- <g filter="url(#path-soft)"><path d="${paths}" stroke="#e4ce97" stroke-width="10"/><path d="${paths}" stroke="#f1dfac" stroke-width="4" opacity=".45"/></g></g>`;
+ </defs><g data-scenery="soft-path">${roadArt()}</g>`;
  const [ga,gb]=maze.gate;const [gx,gy]=edgePoint(ga,gb);
  out+='</g>';
  const sprites=[];
@@ -302,7 +329,7 @@ function renderScene(){
  else if(viewMode==='fpv'){
   $('#map').setAttribute('viewBox','0 0 640 460');
   $('#map').setAttribute('aria-label',`Widok z oczu Adama. Patrzysz: ${facingNames[facing]}.`);
-  $('#map').innerHTML=ForestFPV.render({maze,pos,facing,gateOpen,encounters,done,visited,fleeingCell:fleeing?.cell,reveal:$('#reveal').checked},{characterArt,treeSprite,noise:artNoise});
+  $('#map').innerHTML=ForestFPV.render({maze,pos,facing,gateOpen,encounters,done,visited,fleeingCell:fleeing?.cell,reveal:$('#reveal').checked},{characterArt,treeSprite,noise:artNoise,roadStrip,roadCurve,roadPoint});
  }else{draw();$('#map').setAttribute('aria-label','Odkrywana mapa labiryntu')}
  positionTalk();
 }
@@ -342,8 +369,8 @@ function finishWalk(){
  const {from,to,d}=walking;rememberWalk(from,to);cancelWalk();pos=to;facing=d;visited.add(pos);render();showArrivalEvent();
 }
 function walkPose(from,to,t){
- const eased=t*t*(3-2*t),u=eased<.5?eased*2:(1-eased)*2,curve=eased<.5?roadCurve(from,to):roadCurve(to,from),v=1-u;
- const p=[0,1].map(axis=>v*v*v*curve[0][axis]+3*v*v*u*curve[1][axis]+3*v*u*u*curve[2][axis]+u*u*u*curve[3][axis]);
+ const eased=t*t*(3-2*t),u=eased<.5?eased*2:(1-eased)*2,curve=eased<.5?roadCurve(from,to):roadCurve(to,from);
+ const p=roadPoint(curve,u);
  const fromScale=encounters[from]?.72:.85,toScale=encounters[to]?.72:.85;
  p[0]-=(encounters[from]?14:0)*(1-eased)+(encounters[to]?14:0)*eased;p[1]+=12;
  return {x:p[0],y:p[1],scale:fromScale+(toScale-fromScale)*eased,swing:Math.sin(t*Math.PI*4)*19,stride:Math.sin(t*Math.PI*4)*2.5,bob:-Math.abs(Math.sin(t*Math.PI*4))*1.5};
