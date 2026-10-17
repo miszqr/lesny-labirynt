@@ -142,3 +142,12 @@ Po wejściu na pole przyjaznego zwierzaka `showArrivalEvent()` pozostawia rozmow
 `characterArt('🐺')` ma osobny rysunek SVG: wyraźne brwi, bursztynowe oczy, małe kły, kudłate policzki i pierś oraz szerzej ustawione łapy. Chłodne szarości i proste kształty zachowują stylistykę pozostałych zwierząt. Wszystkie widoki korzystają z tej samej ilustracji. Zachowano `animal-idle` i znaczniki `data-animal-foot`, więc oddychanie oraz ucieczka nadal działają.
 
 Sprawdzono raster SVG starego i nowego rysunku oraz 45 istniejących testów przedmiotów/zadania wilka, FPV i ucieczki; wszystkie przeszły. To weryfikacja grafiki i logiki, bez kontroli całego układu w przeglądarce — podgląd nadal jest niedostępny.
+
+
+### Miękkie brzegi ścieżek — 2026-10-17
+
+Mapa 2D zastępuje ciemny kontur ścieżek szerokim, półprzezroczystym poboczem oraz lekko rozmytym, jaśniejszym środkiem. Filtry `path-shoulder` i `path-soft` mają jawne granice w jednostkach mapy. Obejmują tylko warstwy dróg, zachowując dotychczasowe krzywe, połączenia i maskę odkrytego obszaru.
+
+FPV zbiera podłoże wszystkich widocznych odcinków i bocznych przejść w jedną grupę, a następnie zmiękcza jej brzeg filtrem `fpv-path-soft`. Wspólny gradient w jednostkach ekranu usuwa skoki koloru między odcinkami. Kamienie, roślinność, furtki, postacie, kompas i minimapa pozostają poza filtrem.
+
+Porównano rendery SVG mapy i FPV przed i po zmianie. Wszystkie 23 istniejące testy mgły, chodzenia i FPV przeszły. Nie wykonano kontroli całego interfejsu w przeglądarce z powodu niedostępnego podglądu.

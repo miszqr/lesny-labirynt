@@ -79,7 +79,8 @@
     let out = `<defs>
       <linearGradient id="fpv-sky" x2="0" y2="1"><stop stop-color="#b4dedc"/><stop offset="1" stop-color="#eef1cd"/></linearGradient>
       <linearGradient id="fpv-grass" x2="0" y2="1"><stop stop-color="#91b17c"/><stop offset="1" stop-color="#4d7957"/></linearGradient>
-      <linearGradient id="fpv-path" x2="0" y2="1"><stop stop-color="#e4d6a5"/><stop offset="1" stop-color="#d4b781"/></linearGradient>
+      <linearGradient id="fpv-path" gradientUnits="userSpaceOnUse" x1="0" y1="145" x2="0" y2="460"><stop stop-color="#e4d6a5"/><stop offset="1" stop-color="#d4b781"/></linearGradient>
+      <filter id="fpv-path-soft" filterUnits="userSpaceOnUse" x="-24" y="-24" width="688" height="508" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="4.5"/></filter>
       <clipPath id="fpv-frame"><rect width="640" height="460" rx="22"/></clipPath>
     </defs><g clip-path="url(#fpv-frame)">
       <rect width="640" height="460" fill="url(#fpv-sky)"/>
@@ -137,19 +138,23 @@
       }
       return svg+'</g>';
     }
-    // Draw floors first, then depth-sorted barriers and inhabitants.
+    // Merge the floor pieces before feathering, so junctions have no hard seams.
+    // The shared screen-space gradient keeps the same color across adjoining rooms.
+    let floor='',pebbles='';
     for (const room of [...rooms].reverse()) {
       const near=Math.max(.06,room.depth*2-1),far=room.depth*2+1;
-      out+=polygon([[-1,near,0],[1,near,0],[1,far,0],[-1,far,0]],'url(#fpv-path)');
+      floor+=polygon([[-1,near,0],[1,near,0],[1,far,0],[-1,far,0]],'url(#fpv-path)');
       for (const side of [-1,1]) if(side<0?room.leftOpen:room.rightOpen) {
-        out+=polygon([[side,near,0],[side*3,near,0],[side*3,far,0],[side,far,0]],'#dfc897');
+        floor+=polygon([[side,near,0],[side*3,near,0],[side*3,far,0],[side,far,0]],'url(#fpv-path)');
       }
       for(let i=0;i<5;i++) {
         const z=near+(far-near)*(i+.5)/5,x=(art.noise(room.cell*19+i)-.5)*1.4;
         const [sx,sy]=project(x,z),r=280/(z+.65)*.022;
-        out+=`<ellipse cx="${number(sx)}" cy="${number(sy)}" rx="${number(r*1.5)}" ry="${number(r*.4)}" fill="#b89c6c" opacity=".5"/>`;
+        pebbles+=`<ellipse cx="${number(sx)}" cy="${number(sy)}" rx="${number(r*1.5)}" ry="${number(r*.4)}" fill="#b89c6c" opacity=".5"/>`;
       }
     }
+    out+=`<g data-scenery="soft-path" filter="url(#fpv-path-soft)">${floor}</g>${pebbles}`;
+    // Barriers, inhabitants and interface stay outside the path filter.
     for(const room of [...rooms].reverse()) {
       const near=Math.max(.08,room.depth*2-1),far=room.depth*2+1;
       out+=`<g data-fpv-cell="${room.cell}">`;

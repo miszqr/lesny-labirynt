@@ -243,7 +243,14 @@ function draw(){
  for(const c of maze.cells)out+=`<circle cx="${c.id%n*60+30}" cy="${Math.floor(c.id/n)*60+30}" r="1.5" fill="#b1bfa2"/>`;
  out+='</g><g id="revealed-scene" mask="url(#visible-area)">';
  out+=`<g clip-path="url(#ground)"><rect width="${L}" height="${L}" fill="#a8bd83"/>`+terrainCache;
- const paths=maze.cells.map(roadPath).join(' ');out+=`<path d="${paths}" fill="none" stroke="#91a06e" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/><path d="${paths}" fill="none" stroke="#e4ce97" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="${paths}" fill="none" stroke="#f1dfac" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/>`;
+ const paths=maze.cells.map(roadPath).join(' ');
+ // Blur only the path layers; keep characters, gates and vegetation crisp.
+ out+=`<defs>
+ <filter id="path-shoulder" filterUnits="userSpaceOnUse" x="-16" y="-16" width="${L+32}" height="${L+32}" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="2.4"/></filter>
+ <filter id="path-soft" filterUnits="userSpaceOnUse" x="-16" y="-16" width="${L+32}" height="${L+32}" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="1.2"/></filter>
+ </defs><g data-scenery="soft-path" fill="none" stroke-linecap="round" stroke-linejoin="round">
+ <path d="${paths}" stroke="#c7bd8b" stroke-width="17" opacity=".65" filter="url(#path-shoulder)"/>
+ <g filter="url(#path-soft)"><path d="${paths}" stroke="#e4ce97" stroke-width="10"/><path d="${paths}" stroke="#f1dfac" stroke-width="4" opacity=".45"/></g></g>`;
  const [ga,gb]=maze.gate;const [gx,gy]=edgePoint(ga,gb);
  out+='</g>';
  const sprites=[];
