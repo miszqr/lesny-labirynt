@@ -30,7 +30,7 @@ function player(size, seed) {
   }
 
   function wolfControl(key) {
-    const control = descendants($('#answers')).find(b => b.dataset.wolfAction === key || b.dataset.wolfDir === String(key));
+    const control = [...descendants($('#answers')),...descendants($('#dialogue-actions'))].find(b => b.dataset.wolfAction === key || b.dataset.wolfDir === String(key));
     assert(control, `missing wolf control ${key}`); return control;
   }
 

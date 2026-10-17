@@ -157,6 +157,34 @@ for (const mode of ['map', 'fpv']) {
     });
   }
 
+  test(`${mode}: dymek wilka zachowuje przyciski przy przewijaniu długiej treści`, async ({ page }) => {
+    await encounterFixture(page, { mode, wolf: true });
+    await page.evaluate(() => {
+      const e = encounters[pos]; e.count = 5; e.direction = 0;
+      e.text = 'To groźny wilk. Skocz pięć kroków w górę.';
+      closeEvent(); render(); showEvent();
+    });
+    await page.locator('#dialogue-next').tap();
+    await expect(page.locator('#description')).toHaveText('Skocz pięć kroków w górę.');
+    const footer = page.locator('.bubble-footer');
+    const actions = [page.locator('[data-wolf-action="undo"]'), page.locator('[data-wolf-action="submit"]'), page.locator('#dialogue-next')];
+    for (const button of actions) { await inside(button, footer); await inside(button, page.locator('#event')); await hitTarget(button); }
+    // Force wrapping like a larger text setting; only the body may scroll.
+    await page.locator('#description').evaluate(el => { el.style.fontSize = '40px'; });
+    await page.locator('#notice').evaluate(el => { el.textContent = 'Wilk zabrał serce. Spróbuj jeszcze raz. '.repeat(8); });
+    await page.evaluate(() => positionBubble());
+    const before = await footer.boundingBox();
+    for (const end of [0, 1]) {
+      await page.locator('.bubble-scroll').evaluate((el, end) => { el.scrollTop = end ? el.scrollHeight : 0; }, end);
+      for (const button of actions) { await inside(button, footer); await hitTarget(button); }
+      const after = await footer.boundingBox();
+      expect(Math.abs(after.y - before.y)).toBeLessThan(1);
+      await inside(page.locator('#event'), page.locator('.map-card'));
+    }
+    await page.locator('#dialogue-next').tap();
+    await expect(page.locator('#event')).not.toBeVisible();
+  });
+
   test(`${mode}: wilk — dotyk, postęp, cofanie, ponowne otwarcie i zatwierdzenie`, async ({ page }) => {
     await encounterFixture(page, { mode, wolf: true });
     await page.locator('#dialogue-next').tap();

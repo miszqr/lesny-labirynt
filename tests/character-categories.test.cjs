@@ -33,7 +33,7 @@ for(const mode of ['map','fpv'])test(`${mode}: repeated successful enemy encount
  const {$,run}=game();run(`closeEvent();viewMode='${mode}';hearts=1`);
  for(let i=0;i<12;i++){
   run('closeEvent();pos=Number(Object.keys(encounters).find(id=>isEnemy(encounters[id])));facing=1;render();showEvent()');$('#dialogue-next').onclick();
-  const e=run('encounters[pos]'),controls=all($('#answers'));
+  const e=run('encounters[pos]'),controls=[...all($('#answers')),...all($('#dialogue-actions'))];
   for(let step=0;step<e.count;step++)controls.find(b=>b.dataset.wolfDir===String(e.direction)).onclick();
   const submit=controls.find(b=>b.dataset.wolfAction==='submit');submit.onclick();submit.onclick();
   assert.equal(run('hearts'),1);assert.equal(run('lost'),false);assert.equal(run('fleeing'),null);

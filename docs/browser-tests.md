@@ -90,3 +90,7 @@ Dodano odbiór pojedynczy i całej zawartości, powrót do częściowo opróżni
 ## Limit dwóch miejsc i odkładanie
 
 Scenariusz skrzyni obejmuje teraz zapełnienie dwóch miejsc, zablokowany trzeci odbiór, odłożenie jednej sztuki i ponowne odblokowanie odbioru. Zestaw nadal czeka na działający podgląd przeglądarkowy.
+
+## Ucięte akcje w dymku wilka — 2026-10-17
+
+Przygotowano przypadek „Skocz pięć kroków w górę.” w mapie i FPV. Sprawdza umieszczenie Cofnij/Skaczę/Dalej wewnątrz osobnego paska i dymka, trafienie dotykiem, niezmienne położenie paska przy przewijaniu oraz większy tekst i długi komunikat. Poprawiono też kategorię przyjaznej postaci w starszej scenie przygotowawczej. Sprawdzono składnię scenariuszy, ale nie uruchomiono ich w przeglądarce; blokada podglądu nadal obowiązuje.

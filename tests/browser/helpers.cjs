@@ -97,7 +97,7 @@ async function encounterFixture(page, { mode = 'map', corner = 0, wolf = false, 
       text: 'To groźny wilk. Skocz cztery kroki w prawo.',
       count: 4, direction: 1, steps: [],
     } : {
-      id: 'cat', icon: '🐈', title: 'Kot', text: 'Chcę mleko. Daj mi mleko.',
+      category: 'friendly', id: 'cat', icon: '🐈', title: 'Kot', text: 'Chcę mleko. Daj mi mleko.',
       answer: 'milk', options: ['fish', 'milk', 'ball'],
     } };
     loot={items:{},chests:[],inventoryItemIds:[],consumedItemIds:[],completedRequestIds:[],unlockedGateIds:[],keyIds:[],requests:[]};

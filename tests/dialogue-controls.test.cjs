@@ -56,7 +56,7 @@ test('wolf uses Skaczę and keeps the draft when closed with Dalej', () => {
   run('closeEvent();pos=Number(Object.keys(encounters).find(id=>(encounters[id].category==="enemy")));render();showEvent()');
   $('#dialogue-next').onclick();
   const all = node => [node, ...node.children.flatMap(all)];
-  const controls = all($('#answers'));
+  const controls = [...all($('#answers')),...all($('#dialogue-actions'))];
   assert.equal(controls.find(b => b.dataset.wolfAction === 'submit').textContent, 'Skaczę');
   controls.find(b => b.dataset.wolfDir === '1').onclick();
   $('#dialogue-next').onclick();
@@ -89,4 +89,23 @@ test('keyboard respects an open conversation, menu and form controls', () => {
   for (const tag of ['SELECT', 'INPUT', 'TEXTAREA']) { key(tag); assert.equal(run('pos'), 5); }
   $('#menu').showModal(); key('BODY'); assert.equal(run('pos'), 5);
   $('#menu').close(); key('BODY'); assert.equal(run('pos'), 1);
+});
+
+for(const mode of ['map','fpv'])test(`${mode}: footer actions follow the dialogue stage and are cleared for other encounters`,()=>{
+  const {$,run}=game();
+  const descendants=node=>[node,...node.children.flatMap(descendants)];
+  run(`closeEvent();pos=Number(Object.keys(encounters).find(id=>isEnemy(encounters[id])));viewMode='${mode}';render();showEvent()`);
+  assert.equal($('#dialogue-actions').hidden,true);
+  assert.equal(descendants($('#answers')).some(b=>b.dataset.wolfAction),false,'submit and undo are outside the scrollable task');
+  assert.equal(descendants($('#dialogue-actions')).filter(b=>b.dataset.wolfAction).length,2);
+  $('.bubble-scroll').scrollTop=200;
+  $('#dialogue-next').onclick();
+  assert.equal($('#dialogue-actions').hidden,false);assert.equal($('.bubble-scroll').scrollTop,0);
+  const arrow=descendants($('#answers')).find(b=>b.dataset.wolfDir==='0');arrow.onclick();
+  const undo=descendants($('#dialogue-actions')).find(b=>b.dataset.wolfAction==='undo');undo.onclick();
+  assert.equal(run('encounters[pos].steps.length'),0);
+  $('#dialogue-next').onclick();assert.equal($('#event').open,false);assert.equal($('#dialogue-actions').hidden,true);
+  run('pos=keeper;render();showEvent()');$('#dialogue-next').onclick();
+  assert.equal($('#dialogue-actions').children.length,0,'wolf footer does not leak into a friendly conversation');
+  run('start()');assert.equal($('#dialogue-actions').children.length,0);assert.equal($('#dialogue-actions').hidden,true);
 });

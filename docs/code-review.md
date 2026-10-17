@@ -6,6 +6,12 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Przyciski dymka poza przewijaną treścią — 2026-10-17
+
+Zdjęcie użytkownika ujawniło przypadek, w którym przy „Skocz pięć kroków w górę.” dolne akcje wypadały poza widoczny obszar. Dotychczasowy limit 330 px obejmował całą treść razem z przyciskami. Dymek otrzymał limit wynikający z dostępnej wysokości karty oraz osobny pasek akcji, który się nie kurczy. Cofnij/Skaczę/Dalej są poza przewijaną treścią. Etap rozmowy steruje widocznością paska, a inna rozmowa i nowa gra czyszczą akcje wilka.
+
+Przeszło **86 testów** w ukierunkowanym zestawie dialogów, wilka, kategorii, bramy i legalnych rozgrywek (`TEST_SEED=42`). Następnie przeszło **11 testów dialogów**, w tym dwa dodane przypadki paska w mapie i FPV — łącznie 88 różnych przypadków. Testy w symulowanym DOM potwierdzają obsługę i obliczenia położenia, ale nie rzeczywisty CSS. Nowy scenariusz przeglądarkowy sprawdza granice i dostępność przycisków przy przewijaniu i powiększonym tekście; składnia jest poprawna, wykonanie nadal zablokowane niedostępnością podglądu. Nie oznaczono T03 jako ukończonego.
+
 ## Kategorie postaci i brak nagrody za wilka — 2026-10-17
 
 Wprowadzono wspólny model `ForestCharacters`: `friendly` („Przyjazna”) oraz `enemy` („Przeciwnik”). Zastępuje flagę `danger` w czynnej logice gry, renderowaniu FPV i scenariuszach testowych. Tylko pomoc przyjaznym postaciom daje jedno serce. Poprawne ominięcie wilka nie zmienia zdrowia, błąd nadal odbiera jedno. Przechodzenie wilka na inne pole i kolejne zadania pozostają aktywne. Ta zmiana zastępuje opisaną w poprzedniej sekcji nagrodę za ominięcie.

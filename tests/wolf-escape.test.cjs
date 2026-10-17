@@ -9,7 +9,7 @@ function encounter(mode='map',options={}){
   const g=game({animation:true,...options});
   g.run(`closeEvent();pos=Number(Object.keys(encounters).find(id=>(encounters[id].category==="enemy")));viewMode='${mode}';facing=1;render();showEvent()`);
   g.$('#dialogue-next').onclick();
-  g.control=key=>all(g.$('#answers')).find(b=>b.dataset.wolfAction===key||b.dataset.wolfDir===String(key));
+  g.control=key=>[...all(g.$('#answers')),...all(g.$('#dialogue-actions'))].find(b=>b.dataset.wolfAction===key||b.dataset.wolfDir===String(key));
   g.answer=()=>{const e=g.run('encounters[pos]');for(let i=0;i<e.count;i++)g.control(e.direction).onclick();return g.control('submit')};
   return g;
 }

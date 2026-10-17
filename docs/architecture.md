@@ -215,3 +215,9 @@ Testy obejmują 3000 układów przedmiotów, również powtarzające się prośb
 ### Kategorie postaci — 2026-10-17
 
 `isFriendly()` i `isEnemy()` sprawdzają jawną kategorię, niezależnie od grafiki lub nazwy. Sterują chmurką rozmowy, zadaniami przedmiotowymi, blokadą ruchu, opisem rozmów, licznikiem pomocy i renderowaniem FPV. Oba widoki oznaczają spotkania `data-category`. Odbiór nagrody za pomoc ponownie sprawdza kategorię przy kliknięciu, więc nieaktualna akcja nie zużyje przedmiotu ani nie nagrodzi przeciwnika. Nazwy „Przyjazna” i „Przeciwnik” oraz reguły nagród są zapisane w `ForestCharacters.categories`.
+
+### Dymek z osobnym paskiem akcji — 2026-10-17
+
+Po zgłoszeniu uciętego przycisku wilka usunięto stały limit 330 px. `positionBubble()` wyznacza limit całego dymka z wysokości karty, z marginesem 24 px. Otwarty `#event` jest kolumną flex: `.bubble-scroll` ma `min-height: 0` i przewijanie, natomiast `.bubble-footer` nie kurczy się. Pasek zawiera `#dialogue-actions` (Cofnij/Skaczę), Dalej i przycisk nowej gry. „Cofnij”, „Skaczę” i „Dalej” mieszczą się zwykle w jednym wierszu, a w razie potrzeby pasek zawija się. Przyciski mają co najmniej 44 px wysokości.
+
+`render()` czyści poprzednie akcje. `paintDialogue()` ujawnia je dopiero przy ostatniej kwestii i przewija treść na początek, a `closeEvent()` je ukrywa. Zadanie wilka zachowuje strzałki oraz postęp w przewijanej części. Stare akcje nadal podlegają dotychczasowym zabezpieczeniom. Układ w rzeczywistej przeglądarce pozostaje niezweryfikowany; dopisano scenariusz dokładnego polecenia ze zdjęcia oraz powiększonego tekstu i przewijania.

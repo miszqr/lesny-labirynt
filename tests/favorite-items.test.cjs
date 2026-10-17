@@ -46,7 +46,7 @@ function wolfGame(count = 3, direction = 3) {
   const g = game();
   g.run(`closeEvent();pos=Number(Object.keys(encounters).find(id=>(encounters[id].category==="enemy")));encounters[pos].count=${count};encounters[pos].direction=${direction};render();showEvent()`);
   const all = node => [node, ...node.children.flatMap(all)];
-  g.control = key => all(g.$('#answers')).find(b => b.dataset.wolfAction === key || b.dataset.wolfDir === String(key));
+  g.control = key => [...all(g.$('#answers')),...all(g.$('#dialogue-actions'))].find(b => b.dataset.wolfAction === key || b.dataset.wolfDir === String(key));
   g.progress = () => all(g.$('#answers')).find(b => b.className === 'wolf-progress');
   return g;
 }
