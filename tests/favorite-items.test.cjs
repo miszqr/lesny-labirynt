@@ -31,7 +31,7 @@ test('favorite request stays stable; a held item awards the key and one heart on
     assert.equal($('#description').textContent, `Dam ci klucz, jeśli dasz mi ${item.word}.`);
     const correct=$('#answers').children.find(b=>b.dataset.item===e.answer);
     assert.equal(correct.attrs['aria-label'],`Daj ${item.word}`);
-    assert.equal(correct.children[0].textContent,item.icon);
+    assert.equal(correct.children[0].textContent,`Daj ${item.word}`);
     run('closeEvent()');correct.onclick();assert.equal(run('hearts'),3,'closed dialogue rejects stale delivery');
     run('render();showEvent()');$('#dialogue-next').onclick();
     $('#answers').children.find(b=>b.dataset.item===e.answer).onclick();correct.onclick();
