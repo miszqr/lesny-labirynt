@@ -93,7 +93,7 @@ async function encounterFixture(page, { mode = 'map', corner = 0, wolf = false, 
     keeper = -1; gateOpen = true;
     visited = new Set([pos]); done = new Set();
     encounters = { [pos]: wolf ? {
-      danger: true, icon: '🐺', title: 'Uwaga! Wilk!',
+      category:"enemy", icon: '🐺', title: 'Uwaga! Wilk!',
       text: 'To groźny wilk. Skocz cztery kroki w prawo.',
       count: 4, direction: 1, steps: [],
     } : {

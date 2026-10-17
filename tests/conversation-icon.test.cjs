@@ -43,8 +43,8 @@ test('icon is clamped to the map and hidden for wolves, movement and game end', 
   run('positionTalk()');
   assert.equal($('#talk').style.left, '256px');
   assert.equal($('#talk').style.top, '0px');
-  for (const state of ['walking={}', 'fleeing={}', 'lost=true', 'won=true', 'encounters[5].danger=true']) {
-    run(`walking=null;fleeing=null;lost=false;won=false;encounters[5].danger=false;${state};positionTalk()`);
+  for (const state of ['walking={}', 'fleeing={}', 'lost=true', 'won=true', 'encounters[5].category="enemy"']) {
+    run(`walking=null;fleeing=null;lost=false;won=false;encounters[5].category="friendly";${state};positionTalk()`);
     assert.equal($('#talk').hidden, true, state);
     $('#talk').onclick();
     assert.equal($('#event').open, false, 'stale icon cannot open a conversation');
@@ -56,7 +56,7 @@ test('icon is clamped to the map and hidden for wolves, movement and game end', 
 test('arrival at a wolf still opens its mandatory encounter', () => {
   const { $, run } = game();
   run(`closeEvent();pos=5;maze.exit=15;maze.cells[5].links=[6];gateOpen=true;
-    encounters={6:{danger:true,icon:'🐺',title:'Wilk',text:'Skocz jeden krok w prawo.',count:1,direction:1,steps:[]}};
+    encounters={6:{category:"enemy",icon:'🐺',title:'Wilk',text:'Skocz jeden krok w prawo.',count:1,direction:1,steps:[]}};
     done=new Set();render();move(1)`);
   assert.equal($('#event').open, true);
   assert.equal($('#talk').hidden, true);

@@ -8,9 +8,9 @@ const descendants = node => [node, ...node.children.flatMap(descendants)];
 
 function player(size, seed) {
   const g = game({ size, seed }), { $, run, buttons } = g;
-  let rewards = 0, mistakes = 0;
+  let rewards = 0, mistakes = 0, checkedWolfError = false;
   const maze = run('maze');
-  const wolfEntries = Object.entries(run('encounters')).filter(([, e]) => e.danger);
+  const wolfEntries = Object.entries(run('encounters')).filter(([, e]) => (e.category==="enemy"));
   assert.equal(wolfEntries.length, 1);
   const wolf = Number(wolfEntries[0][0]);
   assert(Number.isInteger(wolf) && wolf >= 0 && wolf < size * size);
@@ -46,23 +46,25 @@ function player(size, seed) {
   }
 
   function solveWolf() {
-    assert.equal(run('encounters[pos]?.danger'), true); readyTask();
+    assert.equal(run('(encounters[pos]?.category==="enemy")'), true); readyTask();
     const cell = run('pos'), hearts = run('hearts'), visited = run('visited.size');
     run('closeEvent()'); buttons[0].onclick();
     assert.equal(run('pos'), cell, 'closing the wolf dialogue cannot bypass it');
     assert.equal(run('visited.size'), visited); assert.equal(run('hearts'), hearts);
     assert(buttons.filter(b=>run('viewMode')!=='fpv'||[0,2].includes(Number(b.dataset.dir))).every(b => b.disabled), 'wolf blocks walking; FPV can still turn'); assert.equal($('#event').open, true);
     $('#dialogue-next').onclick();
-    wrongWolfAnswer();
-    assert.equal(run('lost'), false); assert.match($('#notice').textContent, /Spróbuj jeszcze raz/);
+    if (!checkedWolfError) {
+      wrongWolfAnswer(); checkedWolfError = true;
+      assert.equal(run('lost'), false); assert.match($('#notice').textContent, /Spróbuj jeszcze raz/);
+    }
     const e = run('encounters[pos]'), before = run('hearts');
     for (let i = 0; i < e.count; i++) wolfControl(e.direction).onclick();
     assert.equal(run('hearts'), before);
-    const submit = wolfControl('submit'); submit.onclick(); submit.onclick(); rewards++;
-    assert.equal(run('hearts'), before + 1); assert.equal(run('done.has(pos)'), false);
+    const submit = wolfControl('submit'); submit.onclick(); submit.onclick();
+    assert.equal(run('hearts'), before); assert.equal(run('done.has(pos)'), false);
     assert.equal(run('dangerPending()'), false); assert.equal($('#event').open, false);
     assert.equal(run(`animalPresent(${cell})`), false, 'wolf leaves the solved field');
-    assert.equal(run('Object.values(encounters).filter(e=>e.danger).length'), 1, 'one wolf remains for the next encounter');
+    assert.equal(run('Object.values(encounters).filter(e=>(e.category==="enemy")).length'), 1, 'one wolf remains for the next encounter');
   }
 
   function step(worldDirection) {
@@ -85,7 +87,7 @@ function player(size, seed) {
 
   function helpFriend() {
     const cell = run('pos'), e = run('encounters[pos]');
-    assert(e && !e.danger); collectFor(cell); const before = run('hearts'); readyTask();
+    assert(e && !(e.category==="enemy")); collectFor(cell); const before = run('hearts'); readyTask();
     const request = run('loot.requests.find(r=>r.cell===pos)'), count = run(`ForestLoot.count(loot,'${e.answer}')`);
     assert(count > 0, 'items were collected through legal travel and chest controls');
     const originalText = $('#description').textContent;
@@ -149,7 +151,7 @@ function player(size, seed) {
   }
 
   function reachWolf() {
-    const currentWolf=()=>run('Number(Object.keys(encounters).find(id=>encounters[id].danger))');
+    const currentWolf=()=>run('Number(Object.keys(encounters).find(id=>(encounters[id].category==="enemy")))');
     if (!explore(maze, maze.start, false).parent.has(currentWolf())) {
       gatherEarly(); travel(maze.keeper); helpFriend(); openGate();
     }
@@ -172,7 +174,7 @@ function checkFreshGame(g, previous) {
   assert.equal(run('done.size'), 0); assert.deepEqual(Array.from(run('visited')), [run('pos')]);
   assert.equal(run('seenSamples.size'), 1); assert.equal((run('seenPath').match(/M/g) || []).length, 1);
   assert.equal(run('walking'), null); assert.equal(run('fleeing'), null); assert.equal(pendingFrames(), 0);
-  assert.equal(run('Object.values(encounters).find(e=>e.danger).steps.length'), 0);
+  assert.equal(run('Object.values(encounters).find(e=>(e.category==="enemy")).steps.length'), 0);
   assert.equal($('#reveal').checked, false); assert.equal($('#menu').open, false);
   assert.equal($('#notice').textContent, ''); assert.equal($('#next').hidden, true);
   assert.equal($('#answers').children.length, 0); assert.equal($('#answers').hidden, true);
@@ -196,12 +198,12 @@ for (const size of [4, 6, 8]) {
       assert.equal($('#answers').children.length, 0, 'no unlock action without key');
       g.gatherEarly(); travel(maze.keeper); helpFriend(); g.openGate();
       for (const [cell, e] of Object.entries(run('encounters'))) {
-        if (!e.danger && Number(cell) !== maze.keeper) { travel(Number(cell)); helpFriend(); }
+        if (!(e.category==="enemy") && Number(cell) !== maze.keeper) { travel(Number(cell)); helpFriend(); }
       }
       travel(g.wolf); if (run('dangerPending()')) g.solveWolf();
       travel(maze.exit);
       assert.equal(run('won'), true); assert.equal(run('lost'), false);
-      assert.equal(run('done.size'), Object.values(run('encounters')).filter(e=>!e.danger).length);
+      assert.equal(run('done.size'), Object.values(run('encounters')).filter(e=>!(e.category==="enemy")).length);
       assert.equal(run('hearts'), g.expectedHearts()); assert(g.buttons.every(b => b.disabled));
       assert.match($('#map').innerHTML, /assets\/home-reunion.png/);
       assert.equal($('#event').dataset.speaker, 'adam'); $('#dialogue-next').onclick();

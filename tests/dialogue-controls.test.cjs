@@ -53,7 +53,7 @@ test('Dalej closes an unanswered task without solving it; it can be reopened', (
 
 test('wolf uses Skaczę and keeps the draft when closed with Dalej', () => {
   const { $, run } = game();
-  run('closeEvent();pos=Number(Object.keys(encounters).find(id=>encounters[id].danger));render();showEvent()');
+  run('closeEvent();pos=Number(Object.keys(encounters).find(id=>(encounters[id].category==="enemy")));render();showEvent()');
   $('#dialogue-next').onclick();
   const all = node => [node, ...node.children.flatMap(all)];
   const controls = all($('#answers'));

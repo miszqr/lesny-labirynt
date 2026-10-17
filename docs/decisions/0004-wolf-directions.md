@@ -16,12 +16,12 @@ Wcześniej dziecko czytało liczbę kroków słownie, a odpowiadało cyfrą. Now
 
 Losujemy 1–5 kroków i jeden z czterech kierunków. Polecenie zapisuje liczbę słownie. Każde kliknięcie jednej z czterech strzałek dopisuje krok, widoczny jako strzałka na pasku postępu. „Cofnij” usuwa ostatni krok bez kary. Pusta odpowiedź nie może zostać zatwierdzona. Od 2026-10-17 przycisk zatwierdzający ma etykietę „Skaczę”, zgodnie z poleceniem użytkownika.
 
-Poprawna odpowiedź zawiera dokładnie wymaganą liczbę kroków i wyłącznie wskazany kierunek. Kierunki mieszane są błędne. Zatwierdzenie poprawnej odpowiedzi rozwiązuje spotkanie i daje jedno serce tylko raz. Błąd odbiera jedno serce i czyści odpowiedź; zero serc kończy grę. Samo klikanie lub cofanie nie zabiera serc. Limit roboczy wynosi dziesięć kliknięć, co pozwala również wpisać zbyt wiele kroków bez nieograniczonego powiększania dymka.
+Poprawna odpowiedź zawiera dokładnie wymaganą liczbę kroków i wyłącznie wskazany kierunek. Kierunki mieszane są błędne. Zgodnie z aktualizacją z 2026-10-17 wilk jest postacią kategorii „przeciwnik”. Zatwierdzenie poprawnej odpowiedzi rozwiązuje spotkanie, ale nie daje serca. Błąd odbiera jedno serce i czyści odpowiedź; zero serc kończy grę. Samo klikanie lub cofanie nie zabiera serc. Limit roboczy wynosi dziesięć kliknięć, co pozwala również wpisać zbyt wiele kroków bez nieograniczonego powiększania dymka.
 
 Polecenie i szkic odpowiedzi pozostają stałe po zamknięciu dymka. Nowa gra resetuje oba. Po poprawnej odpowiedzi wilk przechodzi na inne osiągalne pole i otrzymuje nowe polecenie. Przy kolejnym spotkaniu trzeba rozwiązać je ponownie. Strzałki zadania nie zmieniają pozycji Adama; po rozwiązaniu gracz wraca do zwykłego ruchu po labiryncie. Zamknięcie rozmowy nadal nie pozwala ominąć wilka.
 
 ## Konsekwencje i weryfikacja
 
-Zadanie wymaga przeczytania liczby i kierunku, odliczenia kliknięć oraz zatwierdzenia. Postęp pokazuje wybraną odpowiedź, bez podpowiadania docelowej liczby. Przyciski mają opisy dla czytników ekranu, a postęp jest komunikatem statusu. Nieaktualne przyciski nie mogą ponownie przyznać nagrody ani zabrać serca.
+Zadanie wymaga przeczytania liczby i kierunku, odliczenia kliknięć oraz zatwierdzenia. Postęp pokazuje wybraną odpowiedź, bez podpowiadania docelowej liczby. Przyciski mają opisy dla czytników ekranu, a postęp jest komunikatem statusu. Nieaktualne przyciski nie mogą rozwiązać kolejnego spotkania ani ponownie zabrać serca.
 
 Testy obejmują wszystkie 20 kombinacji liczby i kierunku, błędną długość i kierunek, mieszane kroki, cofanie, ponowne otwarcie rozmowy, blokadę ruchu, koniec gry i restart. Kontrola układu na telefonie pozostaje do wykonania: infrastruktura podglądu przeglądarkowego była niedostępna podczas wdrożenia.

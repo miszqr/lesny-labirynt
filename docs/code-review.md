@@ -6,6 +6,12 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Kategorie postaci i brak nagrody za wilka — 2026-10-17
+
+Wprowadzono wspólny model `ForestCharacters`: `friendly` („Przyjazna”) oraz `enemy` („Przeciwnik”). Zastępuje flagę `danger` w czynnej logice gry, renderowaniu FPV i scenariuszach testowych. Tylko pomoc przyjaznym postaciom daje jedno serce. Poprawne ominięcie wilka nie zmienia zdrowia, błąd nadal odbiera jedno. Przechodzenie wilka na inne pole i kolejne zadania pozostają aktywne. Ta zmiana zastępuje opisaną w poprzedniej sekcji nagrodę za ominięcie.
+
+**151 testów przeszło, 0 błędów** (`TEST_SEED=42 node --test tests/*.test.cjs`). Zakres obejmuje wszystkie 20 zadań wilka, błędy i przegraną, powtórne spotkania, serie 12 poprawnych ominięć przy jednym sercu w obu widokach, jawne kategorie, dobór próśb tylko dla przyjaznych postaci i odrzucenie nieaktualnego oddania przedmiotu przeciwnikowi. Pełne podróże uruchomiono dla ziarna 42 w każdym rozmiarze; nie powtarzano całego domyślnego zestawu 300 podróży. Testy symulują DOM; przeglądarka i telefon nadal nie zostały zweryfikowane.
+
 ## Powracający wilk — 2026-10-17
 
 Wilk po ominięciu przechodzi rzeczywistą trasą na inne wolne pole, bez przekraczania zamkniętej furtki. Znika wyłącznie z poprzedniego pola; w świecie pozostaje jeden wilk. Następne spotkanie wymaga nowej odpowiedzi i może dać kolejne serce. Nowe polecenie różni się od poprzedniego. Animacja mapy nie pomniejsza ani nie wygasza postaci; FPV korzysta z tej samej trasy świata, projekcji i widoczności korytarzy.

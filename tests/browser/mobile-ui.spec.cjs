@@ -182,12 +182,12 @@ for (const mode of ['map', 'fpv']) {
     await expect(page.locator('[data-wolf-action="submit"]')).toHaveText('Skaczę');
     await page.locator('[data-wolf-action="submit"]').tap();
     await expect(page.locator('#event')).not.toBeVisible();
-    await expect(page.locator('.heart-item')).toHaveAttribute('aria-label', 'Serduszka: 4');
+    await expect(page.locator('.heart-item')).toHaveAttribute('aria-label', 'Serduszka: 3');
     await expect.poll(() => page.evaluate(() => fleeing === null)).toBe(true);
-    const relocated = await page.evaluate(() => Number(Object.keys(encounters).find(id => encounters[id].danger)));
+    const relocated = await page.evaluate(() => Number(Object.keys(encounters).find(id => (encounters[id].category==="enemy"))));
     expect(relocated).not.toBe(before);
     if (mode === 'map') await expect(page.locator('#map [data-wolf="true"]')).toHaveCount(1);
-    expect(await page.evaluate(() => Object.values(encounters).filter(e => e.danger).length)).toBe(1);
+    expect(await page.evaluate(() => Object.values(encounters).filter(e => (e.category==="enemy")).length)).toBe(1);
     await controlsFit(page);
   });
 

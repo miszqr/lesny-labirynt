@@ -12,6 +12,7 @@ To statyczna aplikacja HTML/CSS/JavaScript uruchamiana w przeglądarce. Nie ma b
 
 | Miejsce | Odpowiedzialność |
 | --- | --- |
+| `characters.js` | Kategorie `friendly` / `enemy`, polskie nazwy i nagroda za ukończenie; moduł bez DOM wspólny dla reguł i FPV. |
 | `loot.js` | Niezależny od DOM model przedmiotów, atomowe operacje odbioru/oddania i walidator ukończenia. |
 | `maze.js` | Generowanie grafu labiryntu, wybór domu, bramy i lokalizacji zwierzaka z kluczem. |
 | `index.html`: `start`, `move`, `target`, `addDanger` | Rozpoczęcie gry, ruch i rozmieszczanie spotkań. |
@@ -22,7 +23,7 @@ To statyczna aplikacja HTML/CSS/JavaScript uruchamiana w przeglądarce. Nie ma b
 | `index.html`: `showEvent`, `paintDialogue`, `positionBubble`, `closeEvent` | Sekwencje wypowiedzi i dymek przy mówiącej postaci. |
 | `index.html`: HTML i CSS | Układ ekranu, przyciski, plecak i menu. |
 
-Część funkcji pozostaje w pliku HTML; generator, FPV oraz model przedmiotów są osobnymi modułami. Logika gry i operacje DOM są obecnie połączone. Generator jest niezależny od DOM: udostępnia `window.generateMaze` oraz eksport CommonJS do uruchamiania w Node.js.
+Część funkcji pozostaje w pliku HTML; generator, FPV, kategorie postaci oraz model przedmiotów są osobnymi modułami. Logika gry i operacje DOM są obecnie połączone. Generator jest niezależny od DOM: udostępnia `window.generateMaze` oraz eksport CommonJS do uruchamiania w Node.js.
 
 ```mermaid
 flowchart TD
@@ -44,6 +45,7 @@ flowchart TD
 | `maze.gate` | Dwa końce krawędzi blokowanej przez bramę. Brama nie usuwa połączenia z grafu; sprawdza ją logika ruchu. |
 | `maze.keeper`, `maze.places` | Pole zwierzaka z kluczem oraz miejsca spotkań. |
 | `pos`, `visited`, `done`, `encounters` | Pozycja Adama, odwiedzone pola, wykonane zadania i spotkania indeksowane polem. |
+| `encounters[cell].category` | `friendly` (przyjazna) lub `enemy` (przeciwnik); zastępuje dawną flagę `danger`. Kategorię otrzymuje każda tworzona postać, także wilk po przeniesieniu. |
 | `seenSamples`, `seenPath` | Zapamiętane pozycje zasięgu i suma odsłoniętych obszarów, niezależna od licznika odwiedzonych pól. |
 | `viewMode`, `facing` | Wybrany widok (`map` lub `fpv`) i kierunek patrzenia (0 północ, 1 wschód, 2 południe, 3 zachód). |
 | `loot` | Słownik instancji `items`, skrzynki, `inventoryItemIds`, `consumedItemIds`, zadania i ukończone ID, klucze oraz otwarte furtki. |
@@ -67,7 +69,7 @@ Parametr `random` umożliwia deterministyczne sprawdzanie generatora. Cała gra 
 - `start()` resetuje stan, ustawia 3 serca, generuje poziom i pokazuje wstęp Adama.
 - `move()` sprawdza sąsiedztwo, bramę, otwarte menu/rozmowę i nierozwiązane spotkanie z wilkiem. Po ruchu aktualizuje odwiedzone pola oraz widok.
 - Przy spotkaniu mówi Adam, potem zwierzak. Odpowiedzi pojawiają się przy ostatniej kwestii. Dymek to niemodalny element `dialog.show()`; ruch podczas rozmowy blokuje kod gry. Menu nadal używa `showModal()`.
-- Wykonanie zadania daje jedno serce tylko raz. Zadanie zwierzaka `keeper` daje dodatkowo klucz. Rozmowa zamyka się bez komunikatu o sukcesie, a zwierzak pozostaje na mapie.
+- Pomoc postaci kategorii `friendly` daje jedno serce tylko raz. Ominięcie postaci `enemy` nie daje serc; wspólny `completionHearts()` zwraca odpowiednio 1 lub 0. Zadanie zwierzaka `keeper` daje dodatkowo klucz. Rozmowa zamyka się bez komunikatu o sukcesie, a zwierzak pozostaje na mapie.
 - Wilk losuje `count` (1–5) i `direction` (góra/prawo/dół/lewo). `renderWolfTask()` buduje cztery strzałki, pasek wybranych kroków, cofanie i zatwierdzanie. `steps` przechowuje kierunki kliknięć, także po zamknięciu dymka. Dopiero zatwierdzenie porównuje długość i wszystkie kierunki z poleceniem. To odpowiedź na zadanie: nie przenosi Adama przez pola labiryntu. Zobacz [ADR-0004](decisions/0004-wolf-directions.md).
 - Bez potrzebnego przedmiotu przyjazny zwierzak pokazuje wskazówkę; nie można ukończyć zadania. Błąd u wilka zabiera jedno; przy zerze gra się kończy. Zamknięcie dymka nie pozwala ominąć nierozwiązanego wilka.
 - Klucz pozwala otworzyć bramę. Dom uruchamia `drawHome()`: Adam i siostra z radością idą ku sobie, a końcowe kwestie pojawiają się przy postaciach. Finał używa zaakceptowanej ilustracji `assets/home-reunion.png`; przezroczyste obszary SVG nad każdą postacią wyznaczają pozycje dymków. Powitanie siostry brzmi „Dobrze cię widzieć!”.
@@ -88,11 +90,11 @@ W 2D `rememberSight()` dopisuje do `seenPath` zamknięte, nieregularne obszary o
 
 Każdy odsłonięty fragment, również części sąsiednich nieodwiedzonych pól, pozostaje widoczny do końca bieżącej gry. Pamięć działa po odejściu, powrocie i zmianie widoku. Nie dopisuje pól do `visited` ani miniatury FPV. „Pokaż całą mapę” jest tymczasowym podglądem, który nie kasuje zebranej pamięci. Nowa gra lub odświeżenie strony zeruje pamięć razem z resztą stanu.
 
-Poprawna odpowiedź wilkowi daje jedno serce za bieżące spotkanie. `wolfRoute()` wybiera inne osiągalne pole i wyznacza trasę po połączeniach labiryntu, bez przechodzenia przez zamkniętą furtkę. Celem nie może być dom, pole Adama ani inny zwierzak. Preferowane są pola bez skrzyni i furtki, oddalone o 2–4 kroki; w ciasnej części planszy możliwe jest bliższe wolne pole, także przy skrzyni lub furtce.
+Wilk ma kategorię `enemy`. Poprawna odpowiedź nie zmienia liczby serc, a błąd odbiera jedno. `wolfRoute()` wybiera inne osiągalne pole i wyznacza trasę po połączeniach labiryntu, bez przechodzenia przez zamkniętą furtkę. Celem nie może być dom, pole Adama ani inny zwierzak. Preferowane są pola bez skrzyni i furtki, oddalone o 2–4 kroki; w ciasnej części planszy możliwe jest bliższe wolne pole, także przy skrzyni lub furtce.
 
-`startFlee()` animuje wilka wzdłuż tej trasy przez 750–2400 ms. W mapie zachowuje rozmiar i pełną widoczność, z uwzględnieniem zwykłej mgły i warstw drzew. FPV przelicza tę samą pozycję świata na perspektywę, więc wilk może naturalnie wyjść z kadru lub za zakręt. Ruch Adama jest zablokowany do końca przejścia. `finishFlee()` przenosi spotkanie na pole docelowe, usuwa tymczasowe `done` starego pola i tworzy nowe polecenie, różne od poprzedniego. Na planszy zawsze pozostaje jeden wilk. Nowe spotkanie ponownie blokuje odejście do czasu poprawnej odpowiedzi i daje jedną nagrodę.
+`startFlee()` animuje wilka wzdłuż tej trasy przez 750–2400 ms. W mapie zachowuje rozmiar i pełną widoczność, z uwzględnieniem zwykłej mgły i warstw drzew. FPV przelicza tę samą pozycję świata na perspektywę, więc wilk może naturalnie wyjść z kadru lub za zakręt. Ruch Adama jest zablokowany do końca przejścia. `finishFlee()` przenosi spotkanie na pole docelowe, usuwa tymczasowe `done` starego pola i tworzy nowe polecenie, różne od poprzedniego. Na planszy zawsze pozostaje jeden wilk. Nowe spotkanie ponownie blokuje odejście do czasu poprawnej odpowiedzi, bez nagrody w postaci serca.
 
-Nowa gra anuluje starą trasę. Zmiana widoku, odsłonięcie mapy i otwarcie menu kończą przejście w tym samym, już wybranym miejscu. Przy ograniczeniu animacji lub braku API wilk od razu zajmuje docelowe pole. Stare przyciski i klatki animacji nie rozwiązują kolejnego spotkania ani nie przyznają dodatkowych serc. Testy obejmują legalne dojście i drugą próbę, oba widoki, błędy, restart, nowe polecenia i 2400 tras na 300 układach.
+Nowa gra anuluje starą trasę. Zmiana widoku, odsłonięcie mapy i otwarcie menu kończą przejście w tym samym, już wybranym miejscu. Przy ograniczeniu animacji lub braku API wilk od razu zajmuje docelowe pole. Stare przyciski i klatki animacji nie rozwiązują kolejnego spotkania. Kolejne ominięcia nie pozwalają odzyskiwać serc. Testy obejmują legalne dojście i drugą próbę, oba widoki, błędy, restart, nowe polecenia i 2400 tras na 300 układach.
 
 ## Widok FPV
 
@@ -209,3 +211,7 @@ Każdy identyfikator należy dokładnie do jednej kolekcji: zawartości skrzynki
 `#storage` jest modalnym oknem wspólnym dla skrzynki i plecaka. Skrzynka ma przyciski „Zabierz” dla każdej instancji, „Zabierz wszystko” (aktywne tylko, gdy całość się mieści) oraz osobną sekcję plecaka z przyciskami „Odłóż do skrzyni”. Pełny plecak blokuje odbiór w modelu i UI. Plecak grupuje typy i pokazuje liczniki; jeśli gracz stoi przy skrzyni, także w tym widoku może odłożyć po jednej sztuce. Pusta skrzynka staje się zapełniona po odłożeniu, a jej wygląd od razu aktualizuje się w mapie i FPV. „Dalej” oraz Escape zamykają okno; kliknięcie poza nim jest pochłaniane. Podczas okna ruch i zmiana widoku są zablokowane. Dialog zwierzaka bez przedmiotu pokazuje samą prośbę, bez dodatkowej podpowiedzi; z przedmiotem oferuje tekstowy przycisk „Daj…”. Wykonane zadanie przy ponownej rozmowie wyświetla podziękowanie, bez ponownego zużycia lub nagrody.
 
 Testy obejmują 3000 układów przedmiotów, również powtarzające się prośby, oraz przykłady wykazujące brak klucza zza furtki i zależność od kolejności wydawania. Pełne rozgrywki zbierają zapasy przez legalne dojście i rzeczywiste callbacki skrzynki. Osobne testy sprawdzają instancje, stan UI, puste skrzynki, reset, modalne blokady, położenie względem ścieżek i krajobrazu oraz pełny obrót FPV. Rastry SVG obejmują mapę, pełną i pustą skrzynkę w FPV. Prawdziwy układ DOM, dotyk i telefon pozostają do sprawdzenia w T03.
+
+### Kategorie postaci — 2026-10-17
+
+`isFriendly()` i `isEnemy()` sprawdzają jawną kategorię, niezależnie od grafiki lub nazwy. Sterują chmurką rozmowy, zadaniami przedmiotowymi, blokadą ruchu, opisem rozmów, licznikiem pomocy i renderowaniem FPV. Oba widoki oznaczają spotkania `data-category`. Odbiór nagrody za pomoc ponownie sprawdza kategorię przy kliknięciu, więc nieaktualna akcja nie zużyje przedmiotu ani nie nagrodzi przeciwnika. Nazwy „Przyjazna” i „Przeciwnik” oraz reguły nagród są zapisane w `ForestCharacters.categories`.

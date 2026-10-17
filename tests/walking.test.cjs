@@ -36,7 +36,7 @@ test('blocked paths, closed gates, and unresolved wolves cannot start a walk', (
   const { run,pendingFrames }=walkGame();
   run('move(0)'); assert.equal(pendingFrames(),0); assert.equal(run('pos'),5);
   run('maze.gate=[5,6];move(1)'); assert.equal(pendingFrames(),0); assert.equal(run('pos'),5);
-  run('closeEvent();gateOpen=true;encounters[5]={danger:true,icon:"🐺",text:"Skocz jeden krok w prawo.",count:1,direction:1,steps:[]};move(1)');
+  run('closeEvent();gateOpen=true;encounters[5]={category:"enemy",icon:"🐺",text:"Skocz jeden krok w prawo.",count:1,direction:1,steps:[]};move(1)');
   assert.equal(pendingFrames(),0); assert.equal(run('pos'),5);
 });
 

@@ -1,6 +1,7 @@
 /* First-person forest view. The maze graph remains the source of movement rules. */
 (function (root) {
   'use strict';
+  const {isFriendly,isEnemy}=typeof module==='object'&&module.exports?require('./characters.js'):root.ForestCharacters;
   const vectors = [[0, -1], [1, 0], [0, 1], [-1, 0]];
   function neighbor(maze, cell, direction) {
     const [dx, dy] = vectors[direction], x = cell % maze.n + dx, y = Math.floor(cell / maze.n) + dy;
@@ -239,9 +240,9 @@
       if(room.cell===maze.exit){
         const [side,depth]=worldToView(state,room.cell%maze.n*2,Math.floor(room.cell/maze.n)*2);
         if(inView(side,depth)&&depth>CAMERA.near){const [x,y]=project(side,depth),s=scaleAt(depth)*.025;sprites.push({depth,svg:`<g data-fpv-home="true" transform="translate(${number(x)} ${number(y)}) scale(${number(s)})"><rect x="-24" y="-37" width="48" height="37" rx="2" fill="#efd9a5"/><path d="M-31-35L0-59 31-35Z" fill="#b96846"/><rect x="-6" y="-22" width="12" height="22" rx="2" fill="#886143"/><rect x="12" y="-27" width="9" height="10" fill="#a1d7d0"/></g>`})}
-      }else if(encounters[room.cell]&&(!encounters[room.cell].danger||!done.has(room.cell)||state.fleeingCell===room.cell)){
+      }else if(encounters[room.cell]&&(isFriendly(encounters[room.cell])||!done.has(room.cell)||state.fleeingCell===room.cell)){
         const e=encounters[room.cell],p=animalPose(state,room.cell);
-        if(p.visible)sprites.push({depth:p.depth,svg:`<g data-encounter="${room.cell}" data-world-x="${p.world.x}" data-world-y="${p.world.y}" data-world-heading="${p.world.heading}" data-animal-view="${p.view}" data-wolf="${e.danger===true}" data-character="${room.depth===0?'animal':'distant-animal'}" transform="translate(${number(p.x)} ${number(p.y)}) scale(${number(p.scale)})">${art.characterArt(e.icon,p.view)}${done.has(room.cell)&&!e.danger?'<circle cx="16" cy="-48" r="6" fill="#fff8da"/><path d="M13-48l2 2 4-5" fill="none" stroke="#5b8650" stroke-width="2"/>':''}</g>`});
+        if(p.visible)sprites.push({depth:p.depth,svg:`<g data-encounter="${room.cell}" data-category="${e.category}" data-world-x="${p.world.x}" data-world-y="${p.world.y}" data-world-heading="${p.world.heading}" data-animal-view="${p.view}" data-wolf="${isEnemy(e)}" data-character="${room.depth===0?'animal':'distant-animal'}" transform="translate(${number(p.x)} ${number(p.y)}) scale(${number(p.scale)})">${art.characterArt(e.icon,p.view)}${done.has(room.cell)&&isFriendly(e)?'<circle cx="16" cy="-48" r="6" fill="#fff8da"/><path d="M13-48l2 2 4-5" fill="none" stroke="#5b8650" stroke-width="2"/>':''}</g>`});
       }
     }
     sprites.sort((a,b)=>b.depth-a.depth);

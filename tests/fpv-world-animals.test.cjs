@@ -54,7 +54,7 @@ test('talking turns the camera toward the stationary friend; free turning hides 
 
 test('wolf escape begins at its rendered anchor, and looking around cannot skip the encounter',()=>{
   const g=scene({animation:true});
-  g.run(`encounters[5]={danger:true,icon:'🐺',title:'Wilk',text:'Skocz jeden krok w prawo.',count:1,direction:1,steps:[]};render()`);
+  g.run(`encounters[5]={category:"enemy",icon:'🐺',title:'Wilk',text:'Skocz jeden krok w prawo.',count:1,direction:1,steps:[]};render()`);
   const p=g.run('ForestFPV.animalPose({maze,pos,facing},5)'),start=g.run('fleePose(5,0,"fpv")');
   for(const key of ['x','y','scale'])assert(Math.abs(p[key]-start[key])<1e-10);
   assert.equal(g.buttons[1].disabled,false);assert.equal(g.buttons[0].disabled,true);

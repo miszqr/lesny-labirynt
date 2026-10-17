@@ -44,7 +44,7 @@ test('favorite request stays stable; a held item awards the key and one heart on
 
 function wolfGame(count = 3, direction = 3) {
   const g = game();
-  g.run(`closeEvent();pos=Number(Object.keys(encounters).find(id=>encounters[id].danger));encounters[pos].count=${count};encounters[pos].direction=${direction};render();showEvent()`);
+  g.run(`closeEvent();pos=Number(Object.keys(encounters).find(id=>(encounters[id].category==="enemy")));encounters[pos].count=${count};encounters[pos].direction=${direction};render();showEvent()`);
   const all = node => [node, ...node.children.flatMap(all)];
   g.control = key => all(g.$('#answers')).find(b => b.dataset.wolfAction === key || b.dataset.wolfDir === String(key));
   g.progress = () => all(g.$('#answers')).find(b => b.className === 'wolf-progress');
@@ -57,7 +57,7 @@ test('wolf draws every count and direction and spells out the matching instructi
   const directions = ['w górę', 'w prawo', 'w dół', 'w lewo'];
   for (let i = 0; i < 250; i++) {
     run('start()');
-    const e = run('Object.values(encounters).find(e=>e.danger)');
+    const e = run('Object.values(encounters).find(e=>(e.category==="enemy"))');
     assert(e.count >= 1 && e.count <= 5);
     assert(e.direction >= 0 && e.direction < 4);
     assert.equal(e.text, `To groźny wilk. Skocz ${words[e.count]} ${directions[e.direction]}.`);
@@ -82,7 +82,7 @@ for (let direction = 0; direction < 4; direction++) for (let count = 1; count <=
     assert.equal(run('hearts'), 3); assert.equal(run('dangerPending()'), true);
     assert.equal(run('pos'), originalPos);
     const submit = control('submit'); submit.onclick(); submit.onclick();
-    assert.equal(run('hearts'), 4); assert.equal(run('dangerPending()'), false);
+    assert.equal(run('hearts'), 3); assert.equal(run('dangerPending()'), false);
     assert.equal($('#event').open, false); assert.equal(run('pos'), originalPos);
   });
 }
@@ -98,7 +98,7 @@ test('wolf draft survives reopening, undo is free, and a closed dialogue still b
   assert.equal(progress().children[0].textContent, '←');
   previous.onclick(); assert.equal(run('encounters[pos].steps.length'), 1);
   control(3).onclick(); control(3).onclick(); control('submit').onclick();
-  assert.equal(run('hearts'), 4);
+  assert.equal(run('hearts'), 3);
 });
 
 for (const sequence of [[3, 3], [3, 3, 3, 3], [1, 1, 1], [3, 1, 3]]) {
@@ -111,7 +111,7 @@ for (const sequence of [[3, 3], [3, 3, 3, 3], [1, 1, 1], [3, 1, 3]]) {
     assert.equal(run('dangerPending()'), true); assert.equal(control('submit').disabled, true);
     assert.equal($('#answers').hidden, false); assert.match($('#notice').textContent, /Spróbuj jeszcze raz/);
     for (let i = 0; i < 3; i++) control(3).onclick(); control('submit').onclick();
-    assert.equal(run('hearts'), 3); assert.equal(run('dangerPending()'), false);
+    assert.equal(run('hearts'), 2); assert.equal(run('dangerPending()'), false);
   });
 }
 
@@ -126,5 +126,5 @@ test('wolf loss, bounded input, undo to empty, and restarting reset the task', (
   assert.equal($('#answers').children.length, 0); assert.equal($('#next').hidden, false);
   const originalPos = run('pos'); run('closeEvent();move(0)'); assert.equal(run('pos'), originalPos);
   run('start()'); assert.equal(run('lost'), false); assert.equal(run('hearts'), 3);
-  assert.equal(run('Object.values(encounters).find(e=>e.danger).steps.length'), 0);
+  assert.equal(run('Object.values(encounters).find(e=>(e.category==="enemy")).steps.length'), 0);
 });

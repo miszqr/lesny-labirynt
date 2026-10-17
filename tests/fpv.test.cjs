@@ -33,7 +33,7 @@ for (let facing = 0; facing < 4; facing++) test(`FPV forward and backward respec
 
 test('view switching preserves maze, hearts, key, completed tasks, and wolf draft plus dialogue stage', () => {
   const { $, run } = game();
-  run('closeEvent();pos=Number(Object.keys(encounters).find(id=>encounters[id].danger));hearts=7;hasKey=true;encounters[pos].steps=[3,3];render();showEvent()');
+  run('closeEvent();pos=Number(Object.keys(encounters).find(id=>(encounters[id].category==="enemy")));hearts=7;hasKey=true;encounters[pos].steps=[3,3];render();showEvent()');
   $('#dialogue-next').onclick();
   const before = run('JSON.stringify({maze,pos,hearts,hasKey,gateOpen,steps:encounters[pos].steps,visited:[...visited],done:[...done]})');
   const line=$('#description').textContent;

@@ -38,7 +38,7 @@ function game(width, height, right, bottom) {
   math.random = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
   const context = vm.createContext({ Math: math, Set, window: { addEventListener() {} },
     document: { querySelector: $, querySelectorAll: () => [], createElement: element, addEventListener() {} } });
-  for(const file of ['loot.js','maze.js','fpv.js'])vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context);
+  for(const file of ['characters.js','loot.js','maze.js','fpv.js'])vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context);
   Object.assign(context, context.window);
   vm.runInContext(source, context);
   const run = code => vm.runInContext(code, context);
