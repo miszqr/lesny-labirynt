@@ -85,6 +85,24 @@ function renderWolfTask(e){
 }
 function artNoise(a,b=0){const v=Math.sin(a*127.1+b*311.7+artSeed)*43758.5453;return v-Math.floor(v)}
 function blob(x,y,r,v){return `M${x-r} ${y-3}C${x-r-7} ${y-r} ${x-4} ${y-r*(.7+v*.3)} ${x+7} ${y-r}S${x+r+8} ${y-5} ${x+r} ${y+7}S${x+3} ${y+r+5} ${x-9} ${y+r*.8}S${x-r-5} ${y+7} ${x-r} ${y-3}Z`}
+function blobOutline(x,y,r,v){
+ const curves=[[[x-r,y-3],[x-r-7,y-r],[x-4,y-r*(.7+v*.3)],[x+7,y-r]]];
+ for(const [control,end] of [[[x+r+8,y-5],[x+r,y+7]],[[x+3,y+r+5],[x-9,y+r*.8]],[[x-r-5,y+7],[x-r,y-3]]]){
+  const previous=curves[curves.length-1],start=previous[3],reflected=start.map((n,i)=>2*n-previous[2][i]);curves.push([start,reflected,control,end]);
+ }
+ return curves.flatMap(curve=>Array.from({length:12},(_,i)=>roadPoint(curve,i/12)));
+}
+function landscapeObjects(){
+ const L=maze.n*60,objects=[];
+ for(const t of terrain){
+  objects.push({...t,id:`${t.type}-${t.x}-${t.y}`});
+  if(t.type==='forest')for(let i=0;i<3;i++){
+   const dx=[-10,9,-2][i]+(t.variant-.5)*5,dy=[-7,-4,10][i];
+   objects.push({id:`tree-${t.x}-${t.y}-${i}`,type:'tree',x:Math.max(6,Math.min(L-6,t.x+dx)),y:Math.max(6,Math.min(L-6,t.y+dy)),variant:(t.variant+i*.31)%1,scale:.46+t.variant*.16+(i===2?.08:0)});
+  }
+ }
+ return objects;
+}
 function placeHills(){
  // Grid corners sit between the clearings; keep water and the map's outer edge intact.
  const L=maze.n*60,candidates=terrain.filter(t=>t.type!=='water'&&t.x>0&&t.y>0&&t.x<L&&t.y<L);
@@ -108,10 +126,10 @@ function hillArt(x,y,v){
 function terrainArt(){let out='';const L=maze.n*60;
 for(let i=0;i<maze.n*maze.n*3;i++){const x=artNoise(i,1)*L,y=artNoise(i,2)*L,r=10+artNoise(i,3)*24;const colors=['#bbca8c','#9db67c','#c0c98e','#8eaa73','#c4bf8b'];out+=`<path d="${blob(x,y,r,artNoise(i,4))}" fill="${colors[i%5]}" opacity=".3"/>`}
 for(const t of terrain){const {x,y,type,variant:v}=t;const r=14+v*5;
-if(type==='water'){out+=`<path d="${blob(x,y,r+3,v)}" fill="#bfc99b"/><path d="${blob(x,y,r,v)}" fill="${v>.5?'#7db9bd':'#8ec4bf'}"/><path d="${blob(x+2,y+1,r*.6,v)}" fill="#66aab5" opacity=".35"/><path d="M${x-8} ${y-3}q5-2 11 0m-7 9q5-2 10 0" stroke="#c7e5d4" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M${x-r} ${y+6}v-7m3 9v-6" stroke="#69875c" stroke-width="1.5"/>`}
+if(type==='water'){out+=`<g data-landmark="water-${x}-${y}"><path d="${blob(x,y,r+3,v)}" fill="#bfc99b"/><path d="${blob(x,y,r,v)}" fill="${v>.5?'#7db9bd':'#8ec4bf'}"/><path d="${blob(x+2,y+1,r*.6,v)}" fill="#66aab5" opacity=".35"/><path d="M${x-8} ${y-3}q5-2 11 0m-7 9q5-2 10 0" stroke="#c7e5d4" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M${x-r} ${y+6}v-7m3 9v-6" stroke="#69875c" stroke-width="1.5"/></g>`}
 else{out+=`<path d="${blob(x,y,17+v*5,v)}" fill="${type==='forest'?'#8ea972':'#c1cd95'}" opacity=".6"/>`;if(type==='meadow')for(let j=0;j<4;j++){const dx=(artNoise(x+j,y)-.5)*30,dy=(artNoise(y+j,x)-.5)*26;out+=`<path d="M${x+dx} ${y+dy}l-2-3m2 3 2-4" stroke="#819d63" stroke-width="1.1" fill="none"/>`}}}
 for(let i=0;i<maze.n*maze.n*14;i++){const x=artNoise(i,6)*L,y=artNoise(i,7)*L,v=artNoise(i,8);out+=v<.7?`<path d="M${x.toFixed(1)} ${y.toFixed(1)}l1-2m-1 2-1-1" stroke="${v<.3?'#789563':'#d3d6a4'}" stroke-width=".7" opacity=".55"/>`:`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${(.7+v).toFixed(1)}" ry=".8" fill="#b4ad89" opacity=".65"/>`}
-for(const t of terrain)if(t.type==='hill')out+=hillArt(t.x,t.y,t.variant);
+for(const t of terrain)if(t.type==='hill')out+=`<g data-landmark="hill-${t.x}-${t.y}">${hillArt(t.x,t.y,t.variant)}</g>`;
 return out}
 function edgePoint(a,b){const n=maze.n,low=Math.min(a,b),high=Math.max(a,b),shift=(artNoise(low,high)-.5)*12;const x=((a%n+b%n)/2)*60+30,y=((Math.floor(a/n)+Math.floor(b/n))/2)*60+30;return Math.abs(a-b)===1?[x,y+shift]:[x+shift,y]}
 function roadCurve(a,b){
@@ -306,7 +324,7 @@ function draw(){
  const [ga,gb]=maze.gate;const [gx,gy]=edgePoint(ga,gb);
  out+='</g>';
  const sprites=[];
- for(const t of terrain)if(t.type==='forest'){for(let i=0;i<3;i++){const dx=[-10,9,-2][i]+(t.variant-.5)*5,dy=[-7,-4,10][i],x=Math.max(6,Math.min(L-6,t.x+dx)),y=Math.max(6,Math.min(L-6,t.y+dy));sprites.push(treeSprite(x,y,(t.variant+i*.31)%1,.46+t.variant*.16+(i===2?.08:0)))}}
+ for(const t of landscapeObjects())if(t.type==='tree'){const sprite=treeSprite(t.x,t.y,t.variant,t.scale);sprite.svg=`<g data-landmark="${t.id}">${sprite.svg}</g>`;sprites.push(sprite)}
  for(const c of maze.cells){const [x,y]=project(c.id%n*60+30,Math.floor(c.id/n)*60+30);
  if(c.id===maze.exit)sprites.push({depth:y,svg:`<g transform="translate(${x} ${y})"><ellipse cy="6" rx="20" ry="7" fill="#526d45" opacity=".23"/><path d="M-14-14L5-9V9L-14 3Z" fill="#f1d8a1"/><path d="M5-9L16-18V1L5 9Z" fill="#c2a573"/><path d="M-19-13L-3-29 21-19 5-4Z" fill="#b96745"/><path d="M-19-13L-3-29 0-13 5-4Z" fill="#d88d5e"/><path d="M-7 5V-7L-1-5V7Z" fill="#755e45"/><path d="M8-7L13-11V-4L8-1Z" fill="#8ab7b4"/></g>`});
  else if(animalPresent(c.id)){sprites.push({depth:y+.1,svg:`<g data-encounter="${c.id}">${characterSprite(encounters[c.id].icon,x+13,y+11,.72)}</g>`})}
@@ -354,7 +372,7 @@ function renderScene(){
  else if(viewMode==='fpv'){
   $('#map').setAttribute('viewBox','0 0 640 460');
   $('#map').setAttribute('aria-label',`Widok z oczu Adama. Patrzysz: ${facingNames[facing]}.`);
-  $('#map').innerHTML=ForestFPV.render({maze,pos,facing,gateOpen,encounters,done,visited,fleeingCell:fleeing?.cell,reveal:$('#reveal').checked},{characterArt,treeSprite,noise:artNoise,roadStrip,roadCurve,roadPoint});
+  $('#map').innerHTML=ForestFPV.render({maze,pos,facing,gateOpen,encounters,done,visited,landscape:landscapeObjects(),fleeingCell:fleeing?.cell,reveal:$('#reveal').checked},{characterArt,treeSprite,noise:artNoise,roadStrip,roadCurve,roadPoint,blobOutline,edgePoint});
  }else{draw();$('#map').setAttribute('aria-label','Odkrywana mapa labiryntu')}
  positionTalk();
 }
@@ -430,7 +448,7 @@ function cancelFlee(){const f=fleeing;fleeing=null;if(f&&typeof cancelAnimationF
 function finishFlee(){if(!fleeing)return;cancelFlee();render()}
 function fleePose(cell,t,mode){
  const hop=Math.abs(Math.sin(t*Math.PI*5));
- if(mode==='fpv'){const start=ForestFPV.animalPose({maze,pos,facing},cell),depth=start.depth+t*4+.65;return {x:320+280*(start.side+t*.75)/depth,y:145+280*.85/depth-hop*8*(1-t),scale:280/depth*.024,opacity:Math.min(1,(1-t)*2.5)}}
+ if(mode==='fpv'){const start=ForestFPV.animalPose({maze,pos,facing},cell),depth=start.depth+t*4,[x,y]=ForestFPV.project(start.side+t*.75,depth);return {x,y:y-hop*8*(1-t),scale:ForestFPV.scaleAt(depth)*.024,opacity:Math.min(1,(1-t)*2.5)}}
  const x=cell%maze.n*60+43,y=Math.floor(cell/maze.n)*60+41,dx=x+45<maze.n*60-8?45:-18;
  return {x:x+dx*t,y:y-35*t-hop*3,scale:.72*(1-.45*t),opacity:Math.min(1,(1-t)*2.5)};
 }

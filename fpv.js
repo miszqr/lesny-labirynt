@@ -26,10 +26,9 @@
     }
     return cells;
   }
-  function project(x, z, height = 0) {
-    const depth = Math.max(.16, z + .65);
-    return [320 + 280 * x / depth, 145 + 280 * (.85 - height) / depth];
-  }
+  const CAMERA=Object.freeze({focal:220,horizon:152,eyeHeight:1.08,near:.08,far:9});
+  const scaleAt=z=>CAMERA.focal/Math.max(.16,z+.65);
+  function project(x,z,height=0){const scale=scaleAt(z);return [320+scale*x,CAMERA.horizon+scale*(CAMERA.eyeHeight-height)]}
   function worldToView({maze,pos,facing}, x, y) {
     const dx=x-pos%maze.n*2,dy=y-Math.floor(pos/maze.n)*2;
     const forward=vectors[facing],right=vectors[(facing+1)%4];
@@ -46,8 +45,8 @@
     const front=(dx*forward[0]+dy*forward[1])/distance,flank=dx*right[0]+dy*right[1];
     // The visible side depends on the observer's location, never the camera's yaw.
     const view=front>.6?'front':front<-.6?'back':flank>0?'right':'left';
-    const [x,y]=project(side,depth),scale=280/Math.max(.16,depth+.65)*.024;
-    const visible=depth>.04&&Math.abs(side)<depth*(320/280)+.24;
+    const [x,y]=project(side,depth),scale=scaleAt(depth)*.024;
+    const visible=depth>.04&&Math.abs(side)<depth*(320/CAMERA.focal)+.24;
     return {world,side,depth,x,y,scale,view,visible};
   }
   const number = n => Number(n.toFixed(2));
@@ -94,133 +93,134 @@
     return svg;
   }
   function render(state, art) {
-    const { maze, pos, facing, gateOpen, encounters, done } = state;
-    const rooms = corridor(maze, pos, facing, gateOpen);
-    let out = `<defs>
-      <linearGradient id="fpv-sky" x2="0" y2="1"><stop stop-color="#b4dedc"/><stop offset="1" stop-color="#eef1cd"/></linearGradient>
-      <linearGradient id="fpv-grass" x2="0" y2="1"><stop stop-color="#91b17c"/><stop offset="1" stop-color="#4d7957"/></linearGradient>
-      <linearGradient id="fpv-path" gradientUnits="userSpaceOnUse" x1="0" y1="145" x2="0" y2="460"><stop stop-color="#e4d6a5"/><stop offset="1" stop-color="#d4b781"/></linearGradient>
-      <filter id="fpv-path-soft" filterUnits="userSpaceOnUse" x="-24" y="-24" width="688" height="508" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="4.5"/></filter>
+    const {maze,pos,facing,gateOpen,encounters,done,landscape=[]}=state;
+    const rooms=corridor(maze,pos,facing,gateOpen),sprites=[];
+    let out=`<defs>
+      <linearGradient id="fpv-sky" x2="0" y2="1"><stop stop-color="#acd6db"/><stop offset="1" stop-color="#edf0cf"/></linearGradient>
+      <linearGradient id="fpv-grass" gradientUnits="userSpaceOnUse" x1="0" y1="152" x2="0" y2="460"><stop stop-color="#c1cea1"/><stop offset=".45" stop-color="#a8bd83"/><stop offset="1" stop-color="#8da66b"/></linearGradient>
+      <linearGradient id="fpv-path" gradientUnits="userSpaceOnUse" x1="0" y1="152" x2="0" y2="460"><stop stop-color="#eee0b4"/><stop offset="1" stop-color="#d9c18a"/></linearGradient>
+      <filter id="fpv-path-soft" filterUnits="userSpaceOnUse" x="-24" y="-24" width="688" height="508" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="2.5"/></filter>
       <clipPath id="fpv-frame"><rect width="640" height="460" rx="22"/></clipPath>
-    </defs><g clip-path="url(#fpv-frame)">
+    </defs><g clip-path="url(#fpv-frame)" data-fpv-fov="${number(2*Math.atan(320/CAMERA.focal)*180/Math.PI)}">
       <rect width="640" height="460" fill="url(#fpv-sky)"/>
-      <circle cx="480" cy="66" r="32" fill="#fff5c4" opacity=".8"/>
-      <g data-scenery="distant-hills">
-        <path d="M0 159C52 151 70 105 119 111S179 154 235 143 302 96 353 114 411 153 465 136 550 93 596 110L640 130V235H0Z" fill="#99b99b"/>
-        <path d="M40 141C76 115 90 107 119 111S179 154 235 143C193 164 152 135 121 129S70 141 40 141Z" fill="#b7ceac" opacity=".65"/>
-        <path d="M0 183C53 177 77 134 128 143S200 189 259 164 323 123 368 142 428 184 492 159 582 128 640 153V240H0Z" fill="#7fa276"/>
-        <path d="M62 161C89 141 104 138 128 143S200 189 259 164C205 198 164 172 134 160S89 159 62 161Z" fill="#abc18a"/>
-        <path d="M321 136C339 133 352 135 368 142S428 184 492 159C452 190 413 177 384 164S344 143 321 136Z" fill="#668f6c" opacity=".55"/>
-      </g>
-      <path d="M0 186H640V460H0Z" fill="url(#fpv-grass)"/>`;
-
-    function tree(x, z, variant, scale = 1) {
-      const [sx, sy] = project(x, z);
-      return art.treeSprite(sx, sy, variant, 280 / (z + .65) * .045 * scale).svg;
+      <path d="M0 ${CAMERA.horizon}H640V460H0Z" fill="url(#fpv-grass)"/>`;
+    const local=([x,y,h=0])=>[...worldToView(state,(x-30)/30,(y-30)/30),h];
+    const inView=(side,depth,radius=0)=>depth+radius>CAMERA.near&&depth-radius<CAMERA.far&&Math.abs(side)<(Math.max(0,depth)+.65)*320/CAMERA.focal+radius;
+    const fade=depth=>Math.max(.35,1-Math.max(0,depth-5)*.14);
+    const tag=t=>`data-landmark="${t.id}" data-world-x="${(t.x-30)/30}" data-world-y="${(t.y-30)/30}" data-variant="${t.variant}"`;
+    function clip(vertices){
+      let result=vertices;
+      for(const [limit,sign] of [[CAMERA.near,1],[CAMERA.far,-1]]){
+        const clipped=[];
+        for(let i=0;i<result.length;i++){
+          const a=result[i],b=result[(i+1)%result.length],insideA=(a[1]-limit)*sign>=0,insideB=(b[1]-limit)*sign>=0;
+          if(insideA)clipped.push(a);
+          if(insideA!==insideB){const t=(limit-a[1])/(b[1]-a[1]);clipped.push(a.map((n,k)=>n+(b[k]-n)*t))}
+        }
+        result=clipped;
+      }
+      return result;
     }
-    function hedge(ax, az, bx, bz, seed) {
-      let svg = polygon([[ax,az,0],[bx,bz,0],[bx,bz,.82],[ax,az,.82]], '#50784e');
-      // A low leafy barrier plus tall trees makes blocked passages unambiguous.
-      for (let i = 0; i < 6; i++) {
-        const t = (i + .5) / 6, x = ax + (bx-ax)*t, z = az + (bz-az)*t;
-        const [sx, sy] = project(x, z, .63), scale = 280/(z+.65);
-        svg += `<ellipse cx="${number(sx)}" cy="${number(sy)}" rx="${number(scale*.25)}" ry="${number(scale*.25)}" fill="${i%2?'#6e985b':'#7da462'}"/>`;
-      }
-      for (const t of [.15, .65]) {
-        const x=ax+(bx-ax)*t, z=az+(bz-az)*t;
-        svg += tree(x,z,art.noise(seed+t*9),.9);
-      }
-      return svg;
+    function surface(vertices,fill,extra=''){
+      const clipped=clip(vertices);return clipped.length>=3?polygon(clipped,fill,extra):'';
     }
-    function gate(ax, az, bx, bz) {
-      const interpolate = (t,h) => [ax+(bx-ax)*t,az+(bz-az)*t,h];
-      const rail = (a,b,h,width,color) => {
-        const [x1,y1]=project(...interpolate(a,h)), [x2,y2]=project(...interpolate(b,h));
-        return `<path d="M${number(x1)} ${number(y1)}L${number(x2)} ${number(y2)}" stroke="${color}" stroke-width="${number(width)}" stroke-linecap="round"/>`;
-      };
-      let svg='<g data-fpv-gate="'+(gateOpen?'open':'closed')+'">';
-      for(const t of [0,1]) {
-        const p=interpolate(t,0), q=interpolate(t,1.16);
-        const [x,y]=project(...p),[tx,ty]=project(...q);
-        svg+=`<path d="M${number(x)} ${number(y)}L${number(tx)} ${number(ty)}" stroke="#765337" stroke-width="${number(280/(p[1]+.65)*.09)}" stroke-linecap="round"/>`;
-      }
-      const end=gateOpen?.17:.96, start=.04;
-      const width=280/((az+bz)/2+.65)*.055;
-      for(let i=0;i<7;i++) {
-        const t=start+(end-start)*i/6;
-        const [x,y]=project(...interpolate(t,.14)),[tx,ty]=project(...interpolate(t,.97));
-        svg+=`<path d="M${number(x)} ${number(y)}L${number(tx)} ${number(ty)}" stroke="#ba8b50" stroke-width="${number(width)}" stroke-linecap="round"/>`;
-      }
-      svg+=rail(start,end,.33,width,'#93653e')+rail(start,end,.77,width,'#d0a36a');
-      if(!gateOpen) {
-        const [x,y]=project(...interpolate(.52,.6)), s=280/((az+bz)/2+.65)*.045;
-        svg+=`<g transform="translate(${number(x)} ${number(y)}) scale(${number(s)})"><path d="M-1-1V-2.4a1.2 1.2 0 0 1 2.4 0V-1" fill="none" stroke="#fff0b2" stroke-width=".7"/><rect x="-1.6" y="-1" width="3.6" height="3" rx=".5" fill="#e8b64d"/><circle cx=".2" cy=".3" r=".35" fill="#74522d"/></g>`;
-      }
-      return svg+'</g>';
+    const groundShape=(points,fill,extra='')=>surface(points.map(p=>local(p)),fill,extra);
+    function solid(vertices,fill,extra=''){
+      const clipped=clip(vertices);if(clipped.length<3)return;
+      const depth=clipped.reduce((sum,p)=>sum+p[1],0)/clipped.length;
+      sprites.push({depth,svg:polygon(clipped,fill,extra)});
     }
-    // Project the map's curved, variable-width roads into the current view.
-    // Clip at the camera before projection to keep near curves finite.
-    let floor='',pebbles='';const strips=new Set();
-    const local=([x,y])=>[...worldToView(state,(x-30)/30,(y-30)/30),0];
-    function clipNear(vertices){
-      const clipped=[];
-      for(let i=0;i<vertices.length;i++){
-        const a=vertices[i],b=vertices[(i+1)%vertices.length],insideA=a[1]>=.06,insideB=b[1]>=.06;
-        if(insideA)clipped.push(a);
-        if(insideA!==insideB){const t=(.06-a[1])/(b[1]-a[1]);clipped.push([a[0]+(b[0]-a[0])*t,.06,0])}
-      }
-      return clipped;
+    const visibleLand=landscape.map(t=>({t,p:local([t.x,t.y])})).filter(({t,p})=>inView(p[0],p[1],t.type==='tree'?.65:1.1)).sort((a,b)=>b.p[1]-a.p[1]);
+    // Ground features share exact map footprints; only their projection changes.
+    for(const {t,p} of visibleLand){
+      if(t.type==='tree'||t.type==='hill')continue;
+      const v=t.variant,r=t.type==='water'?14+v*5:17+v*5;
+      let ground='';
+      if(t.type==='water'){
+        ground+=groundShape(art.blobOutline(t.x,t.y,r+3,v),'#bfc99b');
+        ground+=groundShape(art.blobOutline(t.x,t.y,r,v),v>.5?'#7db9bd':'#8ec4bf');
+        ground+=groundShape(art.blobOutline(t.x+2,t.y+1,r*.6,v),'#66aab5','opacity=".35"');
+        for(const [dx,dy,length] of [[-8,-3,11],[-4,6,10]]){
+          const wave=Array.from({length:9},(_,i)=>local([t.x+dx+length*i/8,t.y+dy-Math.sin(i/8*Math.PI)*1.3,.01]));
+          if(wave.every(q=>q[1]>CAMERA.near))ground+=`<polyline points="${points(wave)}" fill="none" stroke="#d4eee0" stroke-width="1.5" stroke-linecap="round"/>`;
+        }
+      }else ground+=groundShape(art.blobOutline(t.x,t.y,r,v),t.type==='forest'?'#8ea972':'#c1cd95','opacity=".6"');
+      out+=`<g ${tag(t)} data-scenery="${t.type}" opacity="${number(fade(p[1]))}">${ground}</g>`;
     }
-    function road(a,b){
-      const key=a+':'+b;if(strips.has(key))return;strips.add(key);
-      const vertices=clipNear(art.roadStrip(a,b,0,2.2).map(local));
-      if(vertices.length<3)return;
-      floor+=polygon(vertices,'url(#fpv-path)');
-      const curve=art.roadCurve(a,b);
-      for(const t of [.3,.7]){
-        const [x,z]=local(art.roadPoint(curve,t));if(z<.08)continue;
-        const [sx,sy]=project(x+(art.noise(a*19+b+t)-.5)*.2,z),r=280/(z+.65)*.022;
-        pebbles+=`<ellipse cx="${number(sx)}" cy="${number(sy)}" rx="${number(r*1.5)}" ry="${number(r*.4)}" fill="#b89c6c" opacity=".5"/>`;
+    let roads='',pebbles='';
+    for(const cell of maze.cells){
+      const [side,depth]=worldToView(state,cell.id%maze.n*2,Math.floor(cell.id/maze.n)*2);
+      if(!inView(side,depth,1.5)&&cell.id!==pos)continue;
+      let road='';
+      for(const next of cell.links){
+        road+=groundShape(art.roadStrip(cell.id,next,0,2.2),'url(#fpv-path)');
+        const curve=art.roadCurve(cell.id,next);
+        for(const t of [.3,.7]){
+          const p=art.roadPoint(curve,t),q=local([p[0]+(art.noise(cell.id*19+next+t)-.5)*3,p[1]]);
+          if(!inView(q[0],q[1])||q[1]<CAMERA.near)continue;
+          const [sx,sy]=project(...q),r=scaleAt(q[1])*.016;
+          pebbles+=`<ellipse cx="${number(sx)}" cy="${number(sy)}" rx="${number(r*1.5)}" ry="${number(r*.4)}" fill="#b89c6c" opacity=".4"/>`;
+        }
+      }
+      roads+=`<g data-fpv-cell="${cell.id}" opacity="${number(fade(depth))}">${road}</g>`;
+    }
+    out+=`<g data-scenery="soft-path" filter="url(#fpv-path-soft)">${roads}</g>${pebbles}`;
+    for(const {t,p} of visibleLand){
+      const opacity=fade(p[1]);
+      if(t.type==='tree'){
+        if(p[1]<=CAMERA.near)continue;
+        const [x,y]=project(...p),scale=scaleAt(p[1])*.055*t.scale;
+        sprites.push({depth:p[1],svg:`<g ${tag(t)} data-scenery="tree" opacity="${number(opacity)}">${art.treeSprite(x,y,t.variant,scale).svg}</g>`});
+      }else if(t.type==='hill'){
+        const radius=24*(.82+t.variant*.18),height=.52+t.variant*.2,steps=24;
+        const ring=(r,h)=>Array.from({length:steps},(_,i)=>{const angle=i*Math.PI*2/steps;return local([t.x+Math.cos(angle)*radius*r,t.y+Math.sin(angle)*radius*r*.82,h])});
+        const rings=[ring(1,0),ring(.72,height*.58),ring(.32,height*.92),ring(0,height)];
+        const shades=Array.from({length:steps},(_,i)=>{const light=(1+Math.cos(i*Math.PI*2/steps-2.5))/2;return `rgb(${[118,148,84].map((n,k)=>Math.round(n+([185,205,139][k]-n)*light)).join(',')})`});
+        for(let band=0;band<3;band++)for(let i=0;i<steps;i++){
+          const j=(i+1)%steps,vertices=[rings[band][i],rings[band][j],rings[band+1][j],rings[band+1][i]];
+          solid(vertices,shades[i],`${tag(t)} data-scenery="hill" opacity="${number(opacity)}" stroke="${shades[i]}" stroke-width=".45" stroke-linejoin="round"`);
+        }
+        // The little stone belongs to the same hill in every viewing direction.
+        const stone=local([t.x+13,t.y+10,height*.5+.03]);
+        if(stone[1]>CAMERA.near){const [x,y]=project(...stone),s=scaleAt(stone[1])*.035;sprites.push({depth:stone[1],svg:`<g transform="translate(${number(x)} ${number(y)}) scale(${number(s)})" opacity="${number(opacity)}"><path d="M-4 0L-3-3 1-4 4 0 2 2H-3Z" fill="#a6a68b"/><path d="M-4 0L-3-3 1-4 0 1Z" fill="#d1ccb0"/></g>`})}
       }
     }
-    for(const room of [...rooms].reverse()){
-      for(const next of maze.cells[room.cell].links)road(room.cell,next);
-      // Show the continuation around a side bend, without revealing another room.
-      if(room.leftOpen)road(room.left,room.cell);
-      if(room.rightOpen)road(room.right,room.cell);
+    // A world-space wicket uses the map's exact edge anchor and opening direction.
+    const [ga,gb]=maze.gate,[gx,gy]=art.edgePoint(ga,gb),horizontal=Math.abs(ga-gb)===1;
+    const gatePoint=([u,v,h])=>local([gx+(horizontal?v:u),gy+(horizontal?u:v),h/30]);
+    const leaf=([u,v,h])=>gateOpen?[-13+v,-u,h]:[u-13,v,h];
+    const wood=(u,v,h,w,d,t,transform=p=>p)=>{
+      const face=(vertices,color)=>solid(vertices.map(transform).map(gatePoint),color,`data-fpv-gate="${gateOpen?'open':'closed'}" stroke="#795638" stroke-width=".35" stroke-linejoin="round"`);
+      face([[u,v,h],[u+w,v,h],[u+w,v,h+t],[u,v,h+t]],'#c28e53');
+      face([[u+w,v,h],[u+w,v+d,h],[u+w,v+d,h+t],[u+w,v,h+t]],'#805735');
+      face([[u,v+d,h],[u+w,v+d,h],[u+w,v+d,h+t],[u,v+d,h+t]],'#a77543');
+      face([[u,v,h],[u,v+d,h],[u,v+d,h+t],[u,v,h+t]],'#94673d');
+      face([[u,v,h+t],[u+w,v,h+t],[u+w,v+d,h+t],[u,v+d,h+t]],'#e4b879');
+    };
+    const gp=local([gx,gy]);
+    if(inView(gp[0],gp[1],1.1)){
+      for(const u of [-16,16]){wood(u-2,-2,0,4,4,29);wood(u-2.7,-2.7,29,5.4,5.4,2)}
+      wood(0,-1,7,26,2,3,leaf);wood(0,-1,19,26,2,3,leaf);
+      for(const u of [1,6.5,12,17.5,23])wood(u,0,3,3,1.8,23,leaf);
+      solid([[1,2,6],[3,2,5],[25,2,21],[23,2,22]].map(leaf).map(gatePoint),'#e0ad6e',`data-fpv-gate="${gateOpen?'open':'closed'}"`);
+      if(!gateOpen){const p=gatePoint(leaf([23,4,17]));if(p[1]>CAMERA.near){const [x,y]=project(...p),s=scaleAt(p[1])*.04;sprites.push({depth:p[1]-.01,svg:`<g transform="translate(${number(x)} ${number(y)}) scale(${number(s)})"><path d="M-1-1V-2.4a1.2 1.2 0 0 1 2.4 0V-1" fill="none" stroke="#fff0b2" stroke-width=".7"/><rect x="-1.6" y="-1" width="3.6" height="3" rx=".5" fill="#e8b64d"/></g>`})}}
     }
-    out+=`<g data-scenery="soft-path" filter="url(#fpv-path-soft)">${floor}</g>${pebbles}`;
-    // Barriers, inhabitants and interface stay outside the path filter.
-    for(const room of [...rooms].reverse()) {
-      const near=Math.max(.08,room.depth*2-1),far=room.depth*2+1;
-      out+=`<g data-fpv-cell="${room.cell}">`;
-      if(!room.front) out+=hedge(-1,far,1,far,room.cell+81);
-      // Far-to-near sides: openings have a distant hedge, never a fake route through walls.
-      for(const side of [-1,1]) {
-        const open=side<0?room.leftOpen:room.rightOpen;
-        if(open) {
-          out+=hedge(side*3,far,side*3,near+.1,room.cell+side*7);
-          out+=hedge(side,far,side*3,far,room.cell+side*13);
-        } else out+=hedge(side,far,side,near,room.cell+side*7);
-        if(side<0?room.leftGate:room.rightGate) out+=gate(side,near+.04,side,far-.04);
-      }
-      if(room.frontGate) out+=gate(-.95,far,.95,far);
-      if(room.cell===maze.exit) {
-        const [x,y]=project(0,room.depth*2+.4),s=280/(room.depth*2+1.05)*.025;
-        out+=`<g data-fpv-home="true" transform="translate(${number(x)} ${number(y)}) scale(${number(s)})"><rect x="-24" y="-37" width="48" height="37" rx="2" fill="#efd9a5"/><path d="M-31-35L0-59 31-35Z" fill="#b96846"/><rect x="-6" y="-22" width="12" height="22" rx="2" fill="#886143"/><rect x="12" y="-27" width="9" height="10" fill="#a1d7d0"/><path d="M16.5-27V-17M12-22H21" stroke="#fff0ca" stroke-width="1.5"/></g>`;
-      } else if(encounters[room.cell]&&(!encounters[room.cell].danger||!done.has(room.cell)||state.fleeingCell===room.cell)) {
+    // Keep encounter visibility and gate blocking rules while sorting actors with the landscape.
+    for(const room of rooms){
+      if(room.cell===maze.exit){
+        const [side,depth]=worldToView(state,room.cell%maze.n*2,Math.floor(room.cell/maze.n)*2);
+        if(inView(side,depth)&&depth>CAMERA.near){const [x,y]=project(side,depth),s=scaleAt(depth)*.025;sprites.push({depth,svg:`<g data-fpv-home="true" transform="translate(${number(x)} ${number(y)}) scale(${number(s)})"><rect x="-24" y="-37" width="48" height="37" rx="2" fill="#efd9a5"/><path d="M-31-35L0-59 31-35Z" fill="#b96846"/><rect x="-6" y="-22" width="12" height="22" rx="2" fill="#886143"/><rect x="12" y="-27" width="9" height="10" fill="#a1d7d0"/></g>`})}
+      }else if(encounters[room.cell]&&(!encounters[room.cell].danger||!done.has(room.cell)||state.fleeingCell===room.cell)){
         const e=encounters[room.cell],p=animalPose(state,room.cell);
-        if(p.visible)out+=`<g data-encounter="${room.cell}" data-world-x="${p.world.x}" data-world-y="${p.world.y}" data-world-heading="${p.world.heading}" data-animal-view="${p.view}" data-wolf="${e.danger===true}" data-character="${room.depth===0?'animal':'distant-animal'}" transform="translate(${number(p.x)} ${number(p.y)}) scale(${number(p.scale)})">${art.characterArt(e.icon,p.view)}${done.has(room.cell)&&!e.danger?'<circle cx="16" cy="-48" r="6" fill="#fff8da"/><path d="M13-48l2 2 4-5" fill="none" stroke="#5b8650" stroke-width="2"/>':''}</g>`;
+        if(p.visible)sprites.push({depth:p.depth,svg:`<g data-encounter="${room.cell}" data-world-x="${p.world.x}" data-world-y="${p.world.y}" data-world-heading="${p.world.heading}" data-animal-view="${p.view}" data-wolf="${e.danger===true}" data-character="${room.depth===0?'animal':'distant-animal'}" transform="translate(${number(p.x)} ${number(p.y)}) scale(${number(p.scale)})">${art.characterArt(e.icon,p.view)}${done.has(room.cell)&&!e.danger?'<circle cx="16" cy="-48" r="6" fill="#fff8da"/><path d="M13-48l2 2 4-5" fill="none" stroke="#5b8650" stroke-width="2"/>':''}</g>`});
       }
-      out+='</g>';
     }
-    // Foreground leaves frame the view without obscuring its center.
-    out+='<path d="M0 0H100Q65 20 72 47 37 29 24 65 13 32 0 52Z" fill="#386a49"/><path d="M640 0H546Q584 26 570 46 607 31 617 68 628 36 640 53Z" fill="#497d4e"/>';
-    out+='<path d="M0 440Q39 415 75 460H0ZM640 438Q607 414 567 460H640Z" fill="#315e43"/>';
+    sprites.sort((a,b)=>b.depth-a.depth);
+    out+=sprites.map(s=>`<g data-fpv-depth="${number(s.depth)}">${s.svg}</g>`).join('');
     out+=compass(facing)+minimap(state)+'</g>';
     return out;
   }
-  const api = { neighbor, isGate, corridor, worldToView, animalWorldPose, animalPose, render };
+  const api = { CAMERA, project, scaleAt, neighbor, isGate, corridor, worldToView, animalWorldPose, animalPose, render };
   root.ForestFPV = api;
   if(typeof module==='object'&&module.exports) module.exports=api;
 })(typeof window==='object'?window:globalThis);
