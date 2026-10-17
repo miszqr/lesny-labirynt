@@ -151,3 +151,10 @@ Mapa 2D zastępuje ciemny kontur ścieżek szerokim, półprzezroczystym pobocze
 FPV zbiera podłoże wszystkich widocznych odcinków i bocznych przejść w jedną grupę, a następnie zmiękcza jej brzeg filtrem `fpv-path-soft`. Wspólny gradient w jednostkach ekranu usuwa skoki koloru między odcinkami. Kamienie, roślinność, furtki, postacie, kompas i minimapa pozostają poza filtrem.
 
 Porównano rendery SVG mapy i FPV przed i po zmianie. Wszystkie 23 istniejące testy mgły, chodzenia i FPV przeszły. Nie wykonano kontroli całego interfejsu w przeglądarce z powodu niedostępnego podglądu.
+
+
+### Kolejność rysowania furtki i chłopca — 2026-10-17
+
+`wicketSprites()` zwraca osobne warstwy cienia, obu słupków i skrzydła. Głębokość każdego elementu wynika z jego położenia przy ziemi po projekcji, dzięki czemu otwarte skrzydło na poziomej ścieżce znajduje się za Adamem. Wcześniej cała furtka miała jedną głębokość i zasłaniała twarz chłopca. Istniejąca animacja chodzenia porządkuje postać między tymi warstwami w trakcie kroku. Geometria furtki, blokowanie przejścia i FPV nie zmieniły się.
+
+Osiem przypadków w `tests/gate-depth.test.cjs` sprawdza ustawienie po obu stronach poziomej i pionowej furtki oraz przechodzenie w czterech kierunkach. Cztery z nich odtwarzają błąd w poprzednim kodzie. Porównano też rastry SVG przed i po zmianie dla czterech ustawień. Wszystkie 49 testów furtki, dymków, chodzenia i FPV przeszły. Kontrola interfejsu w przeglądarce pozostaje niewykonana z powodu niedostępnego podglądu.

@@ -186,7 +186,7 @@ return shadow+`<g class="animal-idle" style="--idle-delay:-${((Date.now()%3600+k
 function characterSprite(kind,x,y,scale=1){return `<g data-wolf="${kind==='🐺'}" data-character="${kind==='👦'?'adam':kind==='👧'?'sister':'animal'}" transform="translate(${x} ${y}) scale(${scale})">${characterArt(kind)}</g>`}
 function setSceneIcon(kind){const child=kind==='👦'||kind==='👧',art=child?childFace(kind):characterArt(kind);if(art)$('#icon').innerHTML=`<svg viewBox="${child?'-21 -59 42 36':'-22 -59 44 65'}" role="img" aria-label="${kind==='👦'?'Adam':kind==='👧'?'Siostra':'Zwierzak'}">${art}</svg>`;else $('#icon').textContent=kind}
 function treeSprite(x,y,v,k){const [sx,sy]=project(x,y);const pine=v<.5;return {depth:sy,svg:`<g transform="translate(${sx} ${sy}) scale(${k})"><ellipse cx="6" cy="2" rx="13" ry="5" fill="#3e563b" opacity=".2"/><path d="M-2 0V-17H3V0Z" fill="#806044"/><path d="M-2 0V-17H0V0Z" fill="#aa8053"/>${pine?'<path d="M0-43L-9-28H-5L-13-17H-8L-16-6Q0 0 16-6L8-17H13L5-28H9Z" fill="#426b4b"/><path d="M0-43L-9-28H-5L-13-17H-8L-16-6Q-6-4 0-5Z" fill="#71965a"/><path d="M0-33L5-25H0Z" fill="#86a563"/>':'<ellipse cx="1" cy="-22" rx="17" ry="18" fill="#48744e"/><ellipse cx="-6" cy="-27" rx="12" ry="13" fill="#7ca05e"/><ellipse cx="6" cy="-32" rx="10" ry="12" fill="#689252"/><ellipse cx="-5" cy="-35" rx="7" ry="6" fill="#95b46d"/><ellipse cx="11" cy="-20" rx="7" ry="10" fill="#3f6a4a"/>'}</g>`}}
-function wicketSprite(x,y,horizontalRoad,open){
+function wicketSprites(x,y,horizontalRoad,open){
  // Project a small wooden wicket in 3D; the ground map stays flat.
  const projectPoint=([u,v,z])=>{const X=horizontalRoad?v:u,Y=horizontalRoad?u:v;return [x+X*.94+Y*.45,y+X*.28+Y*.60-z]};
  const points=(vertices,transform=p=>p)=>vertices.map(p=>projectPoint(transform(p)).map(n=>n.toFixed(2)).join(',')).join(' ');
@@ -194,16 +194,16 @@ function wicketSprite(x,y,horizontalRoad,open){
  const timber=(u,v,z,w,d,h,transform)=>face([[u,v,z],[u+w,v,z],[u+w,v,z+h],[u,v,z+h]],'#c28e53',transform)+face([[u+w,v,z],[u+w,v+d,z],[u+w,v+d,z+h],[u+w,v,z+h]],'#805735',transform)+face([[u,v+d,z],[u+w,v+d,z],[u+w,v+d,z+h],[u,v+d,z+h]],'#a77543',transform)+face([[u,v,z+h],[u+w,v,z+h],[u+w,v+d,z+h],[u,v+d,z+h]],'#e4b879',transform);
  const leaf=([u,v,z])=>open?[-13+v,-u,z]:[u-13,v,z];
  const post=u=>timber(u-2,-2,0,4,4,29)+timber(u-2.7,-2.7,29,5.4,5.4,2);
- let art=`<g data-scenery="wicket" data-open="${open}" aria-label="${open?'Otwarta furtka':'Zamknięta furtka'}">`;
- art+=`<ellipse cx="${x+5}" cy="${y+4}" rx="19" ry="7" fill="#3c5036" opacity=".2"/>`;
- art+=`<polygon points="${points([[0,-1,0],[26,-1,0],[32,9,0],[6,9,0]],leaf)}" fill="#3c5036" opacity=".16"/>`;
- art+=post(-16);
- art+=timber(0,-1,7,26,2,3,leaf)+timber(0,-1,19,26,2,3,leaf);
- for(const u of [1,6.5,12,17.5,23])art+=timber(u,0,3,3,1.8,23,leaf);
- art+=face([[1,2,6],[3,2,5],[25,2,21],[23,2,22]],'#e0ad6e',leaf);
- for(const z of [8,20])art+=timber(-1,2,z,5,1,1.6,leaf);
- if(!open){art+=timber(21,2,13,4,2,5,leaf);const [lx,ly]=projectPoint(leaf([23,4,17]));art+=`<path d="M${lx-1.6} ${ly}v-2.5a1.6 1.6 0 0 1 3.2 0V${ly}" fill="none" stroke="#e6c36b" stroke-width="1.2"/><rect x="${lx-2.5}" y="${ly-.5}" width="5" height="4.5" rx=".7" fill="#d5a743"/><circle cx="${lx}" cy="${ly+1.5}" r=".65" fill="#6b4e2c"/>`}
- art+=post(16);return art+'</g>';
+ // Each solid piece sorts at its own projected ground position, not its top edge.
+ // In particular, an open leaf swings behind Adam on a horizontal path.
+ const part=(name,depth,svg)=>({depth,svg:`<g data-scenery="wicket" data-wicket-part="${name}" data-open="${open}" aria-label="${open?'Otwarta furtka':'Zamknięta furtka'}">${svg}</g>`});
+ const shadow=`<ellipse cx="${x+5}" cy="${y+4}" rx="19" ry="7" fill="#3c5036" opacity=".2"/><polygon points="${points([[0,-1,0],[26,-1,0],[32,9,0],[6,9,0]],leaf)}" fill="#3c5036" opacity=".16"/>`;
+ let panel=timber(0,-1,7,26,2,3,leaf)+timber(0,-1,19,26,2,3,leaf);
+ for(const u of [1,6.5,12,17.5,23])panel+=timber(u,0,3,3,1.8,23,leaf);
+ panel+=face([[1,2,6],[3,2,5],[25,2,21],[23,2,22]],'#e0ad6e',leaf);
+ for(const z of [8,20])panel+=timber(-1,2,z,5,1,1.6,leaf);
+ if(!open){panel+=timber(21,2,13,4,2,5,leaf);const [lx,ly]=projectPoint(leaf([23,4,17]));panel+=`<path d="M${lx-1.6} ${ly}v-2.5a1.6 1.6 0 0 1 3.2 0V${ly}" fill="none" stroke="#e6c36b" stroke-width="1.2"/><rect x="${lx-2.5}" y="${ly-.5}" width="5" height="4.5" rx=".7" fill="#d5a743"/><circle cx="${lx}" cy="${ly+1.5}" r=".65" fill="#6b4e2c"/>`}
+ return [part('shadow',-1,shadow),part('hinge-post',projectPoint([-16,0,0])[1],post(-16)),part('leaf',projectPoint(leaf([13,0,0]))[1],panel),part('latch-post',projectPoint([16,0,0])[1],post(16))];
 }
 function animalPresent(id){const e=encounters[id];return !!e&&(!e.danger||!done.has(id)||fleeing?.cell===id)}
 // Append-only, same-winding footprints form a union: no previously seen pixel is covered again.
@@ -261,7 +261,7 @@ function draw(){
  }
  const [ax,ay]=project(pos%n*60+30,Math.floor(pos/n)*60+30),sx=ax-(encounters[pos]?14:0);
  sprites.push({depth:ay+.2,player:true,svg:characterSprite('👦',sx,ay+12,encounters[pos]?.72:.85)});
- {const [x,y]=project(gx,gy);sprites.push({depth:y+10,svg:wicketSprite(x,y,Math.abs(ga-gb)===1,gateOpen)})}
+ {const [x,y]=project(gx,gy);sprites.push(...wicketSprites(x,y,Math.abs(ga-gb)===1,gateOpen))}
  sprites.sort((a,b)=>a.depth-b.depth);out+=sprites.map(s=>`<g data-depth="${s.depth}">${s.svg}</g>`).join('');$('#map').innerHTML=out+'</g>';
 }
 function drawHome(){
