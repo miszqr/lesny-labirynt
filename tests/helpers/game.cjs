@@ -1,10 +1,11 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { seededRandom } = require('./random.cjs');
 const root = process.env.GAME_ROOT || path.resolve(__dirname, '../..');
 
 // Minimal DOM: verifies game state and answer content, not browser layout.
-function game({ animation = false, reducedMotion = false } = {}) {
+function game({ animation = false, reducedMotion = false, size = 4, seed = 123 } = {}) {
   const nodes = new Map(), events = {};
   const frames = new Map(); let nextFrame = 0;
   function element() {
@@ -17,9 +18,9 @@ function game({ animation = false, reducedMotion = false } = {}) {
   }
   const $ = s => { if (!nodes.has(s)) nodes.set(s, element()); return nodes.get(s); };
   const buttons=[0,1,2,3].map(d=>{const b=element();b.dataset.dir=String(d);return b});
-  let seed = 123;
+  $('#size').value = String(size);
   const math = Object.create(Math);
-  math.random = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
+  math.random = seededRandom(seed);
   const context = vm.createContext({ Math: math, Set, window: { addEventListener() {}, matchMedia() { return { matches: reducedMotion }; } },
     document: { querySelector: $, querySelectorAll: s => s==='[data-dir]'?buttons:[], createElement: element, addEventListener(name,fn) { events[name]=fn; } } });
   if (animation) Object.assign(context, {

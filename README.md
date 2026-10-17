@@ -56,6 +56,22 @@ Wymaga Node.js z obsługą `node:test` (sprawdzono na 24.19.0), bez dodatkowych 
 node --test tests/*.test.cjs
 ```
 
+Polecenie uruchamia cały zestaw, w tym testy dodane w T01:
+
+| Obszar | Zakres domyślny |
+| --- | --- |
+| `maze.test.cjs` | 3000 map: rozmiary 4, 6, 8 i ziarna 1–1000; spójne drzewo, poprawni sąsiedzi, furtka, dostępny klucz i miejsca spotkań. |
+| `game-rules.test.cjs` | 300 pełnych rozgrywek: każdy rozmiar i ziarna 1–100, naprzemiennie mapa oraz FPV; klucz, zamknięta furtka, odpowiedzi, jednorazowe nagrody, finał i restart. |
+| `game-rules.test.cjs` | 30 przegranych: każdy rozmiar i ziarna 1–10; zejście do zera serc, blokada ruchu, pełny restart z menu. Dodatkowo restart po niedokończonej odpowiedzi wilkowi w każdym rozmiarze. |
+
+Błąd nowego testu podaje scenariusz, rozmiar i ziarno, np. `complete journey: size=8, seed=42`. Żeby odtworzyć pojedyncze ziarno na wszystkich rozmiarach:
+
+```sh
+TEST_SEED=42 node --test tests/maze.test.cjs tests/game-rules.test.cjs
+```
+
+`TEST_SEED` przyjmuje liczbę całkowitą od 0 do 4294967295. Losowanie jest kontrolowane tylko w testach; ta opcja nie dodaje zapisu ani odtwarzania poziomów w samej grze. Powtarzalność dotyczy tej samej wersji kodu i kolejności akcji. Przebiegi korzystają z rzeczywistej logiki i rendererów oraz atrapy DOM, bez przestawiania gracza lub dopisywania klucza w celu ukończenia mapy. Nie weryfikują układu CSS, fokusu ani dotyku. Starsze testy niżej obejmują osobno animacje i szczególne przypadki interfejsu.
+
 Test sprawdza pozycjonowanie po ustawieniu pełnego komunikatu, z kluczem i bez niego, oraz blokadę i otwieranie furtki. Używa symulowanych wymiarów DOM; nie zastępuje sprawdzenia układu w przeglądarce i na telefonie.
 
 Testy przedmiotów sprawdzają wszystkie listy ulubionych rzeczy, unikalne obrazki, zgodność prośby i odpowiedzi, stałość zadania po zamknięciu dymka, jednorazową nagrodę oraz zadanie wilka: wszystkie 20 kombinacji liczby i kierunku, postęp, cofanie, ponowne otwarcie dymka, zatwierdzanie, utratę serc i reset gry.

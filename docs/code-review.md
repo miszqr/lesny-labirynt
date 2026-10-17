@@ -6,6 +6,18 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Aktualizacja T01 / R2 — 2026-10-17
+
+Utrwalono testy generatora i pełnych przebiegów aktualnej gry w `tests/maze.test.cjs` i `tests/game-rules.test.cjs`, z małymi pomocnikami w `tests/helpers/`. Wspólna atrapa gry przyjmuje teraz `size` i `seed`; dotychczasowe testy zachowują swoje wartości domyślne.
+
+Jedno polecenie `node --test tests/*.test.cjs` uruchamia cały zestaw. Wynik: **93 testy przeszły**, w tym 3000 wygenerowanych map (ziarna 1–1000 dla 4, 6 i 8), 300 pełnych wygranych (ziarna 1–100, naprzemiennie mapa/FPV), 30 przegranych (ziarna 1–10) i restart po niedokończonej odpowiedzi wilkowi w każdym rozmiarze.
+
+Przebiegi prowadzą gracza legalną trasą i używają istniejących przycisków oraz odpowiedzi. Sprawdzają niedostępność domu przed otwarciem furtki, klucz osiągalny przed furtką, błędne odpowiedzi, blokadę wilka, nagrody tylko raz, wygraną, przegraną i reset. Reset obejmuje również odwiedzone pola, pamięć mgły, wykonane zadania, ekwipunek, szkic odpowiedzi, stan animacji i interfejs; wybrany widok pozostaje preferencją.
+
+Błąd zawiera scenariusz, rozmiar i ziarno. `TEST_SEED=42 node --test tests/maze.test.cjs tests/game-rules.test.cjs` odtwarza pojedyncze ziarno we wszystkich rozmiarach. Na tymczasowych kopiach kodu potwierdzono wykrywanie dwóch celowo wprowadzonych błędów: klucza za zamkniętą furtką oraz nagrody dwóch serc zamiast jednego. W obu przypadkach raport wskazał rozmiar i ziarno. Kod gry nie wymagał zmiany.
+
+Testy korzystają z atrapy DOM; rzeczywista przeglądarka, telefon i fokus pozostają w T03. CI pozostaje w T04. Kontrolowane ziarno służy testom i nie realizuje osobnego T09 dotyczącego odtwarzania gry przez użytkownika.
+
 ## Aktualizacja T02 / R1 — 2026-10-16
 
 Naprawiono kolejność w `move()`: pełny komunikat bramy jest ustawiany przed `showEvent()`, więc `positionBubble()` mierzy już docelową treść. Pozostałe reguły bramy i rozmów nie zostały zmienione.
@@ -96,7 +108,7 @@ Sprawdzenia wykonano na niezmienionym kodzie przeglądanego commita w Node.js 24
 
 ### Najbliższa iteracja · P2
 
-- [ ] **T01 / R2 — Utrwalić testy generatora i reguł.** Jedno udokumentowane polecenie sprawdza wszystkie rozmiary, klucz/bramę, wilka, nagrodę tylko raz, wygraną, przegraną i pełny reset; błąd podaje ziarno.
+- [x] **T01 / R2 — Utrwalić testy generatora i reguł.** Wykonano: 3000 map, 300 pełnych wygranych, 30 przegranych i resety dla wszystkich rozmiarów; 93 testy przeszły. Jedno polecenie i odtwarzanie błędu według ziarna opisano w README; szczegóły w aktualizacji powyżej.
 - [x] **T02 / R1 — Pozycjonować dymek po ustawieniu całej treści.** Naprawiono kolejność i dodano 24 testy regresji, w tym granice dymka z symulowanymi wymiarami. Sprawdzenie w prawdziwej przeglądarce pozostaje w T03; szczegóły w aktualizacji powyżej.
 - [ ] **T03 — Dodać testy przeglądarkowe oraz kontrolę na telefonie.** Sprawdzić co najmniej 320×568, 390×844 i 844×390, krawędzie mapy, długi tekst wilka, menu, kliknięcie poza dymkiem, Escape i fokus. Strzałki mają pozostać dostępne, a cała strona nie wymagać przewijania.
 - [ ] **T04 / R2 — Uruchamiać testy w CI.** Workflow na push i pull request; komenda i ograniczenia opisane w README.
