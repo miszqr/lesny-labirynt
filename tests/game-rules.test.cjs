@@ -46,7 +46,7 @@ function player(size, seed) {
   }
 
   function solveWolf() {
-    assert.equal(run('pos'), wolf); readyTask();
+    assert.equal(run('encounters[pos]?.danger'), true); readyTask();
     const cell = run('pos'), hearts = run('hearts'), visited = run('visited.size');
     run('closeEvent()'); buttons[0].onclick();
     assert.equal(run('pos'), cell, 'closing the wolf dialogue cannot bypass it');
@@ -59,9 +59,10 @@ function player(size, seed) {
     for (let i = 0; i < e.count; i++) wolfControl(e.direction).onclick();
     assert.equal(run('hearts'), before);
     const submit = wolfControl('submit'); submit.onclick(); submit.onclick(); rewards++;
-    assert.equal(run('hearts'), before + 1); assert.equal(run('done.has(pos)'), true);
+    assert.equal(run('hearts'), before + 1); assert.equal(run('done.has(pos)'), false);
     assert.equal(run('dangerPending()'), false); assert.equal($('#event').open, false);
-    assert.equal(run(`animalPresent(${wolf})`), false, 'solved wolf stays absent');
+    assert.equal(run(`animalPresent(${cell})`), false, 'wolf leaves the solved field');
+    assert.equal(run('Object.values(encounters).filter(e=>e.danger).length'), 1, 'one wolf remains for the next encounter');
   }
 
   function step(worldDirection) {
@@ -148,10 +149,11 @@ function player(size, seed) {
   }
 
   function reachWolf() {
-    if (!explore(maze, maze.start, false).parent.has(wolf)) {
+    const currentWolf=()=>run('Number(Object.keys(encounters).find(id=>encounters[id].danger))');
+    if (!explore(maze, maze.start, false).parent.has(currentWolf())) {
       gatherEarly(); travel(maze.keeper); helpFriend(); openGate();
     }
-    travel(wolf); readyTask();
+    travel(currentWolf()); readyTask();
   }
 
   return { ...g, maze, wolf, travel, helpFriend, solveWolf, wrongWolfAnswer, wolfControl,
@@ -199,7 +201,7 @@ for (const size of [4, 6, 8]) {
       travel(g.wolf); if (run('dangerPending()')) g.solveWolf();
       travel(maze.exit);
       assert.equal(run('won'), true); assert.equal(run('lost'), false);
-      assert.equal(run('done.size'), Object.keys(run('encounters')).length);
+      assert.equal(run('done.size'), Object.values(run('encounters')).filter(e=>!e.danger).length);
       assert.equal(run('hearts'), g.expectedHearts()); assert(g.buttons.every(b => b.disabled));
       assert.match($('#map').innerHTML, /assets\/home-reunion.png/);
       assert.equal($('#event').dataset.speaker, 'adam'); $('#dialogue-next').onclick();

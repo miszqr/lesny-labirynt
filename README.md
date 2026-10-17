@@ -24,7 +24,7 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 - Po dojściu do przyjaznego zwierzaka pojawia się przy nim mała chmurka z trzema kropkami. Kliknięcie chmurki otwiera rozmowę; działa też Tab i Enter. Chmurka jest dostępna w mapie i FPV, wraca po zamknięciu rozmowy i znika po odejściu. Po wykonaniu zadania rozmowa wyświetla podziękowanie.
 - Przycisk „Dalej” przechodzi do kolejnej wypowiedzi, a przy ostatniej zamyka rozmowę. Kliknięcie poza dymkiem nie zamyka go ani nie wykonuje innej akcji. Escape pozostaje skrótem zamknięcia. Zadanie można otworzyć ponownie przyciskiem pod mapą.
 - Wilk ma wyraźniejsze brwi, bursztynowe spojrzenie, dwa małe kły i kudłatą sylwetkę, w kreskówkowym stylu odpowiednim dla dzieci. Ten sam rysunek jest używany na mapie, w FPV i w dialogu.
-- Wilk losuje od jednego do pięciu kroków oraz kierunek: w górę, w prawo, w dół lub w lewo. Gracz czyta polecenie, klika strzałkę odpowiednią liczbę razy i wybiera „Skaczę”. Rząd strzałek pokazuje wybrane kroki; „Cofnij” usuwa ostatni bez kary. Po poprawnej odpowiedzi wilk ucieka i znika z mapy, również w FPV.
+- Wilk losuje od jednego do pięciu kroków oraz kierunek: w górę, w prawo, w dół lub w lewo. Gracz czyta polecenie, klika strzałkę odpowiednią liczbę razy i wybiera „Skaczę”. Rząd strzałek pokazuje wybrane kroki; „Cofnij” usuwa ostatni bez kary. Po poprawnej odpowiedzi wilk przechodzi po ścieżkach na inne pole i czeka tam z nowym poleceniem. Przy kolejnym spotkaniu trzeba ominąć go ponownie. Dotyczy to mapy i FPV.
 - Początkowo są 3 serduszka; każde ukończone zadanie daje 1, błąd u wilka odbiera 1. Zero oznacza koniec gry.
 - W widoku 2D Adam płynnie przechodzi między polami, poruszając nogami i rękami. Chmurka rozmowy pojawia się po dojściu na miejsce; spotkanie z wilkiem otwiera się automatycznie. Ustawienie systemowe ograniczające animacje wyłącza ruch postaci.
 - Dwa widoki tej samej przygody: mapa z góry oraz FPV — oczami Adama. Przełącznik w nagłówku i menu zachowuje cały postęp.
@@ -68,6 +68,7 @@ Polecenie uruchamia cały zestaw, w tym testy dodane w T01:
 | Obszar | Zakres domyślny |
 | --- | --- |
 | `maze.test.cjs` | 3000 map: rozmiary 4, 6, 8 i ziarna 1–1000; spójne drzewo, poprawni sąsiedzi, furtka, dostępny klucz i miejsca spotkań. |
+| `wolf-escape.test.cjs` | Powtórne spotkania w mapie i FPV, animacja bez zanikania, nowe zadania, brak duplikacji nagrody, restart, ograniczenie ruchu oraz 2400 kolejnych tras na 300 układach z otwartą i zamkniętą furtką. |
 | `backpack-capacity.test.cjs` | Limit dwóch egzemplarzy, zwrot do innej i pustej skrzyni, brak duplikacji, zwolnienie miejsca po oddaniu, stare akcje i spójność mapy/FPV. |
 | `loot.test.cjs` | 3000 układów przedmiotów oraz po sześć symulacji kolejności dostaw z limitem dwóch miejsc i odkładaniem, w tym powtarzające się typy; wszystkie kolejności zadań, błędne układy, podwójne kliknięcia, częściowy odbiór, okna, wspólny stan mapy i FPV, rozmieszczenie bez przeszkód. |
 | `game-rules.test.cjs` | 300 pełnych rozgrywek: każdy rozmiar i ziarna 1–100, naprzemiennie mapa oraz FPV; zbieranie ze skrzynek przez legalne dojście, oddawanie, klucz, zamknięta furtka, jednorazowe nagrody, finał i restart. |

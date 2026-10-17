@@ -88,9 +88,11 @@ W 2D `rememberSight()` dopisuje do `seenPath` zamknięte, nieregularne obszary o
 
 Każdy odsłonięty fragment, również części sąsiednich nieodwiedzonych pól, pozostaje widoczny do końca bieżącej gry. Pamięć działa po odejściu, powrocie i zmianie widoku. Nie dopisuje pól do `visited` ani miniatury FPV. „Pokaż całą mapę” jest tymczasowym podglądem, który nie kasuje zebranej pamięci. Nowa gra lub odświeżenie strony zeruje pamięć razem z resztą stanu.
 
-Poprawna odpowiedź wilkowi przyznaje jedno serce i zapisuje `done` jak dotychczas. `startFlee()` pokazuje przez 750 ms podskoki, ruch łap oraz oddalanie i zanikanie wilka. W 2D wilk odbiega w las, w FPV maleje w perspektywie. Ruch gracza jest zablokowany tylko do końca tej krótkiej animacji. Po niej `animalPresent()` oraz renderer FPV pomijają rozwiązanego wilka, także po ponownym wejściu na pole lub zmianie widoku. Przyjazne zwierzęta nadal zostają na mapie.
+Poprawna odpowiedź wilkowi daje jedno serce za bieżące spotkanie. `wolfRoute()` wybiera inne osiągalne pole i wyznacza trasę po połączeniach labiryntu, bez przechodzenia przez zamkniętą furtkę. Celem nie może być dom, pole Adama ani inny zwierzak. Preferowane są pola bez skrzyni i furtki, oddalone o 2–4 kroki; w ciasnej części planszy możliwe jest bliższe wolne pole, także przy skrzyni lub furtce.
 
-Nowa gra anuluje ucieczkę. Zmiana widoku i otwarcie menu kończą ją bez ponownego przyznania serca. Przy ograniczeniu animacji lub braku API wilk znika natychmiast. Testy obejmują oba widoki, błędne odpowiedzi, jednorazową nagrodę, restart, zmianę widoku i śledzenie zasięgu widzenia podczas kroku.
+`startFlee()` animuje wilka wzdłuż tej trasy przez 750–2400 ms. W mapie zachowuje rozmiar i pełną widoczność, z uwzględnieniem zwykłej mgły i warstw drzew. FPV przelicza tę samą pozycję świata na perspektywę, więc wilk może naturalnie wyjść z kadru lub za zakręt. Ruch Adama jest zablokowany do końca przejścia. `finishFlee()` przenosi spotkanie na pole docelowe, usuwa tymczasowe `done` starego pola i tworzy nowe polecenie, różne od poprzedniego. Na planszy zawsze pozostaje jeden wilk. Nowe spotkanie ponownie blokuje odejście do czasu poprawnej odpowiedzi i daje jedną nagrodę.
+
+Nowa gra anuluje starą trasę. Zmiana widoku, odsłonięcie mapy i otwarcie menu kończą przejście w tym samym, już wybranym miejscu. Przy ograniczeniu animacji lub braku API wilk od razu zajmuje docelowe pole. Stare przyciski i klatki animacji nie rozwiązują kolejnego spotkania ani nie przyznają dodatkowych serc. Testy obejmują legalne dojście i drugą próbę, oba widoki, błędy, restart, nowe polecenia i 2400 tras na 300 układach.
 
 ## Widok FPV
 

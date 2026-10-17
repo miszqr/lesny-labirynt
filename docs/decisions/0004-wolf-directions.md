@@ -18,7 +18,7 @@ Losujemy 1–5 kroków i jeden z czterech kierunków. Polecenie zapisuje liczbę
 
 Poprawna odpowiedź zawiera dokładnie wymaganą liczbę kroków i wyłącznie wskazany kierunek. Kierunki mieszane są błędne. Zatwierdzenie poprawnej odpowiedzi rozwiązuje spotkanie i daje jedno serce tylko raz. Błąd odbiera jedno serce i czyści odpowiedź; zero serc kończy grę. Samo klikanie lub cofanie nie zabiera serc. Limit roboczy wynosi dziesięć kliknięć, co pozwala również wpisać zbyt wiele kroków bez nieograniczonego powiększania dymka.
 
-Polecenie i szkic odpowiedzi pozostają stałe po zamknięciu dymka. Nowa gra resetuje oba. Strzałki zadania nie zmieniają pozycji Adama; po rozwiązaniu gracz wraca do zwykłego ruchu po labiryncie. Zamknięcie rozmowy nadal nie pozwala ominąć wilka.
+Polecenie i szkic odpowiedzi pozostają stałe po zamknięciu dymka. Nowa gra resetuje oba. Po poprawnej odpowiedzi wilk przechodzi na inne osiągalne pole i otrzymuje nowe polecenie. Przy kolejnym spotkaniu trzeba rozwiązać je ponownie. Strzałki zadania nie zmieniają pozycji Adama; po rozwiązaniu gracz wraca do zwykłego ruchu po labiryncie. Zamknięcie rozmowy nadal nie pozwala ominąć wilka.
 
 ## Konsekwencje i weryfikacja
 

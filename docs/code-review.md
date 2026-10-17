@@ -6,6 +6,12 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Powracający wilk — 2026-10-17
+
+Wilk po ominięciu przechodzi rzeczywistą trasą na inne wolne pole, bez przekraczania zamkniętej furtki. Znika wyłącznie z poprzedniego pola; w świecie pozostaje jeden wilk. Następne spotkanie wymaga nowej odpowiedzi i może dać kolejne serce. Nowe polecenie różni się od poprzedniego. Animacja mapy nie pomniejsza ani nie wygasza postaci; FPV korzysta z tej samej trasy świata, projekcji i widoczności korytarzy.
+
+**147 testów przeszło, 0 błędów** w poleceniu `TEST_SEED=42 node --test tests/*.test.cjs`. Pełne podróże i przegrane sprawdzono dla ziarna 42 w każdym z trzech rozmiarów; nie powtarzano w tym przebiegu domyślnych 300 pełnych rozgrywek. Nowe testy tras niezależnie wykonują 2400 relokacji na 300 układach. Sprawdzono także legalne dojście do wilka po przeniesieniu, powtórne zadanie w obu widokach, nieaktualne przyciski, podwójną aktywację, restart, ograniczenie animacji i przełączenia widoku. Scenariusz przeglądarkowy zaktualizowano, lecz podgląd i kontrola telefonu nadal są niedostępne; płynność animacji nie została sprawdzona w przeglądarce.
+
 ## Plecak: dwa miejsca i odkładanie — 2026-10-17
 
 Plecak mieści teraz dokładnie dwa egzemplarze. Każda sztuka zajmuje osobne miejsce, nawet przy takim samym typie; klucz do furtki pozostaje osobną nagrodą. Pełny plecak blokuje odbiór na poziomie modelu i UI. „Zabierz wszystko” działa tylko wtedy, gdy mieści się cała zawartość.
