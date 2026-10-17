@@ -27,7 +27,7 @@ function game({ animation = false, reducedMotion = false, size = 4, seed = 123 }
     requestAnimationFrame(fn) { const id = ++nextFrame; frames.set(id,fn); return id; },
     cancelAnimationFrame(id) { frames.delete(id); }
   });
-  for(const file of ['maze.js','fpv.js']) vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context);
+  for(const file of ['loot.js','maze.js','fpv.js']) vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context);
   Object.assign(context, context.window);
   const source = fs.readFileSync(path.join(root, 'index.html'), 'utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
   vm.runInContext(source, context);
@@ -35,4 +35,11 @@ function game({ animation = false, reducedMotion = false, size = 4, seed = 123 }
     pendingFrames: () => frames.size, run: code => vm.runInContext(code, context) };
 }
 
-module.exports = { game };
+function supplyFixture(g) {
+  g.run(`loot={items:{},chests:[],inventoryItemIds:[],consumedItemIds:[],completedRequestIds:[],unlockedGateIds:[],keyIds:[],requests:[]};
+    for(const [cell,e] of Object.entries(encounters))if(!e.danger){
+      const id='fixture-'+cell;loot.items[id]={id,typeId:e.answer};loot.inventoryItemIds.push(id);
+      loot.requests.push({id:'request-'+cell,cell:Number(cell),requiredTypeId:e.answer,rewardId:Number(cell)===keeper?'forest-key':null});
+    }`);
+}
+module.exports = { game, supplyFixture };

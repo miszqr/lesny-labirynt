@@ -1,13 +1,14 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { game } = require('./helpers/game.cjs');
+const { game, supplyFixture } = require('./helpers/game.cjs');
 
 for (const mode of ['map', 'fpv']) {
   test(`${mode}: icon belongs to the friend at Adam's position and opens that conversation`, () => {
-    const { $, run } = game();
+    const g=game(), { $, run } = g;
     run(`closeEvent();pos=5;maze.exit=15;maze.gate=[14,15];gateOpen=true;keeper=6;
       encounters={6:createEncounter(bank[0]),7:createEncounter(bank[1])};done=new Set();
       maze.cells[5].links=[6];maze.cells[6].links=[5,7];viewMode='${mode}';facing=1;render()`);
+    supplyFixture(g);
     assert.equal($('#talk').hidden, true, 'a friend on another clearing cannot be addressed yet');
     run(mode === 'map' ? 'handleDirection(1)' : 'handleDirection(0)');
     assert.equal(run('pos'), 6);
@@ -24,11 +25,13 @@ for (const mode of ['map', 'fpv']) {
     $('#talk').onclick(); $('#dialogue-next').onclick();
     const answer = run('encounters[pos].answer');
     $('#answers').children.find(b => b.dataset.item === answer).onclick();
-    assert.equal($('#talk').hidden, true);
+    assert.equal($('#talk').hidden, false);
     assert.equal(run('hasKey'), true);
     assert.equal(run('hearts'), 4);
     $('#talk').onclick();
-    assert.equal($('#event').open, false, 'completed friends do not reopen their task');
+    assert.equal($('#event').open, true, 'completed friends can be thanked');
+    assert.match($('#description').textContent, /Dziękuję/);
+    assert.equal($('#answers').children.length, 0);
   });
 }
 

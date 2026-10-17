@@ -49,6 +49,11 @@
     const visible=depth>.04&&Math.abs(side)<depth*(320/CAMERA.focal)+.24;
     return {world,side,depth,x,y,scale,view,visible};
   }
+  function chestPose(state,chest){
+    const world={x:(chest.position.x-30)/30,y:(chest.position.z-30)/30};
+    const [side,depth]=worldToView(state,world.x,world.y),[x,y]=project(side,depth,.4);
+    return {world,side,depth,x,y,visible:depth>.04&&Math.abs(side)<(depth+.65)*320/CAMERA.focal+.3};
+  }
   const number = n => Number(n.toFixed(2));
   const points = vertices => vertices.map(v => project(...v).map(number).join(',')).join(' ');
   const polygon = (vertices, fill, extra = '') => `<polygon points="${points(vertices)}" fill="${fill}" ${extra}/>`;
@@ -62,7 +67,7 @@
       <circle cx="36" cy="36" r="3" fill="#fffdf2" stroke="#526d53"/>
     </g>`;
   }
-  function minimap({maze,pos,facing,gateOpen,visited=new Set([pos]),reveal=false}) {
+  function minimap({maze,pos,facing,gateOpen,visited=new Set([pos]),reveal=false,chests=[]}) {
     const size=maze.n*12+12,visible=id=>reveal||visited.has(id),point=id=>[12+(id%maze.n)*12,12+Math.floor(id/maze.n)*12];
     let svg=`<g data-fpv-minimap="true" transform="translate(528 16) scale(${96/size})" role="img" aria-label="Mała mapa: twoja pozycja i odkryte ścieżki. Północ u góry.">
       <rect x=".75" y=".75" width="${size-1.5}" height="${size-1.5}" rx="8" fill="#fffdf2" fill-opacity=".95" stroke="#8b9e78" stroke-width="1.5"/>`;
@@ -87,6 +92,9 @@
     if(visible(maze.exit)){
       const [x,y]=point(maze.exit);
       svg+=`<path d="M${x-3} ${y}l3-3 3 3v3h-6Z" fill="#bb7651"/>`;
+    }
+    for(const chest of chests)if(visible(chest.cell)){
+      const [x,y]=point(chest.cell);svg+=`<rect x="${x+1}" y="${y-4}" width="4" height="3" rx=".7" fill="${chest.itemIds.length?'#b78039':'#b6b99e'}"/>`;
     }
     const [x,y]=point(pos);
     svg+=`<g data-minimap-player="${pos}" transform="translate(${x} ${y}) rotate(${facing*90})"><path d="M0-5L4 4 0 2-4 4Z" fill="#bb5143" stroke="#fffdf2" stroke-width="1.2" stroke-linejoin="round"/></g></g>`;
@@ -205,6 +213,27 @@
       solid([[1,2,6],[3,2,5],[25,2,21],[23,2,22]].map(leaf).map(gatePoint),'#e0ad6e',`data-fpv-gate="${gateOpen?'open':'closed'}"`);
       if(!gateOpen){const p=gatePoint(leaf([23,4,17]));if(p[1]>CAMERA.near){const [x,y]=project(...p),s=scaleAt(p[1])*.04;sprites.push({depth:p[1]-.01,svg:`<g transform="translate(${number(x)} ${number(y)}) scale(${number(s)})"><path d="M-1-1V-2.4a1.2 1.2 0 0 1 2.4 0V-1" fill="none" stroke="#fff0b2" stroke-width=".7"/><rect x="-1.6" y="-1" width="3.6" height="3" rx=".5" fill="#e8b64d"/></g>`})}}
     }
+    // Chests are small world-space boxes: their position and orientation never follow the camera.
+    for(const chest of state.chests||[]){
+      const p=chestPose(state,chest);if(!inView(p.side,p.depth,.6))continue;
+      const {x,z}=chest.position,empty=!chest.itemIds.length;
+      const at=([dx,dz,h])=>local([x+dx,z+dz,h/30]);
+      const face=(vertices,color)=>solid(vertices.map(at),color,`data-chest-part="${chest.id}" stroke="#775430" stroke-width=".55" stroke-linejoin="round"`);
+      function box(x0,z0,h,w,d,height,top='#e6b66d'){
+        face([[x0,z0,h],[x0+w,z0,h],[x0+w,z0,h+height],[x0,z0,h+height]],'#b78346');
+        face([[x0+w,z0,h],[x0+w,z0+d,h],[x0+w,z0+d,h+height],[x0+w,z0,h+height]],'#8f6134');
+        face([[x0+w,z0+d,h],[x0,z0+d,h],[x0,z0+d,h+height],[x0+w,z0+d,h+height]],'#c48f4d');
+        face([[x0,z0+d,h],[x0,z0,h],[x0,z0,h+height],[x0,z0+d,h+height]],'#a37440');
+        face([[x0,z0,h+height],[x0+w,z0,h+height],[x0+w,z0+d,h+height],[x0,z0+d,h+height]],top);
+      }
+      box(-8,-6,0,16,12,9,empty?'#5e4830':'#d6a25c');
+      if(empty)box(-8,-6,9,16,2,10);
+      else{box(-8.5,-6.5,9,17,13,4);box(-5,-6.8,.3,1.5,13.6,13.2,'#f2d08b');box(4,-6.8,.3,1.5,13.6,13.2,'#f2d08b');box(-1.7,6.6,6,3.4,.7,4,'#f6da91')}
+      if(p.visible){
+        const [sx,sy]=project(p.side,p.depth),scale=scaleAt(p.depth)/30;
+        sprites.push({depth:p.depth,svg:`<g data-chest="${chest.id}" data-empty="${empty}" data-world-x="${p.world.x}" data-world-y="${p.world.y}" transform="translate(${number(sx)} ${number(sy)})"><rect x="${number(-10*scale)}" y="${number(-(empty?19:14)*scale)}" width="${number(20*scale)}" height="${number((empty?19:14)*scale)}" fill="transparent" pointer-events="none"/></g>`});
+      }
+    }
     // Keep encounter visibility and gate blocking rules while sorting actors with the landscape.
     for(const room of rooms){
       if(room.cell===maze.exit){
@@ -220,7 +249,7 @@
     out+=compass(facing)+minimap(state)+'</g>';
     return out;
   }
-  const api = { CAMERA, project, scaleAt, neighbor, isGate, corridor, worldToView, animalWorldPose, animalPose, render };
+  const api = { CAMERA, project, scaleAt, neighbor, isGate, corridor, worldToView, animalWorldPose, animalPose, chestPose, render };
   root.ForestFPV = api;
   if(typeof module==='object'&&module.exports) module.exports=api;
 })(typeof window==='object'?window:globalThis);

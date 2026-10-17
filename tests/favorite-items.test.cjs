@@ -1,8 +1,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { game } = require('./helpers/game.cjs');
+const { game, supplyFixture } = require('./helpers/game.cjs');
 
-test('every animal draws only favorites, with exactly one matching icon among three choices', () => {
+test('every animal draws one stable request from its favorite item definitions', () => {
   const { run } = game();
   const animals = run('bank'), catalog = run('itemCatalog');
   assert.equal(new Set(animals.map(a => a.id)).size, 6);
@@ -13,10 +13,7 @@ test('every animal draws only favorites, with exactly one matching icon among th
     for (let attempt = 0; attempt < 200; attempt++) {
       const e = run(`createEncounter(bank[${i}])`);
       assert(animals[i].favorites.includes(e.answer));
-      assert.equal(e.options.length, 3);
-      assert.equal(new Set(e.options).size, 3);
-      assert.equal(e.options.filter(id => id === e.answer).length, 1);
-      for (const id of e.options) assert(catalog[id]?.icon && catalog[id]?.label);
+      assert(catalog[e.answer]?.icon && catalog[e.answer]?.label);
       assert.equal(e.text, `Chcę ${catalog[e.answer].word}. Daj mi ${catalog[e.answer].word}.`);
       seen.add(e.answer);
     }
@@ -24,33 +21,24 @@ test('every animal draws only favorites, with exactly one matching icon among th
   }
 });
 
-test('icon answers stay stable when reopened, and correct choice awards the key and one heart', () => {
-  const { $, run } = game();
-  for (let i = 0; i < 6; i++) {
-    run(`start();closeEvent();pos=keeper;encounters[pos]=createEncounter(bank[${i}]);visited.add(pos);render();showEvent()`);
-    assert.equal($('#answers').hidden, true);
+test('favorite request stays stable; a held item awards the key and one heart only once', () => {
+  const g=game(), { $, run } = g;
+  for (let i=0;i<6;i++) {
+    run(`start();closeEvent();pos=keeper;encounters[pos]=createEncounter(bank[${i}]);visited.add(pos)`);
+    supplyFixture(g); run('render();showEvent()');
     $('#dialogue-next').onclick();
-    const encounter = run('encounters[pos]'), catalog = run('itemCatalog');
-    assert.equal($('#description').textContent, `Dam ci klucz, jeśli dasz mi ${catalog[encounter.answer].word}.`);
-    const snapshot = () => $('#answers').children.map(b => [b.dataset.item, b.textContent, b.attrs['aria-label']]);
-    const before = snapshot();
-    for (const b of $('#answers').children) {
-      assert.equal(b.textContent, catalog[b.dataset.item].icon);
-      assert.equal(b.attrs['aria-label'], catalog[b.dataset.item].label);
-      assert.equal(b.className, 'item-answer');
-    }
-    $('#answers').children.find(b => b.dataset.item !== encounter.answer).onclick();
-    assert.equal(run('hearts'), 3);
-    assert.equal(run('hasKey'), false);
-    run('closeEvent();render();showEvent()'); $('#dialogue-next').onclick();
-    assert.deepEqual(snapshot(), before);
-    assert.equal($('#description').textContent, `Dam ci klucz, jeśli dasz mi ${catalog[encounter.answer].word}.`);
-    const correct = $('#answers').children.find(b => b.dataset.item === encounter.answer);
-    correct.onclick();
-    assert.equal(run('hearts'), 4); assert.equal(run('hasKey'), true); assert.equal($('#event').open, false);
-    correct.onclick(); assert.equal(run('hearts'), 4);
-    run('showEvent()'); assert.equal($('#event').open, false);
-    assert($('#items').innerHTML.includes('Klucz'));
+    const e=run('encounters[pos]'), item=run(`itemCatalog['${e.answer}']`);
+    assert.equal($('#description').textContent, `Dam ci klucz, jeśli dasz mi ${item.word}.`);
+    const correct=$('#answers').children.find(b=>b.dataset.item===e.answer);
+    assert.equal(correct.attrs['aria-label'],`Daj ${item.word}`);
+    assert.equal(correct.children[0].textContent,item.icon);
+    run('closeEvent()');correct.onclick();assert.equal(run('hearts'),3,'closed dialogue rejects stale delivery');
+    run('render();showEvent()');$('#dialogue-next').onclick();
+    $('#answers').children.find(b=>b.dataset.item===e.answer).onclick();correct.onclick();
+    assert.equal(run('hearts'),4);assert.equal(run('hasKey'),true);assert.equal($('#event').open,false);
+    assert.equal(run(`ForestLoot.count(loot,'${e.answer}')`),0);
+    run('showEvent()');assert.match($('#description').textContent,/Dziękuję/);assert.equal($('#answers').children.length,0);
+    assert.equal(run('ForestLoot.invariant(loot)'),true);
   }
 });
 

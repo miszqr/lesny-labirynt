@@ -38,7 +38,7 @@ function game(width, height, right, bottom) {
   math.random = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
   const context = vm.createContext({ Math: math, Set, window: { addEventListener() {} },
     document: { querySelector: $, querySelectorAll: () => [], createElement: element, addEventListener() {} } });
-  vm.runInContext(fs.readFileSync(path.join(root, 'maze.js'), 'utf8'), context);
+  for(const file of ['loot.js','maze.js','fpv.js'])vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context);
   Object.assign(context, context.window);
   vm.runInContext(source, context);
   const run = code => vm.runInContext(code, context);
@@ -49,7 +49,7 @@ for (const [width, height] of [[304, 480], [374, 756], [724, 320]]) {
   for (const right of [false, true]) for (const bottom of [false, true]) for (const key of [false, true]) {
     test(`gate bubble ${width}x${height}, ${right ? 'right' : 'left'}/${bottom ? 'bottom' : 'top'}, key=${key}`, () => {
       const { $, run, box, measurements } = game(width, height, right, bottom);
-      run(`closeEvent();pos=maze.gate[0];visited.add(pos);hasKey=${key};render()`);
+      run(`closeEvent();pos=maze.gate[0];visited.add(pos);hasKey=${key};loot.keyIds=${key} ? ['forest-key'] : [];render()`);
       const from = run('pos'), to = run('maze.gate[1]'), n = run('maze.n');
       const direction = to === from - n ? 0 : to === from + 1 ? 1 : to === from + n ? 2 : 3;
       const message = key ? 'Otwórz furtkę kluczem.' : 'Furtka jest zamknięta. Znajdź klucz.';

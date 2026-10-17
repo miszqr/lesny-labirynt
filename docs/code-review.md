@@ -6,6 +6,16 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Skrzynki i plecak — 2026-10-17
+
+Wdrożono załączoną specyfikację: stałą zawartość skrzynek, częściowy odbiór, plecak z ikonami i licznikami, jednorazowe oddawanie instancji i nagrody, podziękowania w ponownej rozmowie oraz wspólny stan mapy i FPV. Skrzynki stoją obok ścieżek, bez kolizji z dekoracjami; pustą skrzynkę wyróżnia otwarte wieko. Okna zamyka „Dalej” lub Escape; kliknięcia poza nimi nie zamykają ani nie uruchamiają sterowania.
+
+Generator rezerwuje przed furtką po jednym egzemplarzu dla każdego zadania, także dobrowolnego. Walidator sprawdza wszystkie możliwe kolejności dostaw i liczby egzemplarzy. Zaktualizowane listy oraz specyfikacja są w `docs/LESNY_LABIRYNT_TODO.md` i `docs/LESNY_LABIRYNT_SPEC_SKRZYNKI_PLECAK.md`.
+
+**136 testów przeszło, 0 błędów.** Zakres obejmuje 3000 układów przedmiotów (w tym powtarzające się prośby), 3000 grafów labiryntu, 300 pełnych wygranych z odbiorem przez interfejs skrzynek, 30 przegranych oraz testy stanu, geometrii i animacji. Obejrzano rastry mapy oraz pełnej i pustej skrzynki w FPV. Zaktualizowano scenariusze przeglądarkowe, ale nie wykonano ich: zarządzany podgląd pozostaje niedostępny. Wyliczenie scenariuszy również nie zostało teraz potwierdzone, ponieważ lokalnie brakuje pakietu Playwright. T03 nadal pozostaje otwarte.
+
+Przed edycją utworzono i wypchnięto tag `przed-skrzynkami-2026-10-17` w źródłowym repozytorium Sites, wskazujący commit `055f6a90ffbb3cb51041da4542ea6d7468d5838d` (odpowiadający GitHub `f4c3a5a0778c963b680485cb38b6f1554f7ce471`). Tag nie został utworzony na GitHubie, ponieważ dostępny konektor obsługuje aktualizację gałęzi, a nie tagów.
+
 ## Ikona rozmowy — 2026-10-17
 
 Po dojściu do przyjaznego zwierzaka z niewykonanym zadaniem pojawia się mała chmurka z trzema kropkami. Otwiera rozmowę dotykiem, kliknięciem lub Enterem. Jest przypisana do aktualnego pola i działa w mapie oraz FPV. Chowa się podczas rozmowy, chodzenia, po wykonaniu zadania i po odejściu. Przyjazne spotkanie czeka teraz na wybranie chmurki lub dotychczasowego przycisku pod mapą. Obsługa wilka, furtki i finału pozostaje bez zmian.

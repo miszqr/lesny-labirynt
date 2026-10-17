@@ -53,7 +53,7 @@ for(const side of [0,1]) test(`FPV gate blocks crossing from endpoint ${side} un
   const start=run('pos'), destination=run(`maze.gate[${1-side}]`);
   assert.match($('#map').innerHTML,/data-fpv-gate="closed"/);
   run('handleDirection(0)'); assert.equal(run('pos'),start); assert.equal($('#event').open,true);
-  run('hasKey=true;render();showEvent()');
+  run('hasKey=true;loot.keyIds=["forest-key"];render();showEvent()');
   $('#answers').children.find(b=>b.textContent==='🔑 Otwórz furtkę').onclick();
   assert.equal(run('gateOpen'),true); assert.match($('#map').innerHTML,/data-fpv-gate="open"/);
   run('closeEvent();handleDirection(0)'); assert.equal(run('pos'),destination);

@@ -12,6 +12,7 @@ To statyczna aplikacja HTML/CSS/JavaScript uruchamiana w przeglądarce. Nie ma b
 
 | Miejsce | Odpowiedzialność |
 | --- | --- |
+| `loot.js` | Niezależny od DOM model przedmiotów, atomowe operacje odbioru/oddania i walidator ukończenia. |
 | `maze.js` | Generowanie grafu labiryntu, wybór domu, bramy i lokalizacji zwierzaka z kluczem. |
 | `index.html`: `start`, `move`, `target`, `addDanger` | Rozpoczęcie gry, ruch i rozmieszczanie spotkań. |
 | `fpv.js`: `neighbor`, `corridor`, `render` | Kierunki w grafie i perspektywiczna scena FPV: ścieżki, zieleń, furtka, zwierzęta i dom. |
@@ -21,7 +22,7 @@ To statyczna aplikacja HTML/CSS/JavaScript uruchamiana w przeglądarce. Nie ma b
 | `index.html`: `showEvent`, `paintDialogue`, `positionBubble`, `closeEvent` | Sekwencje wypowiedzi i dymek przy mówiącej postaci. |
 | `index.html`: HTML i CSS | Układ ekranu, przyciski, plecak i menu. |
 
-To podział odpowiedzialności wewnątrz pliku, a nie osobne moduły. Logika gry i operacje DOM są obecnie połączone. Generator jest niezależny od DOM: udostępnia `window.generateMaze` oraz eksport CommonJS do uruchamiania w Node.js.
+Część funkcji pozostaje w pliku HTML; generator, FPV oraz model przedmiotów są osobnymi modułami. Logika gry i operacje DOM są obecnie połączone. Generator jest niezależny od DOM: udostępnia `window.generateMaze` oraz eksport CommonJS do uruchamiania w Node.js.
 
 ```mermaid
 flowchart TD
@@ -45,7 +46,8 @@ flowchart TD
 | `pos`, `visited`, `done`, `encounters` | Pozycja Adama, odwiedzone pola, wykonane zadania i spotkania indeksowane polem. |
 | `seenSamples`, `seenPath` | Zapamiętane pozycje zasięgu i suma odsłoniętych obszarów, niezależna od licznika odwiedzonych pól. |
 | `viewMode`, `facing` | Wybrany widok (`map` lub `fpv`) i kierunek patrzenia (0 północ, 1 wschód, 2 południe, 3 zachód). |
-| `hearts`, `hasKey`, `gateOpen`, `won`, `lost` | Ekwipunek i stan zakończenia gry. |
+| `loot` | Słownik instancji `items`, skrzynki, `inventoryItemIds`, `consumedItemIds`, zadania i ukończone ID, klucze oraz otwarte furtki. |
+| `hearts`, `hasKey`, `gateOpen`, `won`, `lost` | Serduszka, flagi UI klucza/furtki i stan zakończenia gry; klucz/furtka zmieniają się po udanej operacji modelu. |
 | `dialogueSteps`, `dialogueIndex` | Lista kwestii `{speaker, icon, name, text}` i indeks bieżącej wypowiedzi. |
 | `terrain`, `terrainCache`, `artSeed` | Dane dekoracji i przygotowany obraz terenu. Nie określają dostępności przejść. |
 
@@ -67,7 +69,7 @@ Parametr `random` umożliwia deterministyczne sprawdzanie generatora. Cała gra 
 - Przy spotkaniu mówi Adam, potem zwierzak. Odpowiedzi pojawiają się przy ostatniej kwestii. Dymek to niemodalny element `dialog.show()`; ruch podczas rozmowy blokuje kod gry. Menu nadal używa `showModal()`.
 - Wykonanie zadania daje jedno serce tylko raz. Zadanie zwierzaka `keeper` daje dodatkowo klucz. Rozmowa zamyka się bez komunikatu o sukcesie, a zwierzak pozostaje na mapie.
 - Wilk losuje `count` (1–5) i `direction` (góra/prawo/dół/lewo). `renderWolfTask()` buduje cztery strzałki, pasek wybranych kroków, cofanie i zatwierdzanie. `steps` przechowuje kierunki kliknięć, także po zamknięciu dymka. Dopiero zatwierdzenie porównuje długość i wszystkie kierunki z poleceniem. To odpowiedź na zadanie: nie przenosi Adama przez pola labiryntu. Zobacz [ADR-0004](decisions/0004-wolf-directions.md).
-- Błędna odpowiedź u przyjaznego zwierzaka nie zabiera serca. Błąd u wilka zabiera jedno; przy zerze gra się kończy. Zamknięcie dymka nie pozwala ominąć nierozwiązanego wilka.
+- Bez potrzebnego przedmiotu przyjazny zwierzak pokazuje wskazówkę; nie można ukończyć zadania. Błąd u wilka zabiera jedno; przy zerze gra się kończy. Zamknięcie dymka nie pozwala ominąć nierozwiązanego wilka.
 - Klucz pozwala otworzyć bramę. Dom uruchamia `drawHome()`: Adam i siostra z radością idą ku sobie, a końcowe kwestie pojawiają się przy postaciach. Finał używa zaakceptowanej ilustracji `assets/home-reunion.png`; przezroczyste obszary SVG nad każdą postacią wyznaczają pozycje dymków. Powitanie siostry brzmi „Dobrze cię widzieć!”.
 
 ## Animacja chodzenia w 2D
@@ -108,7 +110,7 @@ Mapa jest płaska, a elementy mają styl 2,5D dzięki kształtom, cieniom i kole
 
 ## Uruchamianie i publikacja
 
-W repozytorium GitHub `index.html`, `maze.js` i `fpv.js` leżą w katalogu głównym. Można otworzyć HTML bezpośrednio lub uruchomić `python3 -m http.server 8080`. Hosting wymaga jedynie serwowania tych plików statycznych; kod nie wymaga usług serwerowych.
+W repozytorium GitHub `index.html`, `maze.js`, `loot.js` i `fpv.js` leżą w katalogu głównym. Można otworzyć HTML bezpośrednio lub uruchomić `python3 -m http.server 8080`. Hosting wymaga jedynie serwowania tych plików statycznych; kod nie wymaga usług serwerowych.
 
 Istniejąca publikacja Sites korzysta z osobnego repozytorium źródłowego, katalogu `dist/` oraz manifestu `.openai/hosting.json`. Zapis do GitHuba nie jest sam w sobie publikacją Sites. Repozytorium GitHub nie zawiera obecnie workflow wdrażania GitHub Pages.
 
@@ -191,3 +193,17 @@ FPV ma poziomy kąt widzenia około 111°, wyświetla również krajobraz obok g
 Drzewa, powierzchnie pagórków, furtka i postacie trafiają do wspólnej kolejki rysowanej od najdalszych elementów. Furtka używa mapowego `edgePoint()` i geometrii skrzydła obracanej w świecie. Drogi nadal wynikają z grafu labiryntu; możliwość ruchu wyznaczają jego połączenia. Szerszy widok terenu nie zmienia odkrytej mapy, stanu rozmów ani blokady furtki. Widoczność spotkań nadal respektuje korytarz i zamkniętą furtkę.
 
 Cztery testy `fpv-landscape.test.cjs` sprawdzają zgodność identyfikatorów i współrzędnych z mapą, stabilność po obrocie i ruchu, szerszy kadr oraz porządek warstw i brak zastępczej scenerii. Łącznie przeszły 52 testy FPV, krajobrazu, mgły, ścieżek, chodzenia, rozmów, furtki i wilka. Porównano mapę i rendery czterech kierunków, także ze zwierzakiem. Kontroli w przeglądarce nadal nie wykonano z powodu niedostępnego podglądu.
+
+## Skrzynki i plecak — 2026-10-17
+
+`ForestLoot` nie zależy od DOM. `create()` ustala zawartość raz podczas generowania gry: jedna instancja wymaganego typu na każde zadanie trafia do skrzynki osiągalnej przed furtką. Zapas obejmuje również dobrowolną pomoc, dlatego jej wcześniejsze wykonanie nie może pozbawić zwierzaka z kluczem potrzebnego egzemplarza. Skrzynki mają po trzy różne typy (czasem kilka kopii jednego typu). Jedna skrzynka pojawia się na starcie, kolejne w dostępnych polanach i opcjonalnie za furtką. Przedmioty bonusowe nie są wymagane.
+
+Każdy identyfikator należy dokładnie do jednej kolekcji: zawartości skrzynki, plecaka albo zużytych przedmiotów. `take()` przenosi go atomowo. `deliver()` zużywa jedną pasującą instancję, zapisuje ID zadania i wydaje klucz co najwyżej raz. `unlock()` otwiera furtkę tylko z odpowiednim kluczem. Nie ma zapisu gry ani limitu plecaka; nowa gra odtwarza cały model. ID są unikatowe w obrębie przygody, a callbacki dodatkowo sprawdzają tożsamość obiektu przygody oraz wersję okna, by odrzucić stare kliknięcia.
+
+`validate()` zbiera w symulacji wszystkie osiągalne skrzynki i rozgałęzia się dla każdej możliwej kolejnej dostawy. Po zdobyciu klucza uwzględnia nowy obszar. Liczy egzemplarze, a nie tylko obecność typu. Wszystkie końcowe gałęzie muszą osiągać dom i wszystkie zadania; niespełnienie warunku odrzuca układ. Aktualny model gry ma jedną furtkę, jeden klucz i najwyżej trzy przyjazne zadania. Walidator wymaga świeżego stanu i nie jest migratorem zapisu.
+
+`chestSpots()` wybiera pozycje przy krzywych ścieżkach, z odstępem od ich krawędzi. Omija zwierzęta, furtkę i dom. Bliskie dekoracje są zamieniane na łąkę przed przygotowaniem obu rendererów; skrzynka nie stoi w wodzie ani pod drzewem. Mapa sortuje skrzynki z postaciami i furtką po głębokości. FPV rysuje je jako stałe bryły przestrzenne, z tym samym położeniem, w globalnej kolejce głębokości. Pusta skrzynka ma otwarte wieko. Zmiana kamery nie przesuwa ani nie obraca bryły w świecie.
+
+`#storage` jest modalnym oknem wspólnym dla skrzynki i plecaka. Skrzynka ma przyciski „Zabierz” dla każdej instancji oraz „Zabierz wszystko”. Plecak grupuje typy i pokazuje liczniki. „Dalej” oraz Escape zamykają okno; kliknięcie poza nim jest pochłaniane. Podczas okna ruch i zmiana widoku są zablokowane. Dialog zwierzaka bez przedmiotu podpowiada, czego szukać; z przedmiotem oferuje „Daj…”. Wykonane zadanie przy ponownej rozmowie wyświetla podziękowanie, bez ponownego zużycia lub nagrody.
+
+Testy obejmują 3000 układów przedmiotów, również powtarzające się prośby, oraz przykłady wykazujące brak klucza zza furtki i zależność od kolejności wydawania. Pełne rozgrywki zbierają zapasy przez legalne dojście i rzeczywiste callbacki skrzynki. Osobne testy sprawdzają instancje, stan UI, puste skrzynki, reset, modalne blokady, położenie względem ścieżek i krajobrazu oraz pełny obrót FPV. Rastry SVG obejmują mapę, pełną i pustą skrzynkę w FPV. Prawdziwy układ DOM, dotyk i telefon pozostają do sprawdzenia w T03.

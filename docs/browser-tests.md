@@ -82,3 +82,7 @@ Po uruchomieniu automatu obejrzyj jego zrzuty. Następnie sprawdź grę na prawd
 Zarządzany podgląd Sites pozostaje zatrzymany po wcześniejszym błędzie `bwrap: Can't mount proc on /newroot/proc: Operation not permitted`. Instrukcja Sites wymaga naprawy lub konkretnej oznaki przywrócenia infrastruktury przed ponowieniem. Nie uruchamiano zastępczego serwera ani przeglądarki z pominięciem tego ograniczenia.
 
 Sprawdzono składnię i wyliczenie **69 scenariuszy**; wszystkie **106 testów logiki** przeszło. Nie sprawdzono wyniku scenariuszy w przeglądarce. **T03 pozostaje otwarte** do wykonania automatu, poprawienia ewentualnych błędów i zapisania rzeczywistej kontroli telefonu.
+
+## Skrzynki i plecak — scenariusze przygotowane
+
+Dodano odbiór pojedynczy i całej zawartości, powrót do częściowo opróżnionej skrzynki, pustą skrzynkę, podgląd plecaka, brak zamknięcia po kliknięciu poza oknem oraz dostęp do sterowania po „Dalej” w mapie i FPV. Zaktualizowano sceny zwierząt do posiadania fizycznej instancji przedmiotu i podziękowania po oddaniu. Scenariusze pozostają niewykonane w przeglądarce.

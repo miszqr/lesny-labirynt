@@ -51,7 +51,7 @@ function player(size, seed) {
     run('closeEvent()'); buttons[0].onclick();
     assert.equal(run('pos'), cell, 'closing the wolf dialogue cannot bypass it');
     assert.equal(run('visited.size'), visited); assert.equal(run('hearts'), hearts);
-    assert(buttons.every(b => b.disabled)); assert.equal($('#event').open, true);
+    assert(buttons.filter(b=>run('viewMode')!=='fpv'||[0,2].includes(Number(b.dataset.dir))).every(b => b.disabled), 'wolf blocks walking; FPV can still turn'); assert.equal($('#event').open, true);
     $('#dialogue-next').onclick();
     wrongWolfAnswer();
     assert.equal(run('lost'), false); assert.match($('#notice').textContent, /Spróbuj jeszcze raz/);
@@ -85,12 +85,10 @@ function player(size, seed) {
   function helpFriend() {
     const cell = run('pos'), e = run('encounters[pos]'), before = run('hearts');
     assert(e && !e.danger); readyTask();
-    const options = () => $('#answers').children.map(b => b.dataset.item);
-    const originalOptions = options();
-    $('#answers').children.find(b => b.dataset.item !== e.answer).onclick();
-    assert.equal(run('hearts'), before); assert.equal(run('done.has(pos)'), false);
-    assert($('#notice').textContent);
-    readyTask(); assert.deepEqual(options(), originalOptions, 'task stays stable after reopening');
+    const request = run('loot.requests.find(r=>r.cell===pos)'), count = run(`ForestLoot.count(loot,'${e.answer}')`);
+    assert(count > 0, 'items were collected through legal travel and chest controls');
+    const originalText = $('#description').textContent;
+    readyTask(); assert.equal($('#description').textContent, originalText, 'request stays stable after reopening');
     const correct = $('#answers').children.find(b => b.dataset.item === e.answer);
     assert(correct); correct.onclick(); correct.onclick(); rewards++;
     assert.equal(run('hearts'), before + 1); assert.equal(run('done.has(pos)'), true);
@@ -98,7 +96,13 @@ function player(size, seed) {
     if (cell === maze.keeper) {
       assert.equal(run('hasKey'), true); assert.match($('#items').innerHTML, /Klucz/);
     }
-    run('showEvent()'); assert.equal($('#event').open, false, 'completed friend does not repeat its task');
+    assert.equal(run(`ForestLoot.count(loot,'${e.answer}')`), count-1);
+    assert.equal(run(`loot.completedRequestIds.includes('${request.id}')`), true);
+    run('showEvent()'); assert.equal($('#event').open, true);
+    assert.match($('#description').textContent, /Dziękuję/);
+    assert.equal($('#answers').children.length, 0, 'completed friend thanks without another delivery');
+    assert.equal(run('ForestLoot.invariant(loot)'), true);
+    run('closeEvent()');
   }
 
   function tryClosedGate() {
@@ -116,15 +120,26 @@ function player(size, seed) {
     assert.equal(run('gateOpen'), true); assert.equal(run('hearts'), before);
   }
 
+  function gatherEarly() {
+    for (const chest of run('loot.chests')) {
+      if (!explore(maze, maze.start, false).parent.has(chest.cell)) continue;
+      travel(chest.cell); run('closeEvent()'); $('#interact').onclick();
+      assert.equal($('#storage').open, true);
+      $('#take-all').onclick(); $('#storage-next').onclick();
+      assert.equal(chest.itemIds.length, 0);
+    }
+    assert(run('loot.inventoryItemIds.length') > 0);
+  }
+
   function reachWolf() {
     if (!explore(maze, maze.start, false).parent.has(wolf)) {
-      travel(maze.keeper); helpFriend(); openGate();
+      gatherEarly(); travel(maze.keeper); helpFriend(); openGate();
     }
     travel(wolf); readyTask();
   }
 
   return { ...g, maze, wolf, travel, helpFriend, solveWolf, wrongWolfAnswer, wolfControl,
-    tryClosedGate, openGate, reachWolf, expectedHearts: () => 3 + rewards - mistakes };
+    tryClosedGate, openGate, reachWolf, gatherEarly, expectedHearts: () => 3 + rewards - mistakes };
 }
 
 function checkFreshGame(g, previous) {
@@ -135,6 +150,7 @@ function checkFreshGame(g, previous) {
   assert.equal(run('maze.n'), previous.maze.n); assert.equal(run('viewMode'), previous.mode, 'selected view is a preference');
   assert.equal(run('pos'), run('maze.start')); assert.equal(run('hearts'), 3);
   for (const flag of ['hasKey', 'gateOpen', 'won', 'lost']) assert.equal(run(flag), false, `reset ${flag}`);
+  assert.equal(run('loot.inventoryItemIds.length'), 0); assert.equal(run('loot.consumedItemIds.length'), 0); assert.equal(run('loot.completedRequestIds.length'), 0); assert.equal(run('loot.unlockedGateIds.length'), 0); assert.equal($('#storage').open, false);
   assert.equal(run('done.size'), 0); assert.deepEqual(Array.from(run('visited')), [run('pos')]);
   assert.equal(run('seenSamples.size'), 1); assert.equal((run('seenPath').match(/M/g) || []).length, 1);
   assert.equal(run('walking'), null); assert.equal(run('fleeing'), null); assert.equal(pendingFrames(), 0);
@@ -160,7 +176,7 @@ for (const size of [4, 6, 8]) {
       assert.equal(run('hearts'), 3); assert.equal(run('visited.size'), 1);
       travel(maze.gate[0]); g.tryClosedGate(); assert.equal(run('hasKey'), false);
       assert.equal($('#answers').children.length, 0, 'no unlock action without key');
-      travel(maze.keeper); helpFriend(); g.openGate();
+      g.gatherEarly(); travel(maze.keeper); helpFriend(); g.openGate();
       for (const [cell, e] of Object.entries(run('encounters'))) {
         if (!e.danger && Number(cell) !== maze.keeper) { travel(Number(cell)); helpFriend(); }
       }

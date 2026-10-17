@@ -100,6 +100,8 @@ async function encounterFixture(page, { mode = 'map', corner = 0, wolf = false, 
       id: 'cat', icon: '🐈', title: 'Kot', text: 'Chcę mleko. Daj mi mleko.',
       answer: 'milk', options: ['fish', 'milk', 'ball'],
     } };
+    loot={items:{},chests:[],inventoryItemIds:[],consumedItemIds:[],completedRequestIds:[],unlockedGateIds:[],keyIds:[],requests:[]};
+    if(!wolf){loot.items['fixture-milk']={id:'fixture-milk',typeId:'milk'};loot.inventoryItemIds.push('fixture-milk');loot.requests.push({id:'request-'+pos,cell:pos,requiredTypeId:'milk',rewardId:null})}
     setView(mode);
   }, { mode, corner, wolf, size });
   await page.locator('#interact').click();

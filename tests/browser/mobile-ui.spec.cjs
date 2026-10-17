@@ -89,6 +89,27 @@ test('menu: rozmiar mapy, FPV i orientacja ekranu', async ({ page }) => {
 });
 
 for (const mode of ['map', 'fpv']) {
+  test(`${mode}: skrzynka, częściowy odbiór, plecak i zamykanie przyciskiem Dalej`, async ({ page }) => {
+    await page.locator('#dialogue-next').tap();await page.locator('#dialogue-next').tap();
+    if(mode==='fpv')await page.locator('#view-toggle').tap();
+    await page.locator('#interact').tap();
+    await expect(page.locator('#storage')).toBeVisible();
+    await inside(page.locator('#storage'),page.locator('body'));
+    const original=await page.locator('[data-take]').count();expect(original).toBeGreaterThanOrEqual(3);
+    await page.locator('[data-take]').first().tap();
+    await expect(page.locator('[data-take]')).toHaveCount(original-1);
+    await expect(page.locator('#backpack-count')).toHaveText('1');
+    await page.touchscreen.tap(2,2);await expect(page.locator('#storage')).toBeVisible();
+    await page.locator('#storage-next').tap();await controlsFit(page);
+    await page.locator('#interact').tap();await expect(page.locator('[data-take]')).toHaveCount(original-1);
+    await page.locator('#take-all').tap();await expect(page.locator('.storage-empty')).toHaveText('Pusta');
+    await page.locator('#storage-next').tap();await page.locator('#backpack-toggle').tap();
+    await expect(page.locator('#storage-title')).toHaveText('🎒 Plecak');
+    await expect(page.locator('#take-all')).not.toBeVisible();
+    expect(await page.locator('.storage-item').count()).toBeGreaterThanOrEqual(2);
+    await page.locator('#storage-next').tap();await controlsFit(page);await pageFits(page);
+  });
+
   test(`${mode}: chmurka rozmowy jest przy zwierzaku, działa dotykiem i klawiaturą`, async ({ page }) => {
     await encounterFixture(page, { mode });
     await page.locator('#dialogue-next').tap();
@@ -108,7 +129,10 @@ for (const mode of ['map', 'fpv']) {
     await page.locator('#dialogue-next').tap();
     await page.locator('[data-item="milk"]').tap();
     await expect(page.locator('#event')).not.toBeVisible();
-    await expect(icon).not.toBeVisible();
+    await expect(icon).toBeVisible();
+    await icon.tap();
+    await expect(page.locator('#description')).toHaveText('Dziękuję za pomoc!');
+    await page.locator('#dialogue-next').tap();
     await controlsFit(page);
   });
 
@@ -197,7 +221,7 @@ for (const key of [false, true]) {
   test(`furtka: cały komunikat mieści się w dymku, klucz=${key}`, async ({ page }) => {
     const { direction, before } = await page.evaluate(key => {
       closeEvent(); pos = maze.gate[0]; visited.add(pos);
-      encounters = {}; done = new Set(); hasKey = key; gateOpen = false;
+      encounters = {}; done = new Set(); hasKey = key; loot.keyIds = key ? ['forest-key'] : []; gateOpen = false;
       render();
       const to = maze.gate[1];
       return { direction: [pos - maze.n, pos + 1, pos + maze.n, pos - 1].indexOf(to), before: pos };
