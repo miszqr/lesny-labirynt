@@ -116,6 +116,15 @@ Istniejąca publikacja Sites korzysta z osobnego repozytorium źródłowego, kat
 
 Zestaw `node --test tests/*.test.cjs` obejmuje testy własności generatora na 3000 mapach oraz 300 pełnych przejść gry, 30 przegranych i restarty dla rozmiarów 4, 6 i 8. Testy przebiegów sterują grą przez przyciski i odpowiedzi w symulowanym DOM, bez teleportowania postaci i dopisywania ekwipunku. `tests/helpers/game.cjs` przyjmuje rozmiar i ziarno, a błąd testu generatora lub reguł podaje ziarno do odtworzenia przez `TEST_SEED` (szczegóły w README). Kontrolowane losowanie dotyczy wyłącznie testów; T09 pozostaje osobnym zadaniem. Pozostałe testy sprawdzają furtkę i dymki, prośby zwierząt, zadanie wilka, animacje i FPV. Nie ma CI; to T04. Testy mgły obejmują trwałość odsłoniętych fragmentów, niezależność od animacji i FPV, blokady ruchu oraz reset. Osobny raster SVG potwierdził miękkie krawędzie, widoczność zwierzaka i furtki oraz brak ponownego zasłaniania pikseli po odejściu. Testy logiki i rastrów nie zastępują kontroli układu w przeglądarce.
 
+W ramach T03 przygotowano `tests/browser/` i konfigurację Playwright dla trzech viewportów mobilnych, mapy i FPV. Testy scen korzystają z prawdziwego DOM i zdarzeń przeglądarki, ale ustawiają kontrolowane pozycje i spotkania; nie zastępują pełnych przebiegów T01. Zależność Playwright jest wyłącznie narzędziem deweloperskim. Testy przeglądarkowe oraz kontrola prawdziwego telefonu pozostają niewykonane z powodu blokady zarządzanego podglądu. Uruchomienie, zakres i checklista: [browser-tests.md](browser-tests.md).
+
 Przy zmianach sprawdzaj: spójność grafu, dostępność klucza przed bramą, blokadę bramy, jednorazowe nagrody, serca i ponowne próby u wilka, kolejność rozmów, finał oraz reset gry. Na telefonie sprawdzaj widoczność strzałek, czytelność dymków, orientację ekranu i brak przewijania całej strony.
 
 Możliwe dalsze usprawnienia, jeszcze niewdrożone: wydzielenie stanu i reguł z DOM, rozszerzenie testów generatora, osobne dane dialogów, wspólne ziarno losowości, zapis postępu. Istotne zmiany tych obszarów należy poprzedzić ADR.
+
+
+### Aktualne zamykanie rozmów — 2026-10-17
+
+„Dalej” przechodzi przez wypowiedzi, a po ostatniej wywołuje `closeEvent()`. Przycisk jest dostępny także na etapie wyboru odpowiedzi; samo zamknięcie nie rozwiązuje zadania, nie daje klucza i nie kasuje szkicu kroków wilka. Kliknięcia poza otwartym dymkiem są pochłaniane, bez zamykania go i bez działania na elementy pod nim. Escape nadal zamyka rozmowę. Strzałki klawiatury pozostają zablokowane podczas rozmowy i menu, a po ich zamknięciu sterują mapą lub FPV zgodnie z aktualnym widokiem. Pola formularzy zachowują własną obsługę klawiatury.
+
+`npcLine()` tworzy także prośbę posiadacza klucza: „Dam ci klucz, jeśli dasz mi …”, z formą gramatyczną z `itemCatalog`. Wilk zatwierdza kroki przyciskiem „Skaczę”. Reguły nagród i ruchu pozostają wspólne dla przycisków i klawiatury.

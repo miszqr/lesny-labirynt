@@ -31,7 +31,7 @@ test('icon answers stay stable when reopened, and correct choice awards the key 
     assert.equal($('#answers').hidden, true);
     $('#dialogue-next').onclick();
     const encounter = run('encounters[pos]'), catalog = run('itemCatalog');
-    assert.equal($('#description').textContent, encounter.text + ' Dam ci klucz.');
+    assert.equal($('#description').textContent, `Dam ci klucz, jeśli dasz mi ${catalog[encounter.answer].word}.`);
     const snapshot = () => $('#answers').children.map(b => [b.dataset.item, b.textContent, b.attrs['aria-label']]);
     const before = snapshot();
     for (const b of $('#answers').children) {
@@ -44,7 +44,7 @@ test('icon answers stay stable when reopened, and correct choice awards the key 
     assert.equal(run('hasKey'), false);
     run('closeEvent();render();showEvent()'); $('#dialogue-next').onclick();
     assert.deepEqual(snapshot(), before);
-    assert.equal($('#description').textContent, encounter.text + ' Dam ci klucz.');
+    assert.equal($('#description').textContent, `Dam ci klucz, jeśli dasz mi ${catalog[encounter.answer].word}.`);
     const correct = $('#answers').children.find(b => b.dataset.item === encounter.answer);
     correct.onclick();
     assert.equal(run('hearts'), 4); assert.equal(run('hasKey'), true); assert.equal($('#event').open, false);

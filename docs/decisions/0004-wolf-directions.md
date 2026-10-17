@@ -14,7 +14,7 @@ Wcześniej dziecko czytało liczbę kroków słownie, a odpowiadało cyfrą. Now
 
 ## Decyzja
 
-Losujemy 1–5 kroków i jeden z czterech kierunków. Polecenie zapisuje liczbę słownie. Każde kliknięcie jednej z czterech strzałek dopisuje krok, widoczny jako strzałka na pasku postępu. „Cofnij” usuwa ostatni krok bez kary. Pusta odpowiedź nie może zostać zatwierdzona.
+Losujemy 1–5 kroków i jeden z czterech kierunków. Polecenie zapisuje liczbę słownie. Każde kliknięcie jednej z czterech strzałek dopisuje krok, widoczny jako strzałka na pasku postępu. „Cofnij” usuwa ostatni krok bez kary. Pusta odpowiedź nie może zostać zatwierdzona. Od 2026-10-17 przycisk zatwierdzający ma etykietę „Skaczę”, zgodnie z poleceniem użytkownika.
 
 Poprawna odpowiedź zawiera dokładnie wymaganą liczbę kroków i wyłącznie wskazany kierunek. Kierunki mieszane są błędne. Zatwierdzenie poprawnej odpowiedzi rozwiązuje spotkanie i daje jedno serce tylko raz. Błąd odbiera jedno serce i czyści odpowiedź; zero serc kończy grę. Samo klikanie lub cofanie nie zabiera serc. Limit roboczy wynosi dziesięć kliknięć, co pozwala również wpisać zbyt wiele kroków bez nieograniczonego powiększania dymka.
 

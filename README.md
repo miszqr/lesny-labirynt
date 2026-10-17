@@ -17,8 +17,9 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 - Losowy labirynt 4×4, 6×6 lub 8×8; cel: dotrzeć do domu. W 2D Adam odsłania okolicę z dodatkowym zasięgiem około pół pola. Mgła ma nieregularny, miękko cieniowany brzeg. Każdy odsłonięty fragment, także na obrzeżach zasięgu, pozostaje widoczny do końca tej przygody. Samo zobaczenie fragmentu pola nie zalicza go jako odwiedzonego.
 - Krajobraz urozmaicają trawiaste pagórki z cieniowanymi stokami, kamieniami i drobnymi kwiatami. W FPV widać wzgórza w oddali. Pagórki nie zmieniają przejść labiryntu.
 - Pomoc zwierzakom polega na czytaniu krótkiej prośby i wybieraniu obrazka spośród trzech odpowiedzi. Przedmiot losuje się z listy ulubionych rzeczy zwierzaka raz na przygodę; ponowne otwarcie rozmowy nie zmienia prośby ani odpowiedzi.
-- Jeden zwierzak daje klucz do furtki. Jest dostępny przed zamkniętą furtką.
-- Wilk losuje od jednego do pięciu kroków oraz kierunek: w górę, w prawo, w dół lub w lewo. Gracz czyta polecenie, klika strzałkę odpowiednią liczbę razy i wybiera „Zatwierdź”. Rząd strzałek pokazuje wybrane kroki; „Cofnij” usuwa ostatni bez kary. Po poprawnej odpowiedzi wilk ucieka i znika z mapy, również w FPV.
+- Jeden zwierzak daje klucz do furtki. Jest dostępny przed zamkniętą furtką. Jego prośba zaczyna się od „Dam ci klucz, jeśli…” i wskazuje wylosowany przedmiot.
+- Przycisk „Dalej” przechodzi do kolejnej wypowiedzi, a przy ostatniej zamyka rozmowę. Kliknięcie poza dymkiem nie zamyka go ani nie wykonuje innej akcji. Escape pozostaje skrótem zamknięcia. Zadanie można otworzyć ponownie przyciskiem pod mapą.
+- Wilk losuje od jednego do pięciu kroków oraz kierunek: w górę, w prawo, w dół lub w lewo. Gracz czyta polecenie, klika strzałkę odpowiednią liczbę razy i wybiera „Skaczę”. Rząd strzałek pokazuje wybrane kroki; „Cofnij” usuwa ostatni bez kary. Po poprawnej odpowiedzi wilk ucieka i znika z mapy, również w FPV.
 - Początkowo są 3 serduszka; każde ukończone zadanie daje 1, błąd u wilka odbiera 1. Zero oznacza koniec gry.
 - W widoku 2D Adam płynnie przechodzi między polami, poruszając nogami i rękami. Rozmowy zaczynają się po dojściu na miejsce. Ustawienie systemowe ograniczające animacje wyłącza ruch postaci.
 - Dwa widoki tej samej przygody: mapa z góry oraz FPV — oczami Adama. Przełącznik w nagłówku i menu zachowuje cały postęp.
@@ -77,6 +78,12 @@ Test sprawdza pozycjonowanie po ustawieniu pełnego komunikatu, z kluczem i bez 
 Testy przedmiotów sprawdzają wszystkie listy ulubionych rzeczy, unikalne obrazki, zgodność prośby i odpowiedzi, stałość zadania po zamknięciu dymka, jednorazową nagrodę oraz zadanie wilka: wszystkie 20 kombinacji liczby i kierunku, postęp, cofanie, ponowne otwarcie dymka, zatwierdzanie, utratę serc i reset gry.
 
 Testy FPV sprawdzają obracanie i ruch we wszystkich orientacjach, klawiaturę i przyciski, blokadę furtki, zachowanie stanu przy zmianie widoku, widoczność przejść oraz finał. Sceny SVG sprawdzono osobno; układ całego interfejsu pozostaje niesprawdzony w przeglądarce z powodu niedostępnego podglądu.
+
+### Testy przeglądarkowe — T03 w toku
+
+Przygotowano osobny zestaw Playwright dla 320×568, 390×844 i 844×390: geometria dymków i strzałek, dotyk, menu, klawiatura, Escape i fokus, mapa oraz FPV. Uruchomienie: `npm install`, `npx playwright install chromium`, serwer opisany wyżej, a w drugim terminalu `npm run test:browser`. `npm run test:browser:list` tylko wylicza scenariusze; nie potwierdza ich przejścia.
+
+**Testy nie zostały jeszcze wykonane w przeglądarce; kontrola prawdziwego telefonu również oczekuje.** Instrukcja, zakres, sposób przygotowania scen i checklista: [Testy przeglądarkowe i telefon](docs/browser-tests.md). Gra nadal nie wymaga pakietów ani kompilacji; Playwright jest zależnością wyłącznie testową.
 
 ## Dokumentacja projektu
 

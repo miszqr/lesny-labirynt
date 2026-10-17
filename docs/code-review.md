@@ -6,6 +6,16 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Zmiany dialogów i sterowania — 2026-10-17
+
+Zgodnie z nowszym poleceniem użytkownika kliknięcie poza dymkiem nie zamyka go i nie wykonuje akcji w tle. „Dalej” przechodzi do kolejnej wypowiedzi i zamyka ostatnią; Escape pozostaje dostępny. Wilk ma przycisk „Skaczę”, a zwierzak z kluczem zaczyna prośbę od „Dam ci klucz, jeśli…” z nazwą wylosowanego przedmiotu. Istniejące sterowanie strzałkami klawiatury zachowano i objęto dodatkowymi testami dla wszystkich kierunków mapy. Zaktualizowano scenariusze T03 do tych zasad. Starsze opisy zamykania kliknięciem poniżej dotyczą historycznej wersji. Wynik weryfikacji: **102 testy logiki przeszły**. Playwright poprawnie wyliczył **63 scenariusze**, ale nie uruchamiano ich w przeglądarce.
+
+## Aktualizacja T03 — 2026-10-17, przygotowanie testów
+
+Dodano konfigurację Playwright oraz `tests/browser/`: trzy rozmiary ekranu, mapa i FPV, cztery narożniki, długi tekst i błąd wilka, dotyk, menu, Escape, Tab, Enter, powrót fokusu oraz pełny komunikat furtki. Testy mierzą rzeczywiste prostokąty DOM i sprawdzają, czy środek strzałki nie jest zasłonięty. Raport zachowuje zrzuty i ślady błędów. Instrukcja uruchomienia oraz niewypełniona checklista kontroli prawdziwego telefonu są w [browser-tests.md](browser-tests.md).
+
+**T03 nie jest ukończone.** Zarządzany podgląd pozostaje zatrzymany po błędzie `bwrap: Can't mount proc on /newroot/proc: Operation not permitted`; brak oznak naprawy wymaganych przez instrukcję Sites przed ponowieniem. Przygotowanie scenariuszy i sprawdzenie ich składni/wyliczenia nie potwierdza zachowania gry w przeglądarce. Wykonanie, ewentualne poprawki i kontrola telefonu pozostają do zrobienia.
+
 ## Aktualizacja T01 / R2 — 2026-10-17
 
 Utrwalono testy generatora i pełnych przebiegów aktualnej gry w `tests/maze.test.cjs` i `tests/game-rules.test.cjs`, z małymi pomocnikami w `tests/helpers/`. Wspólna atrapa gry przyjmuje teraz `size` i `seed`; dotychczasowe testy zachowują swoje wartości domyślne.
@@ -110,7 +120,7 @@ Sprawdzenia wykonano na niezmienionym kodzie przeglądanego commita w Node.js 24
 
 - [x] **T01 / R2 — Utrwalić testy generatora i reguł.** Wykonano: 3000 map, 300 pełnych wygranych, 30 przegranych i resety dla wszystkich rozmiarów; 93 testy przeszły. Jedno polecenie i odtwarzanie błędu według ziarna opisano w README; szczegóły w aktualizacji powyżej.
 - [x] **T02 / R1 — Pozycjonować dymek po ustawieniu całej treści.** Naprawiono kolejność i dodano 24 testy regresji, w tym granice dymka z symulowanymi wymiarami. Sprawdzenie w prawdziwej przeglądarce pozostaje w T03; szczegóły w aktualizacji powyżej.
-- [ ] **T03 — Dodać testy przeglądarkowe oraz kontrolę na telefonie.** Sprawdzić co najmniej 320×568, 390×844 i 844×390, krawędzie mapy, długi tekst wilka, menu, kliknięcie poza dymkiem, Escape i fokus. Strzałki mają pozostać dostępne, a cała strona nie wymagać przewijania.
+- [ ] **T03 — Dodać testy przeglądarkowe oraz kontrolę na telefonie.** Zestaw i instrukcja przygotowane; wykonanie zablokowane przez niedostępny podgląd, kontrola telefonu oczekuje. Sprawdzić co najmniej 320×568, 390×844 i 844×390, krawędzie mapy, długi tekst wilka, menu, kliknięcie poza dymkiem, Escape i fokus. Strzałki mają pozostać dostępne, a cała strona nie wymagać przewijania. Szczegóły w aktualizacji powyżej i `browser-tests.md`.
 - [ ] **T04 / R2 — Uruchamiać testy w CI.** Workflow na push i pull request; komenda i ograniczenia opisane w README.
 - [ ] **T05 / R3 — Oddzielić stan i operacje gry od DOM.** Reguły dają się testować bez tworzenia elementów strony; samo renderowanie nie przyznaje nagród i nie ustala wyniku gry. Zaktualizować architekturę i ADR, jeśli zmienia się przyjęty podział modułów.
 

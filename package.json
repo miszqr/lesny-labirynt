@@ -1,0 +1,17 @@
+{
+  "name": "adam-w-lesie",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "test:browser": "playwright test",
+    "test:browser:list": "playwright test --list",
+    "test:browser:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
