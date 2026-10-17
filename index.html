@@ -177,7 +177,32 @@ function childFace(kind){
  <path d="M.5-36.5l-1 2.8 1.9.1M-2.8-30.8q3 2 6-.3" stroke="#be8977" stroke-width=".8" fill="none" stroke-linecap="round"/>
  </g>`;
 }
-function characterArt(kind){
+function animalDirectionalArt(kind,view){
+ const palette={'🐈':['#d8974c','#f2bb73'],'🐇':['#c1b6aa','#e7ddd1'],'🐻':['#8c6142','#b98958'],'🦔':['#825c42','#c69d76'],'🐕':['#a67246','#d3a16b'],'🦉':['#897253','#baa278'],'🐺':['#526570','#91a4a8']};
+ const c=palette[kind];if(!c)return '';
+ const back=view==='back',wolf=kind==='🐺',owl=kind==='🦉',rabbit=kind==='🐇',spiky=kind==='🦔';
+ const delay=((Date.now()%3600+kind.codePointAt(0)*37)%3600)/1000;
+ let ears='';
+ if(rabbit)ears=`<ellipse cx="-6" cy="-42" rx="4" ry="13" fill="${c[0]}"/><ellipse cx="5" cy="-43" rx="4" ry="14" fill="${c[1]}"/>`;
+ else if(kind==='🐻')ears=`<circle cx="-9" cy="-36" r="6" fill="${c[0]}"/><circle cx="9" cy="-36" r="6" fill="${c[0]}"/>`;
+ else if(kind==='🐕')ears='<ellipse cx="-9" cy="-28" rx="5" ry="11" fill="#704c35"/><ellipse cx="9" cy="-28" rx="5" ry="11" fill="#704c35"/>';
+ else if(!spiky)ears=`<path d="M-12 -29L-12 -${wolf?48:43} -1 -35 9 -${wolf?48:43} 13 -29Z" fill="${c[0]}"/>`;
+ const spines=spiky?'<path d="M-15-4L-19-13-15-15-19-23-13-24-14-32-7-30-5-38 1-32 7-37 10-29 17-30 15-22 20-18 15-12 18-6Z" fill="#6f503c"/>':'';
+ const tail=rabbit?`<circle cx="${back?1:12}" cy="-9" r="5" fill="#f1e9de"/>`:kind==='🐻'?`<circle cx="${back?1:11}" cy="-8" r="3.5" fill="${c[0]}"/>`:owl?'<path d="M3-7L12 3H-2Z" fill="#6e5a42"/>':spiky?'':wolf?'<path d="M8-6Q24-8 20-28L15-23 17-21 12-18 13-15 6-13Z" fill="#526570"/><path d="M20-28L15-23 17-21 20-20Z" fill="#aab8ba"/>':`<path d="M8-7Q23-10 19-24" fill="none" stroke="${c[0]}" stroke-width="5" stroke-linecap="round"/>`;
+ let svg=`<ellipse cx="3" cy="1" rx="13" ry="4.5" fill="#3c5036" opacity=".23"/><g transform="scale(${view==='right'?-1:1} 1)"><g class="animal-idle" ${wolf?'data-art="storybook-wolf"':''} style="--idle-delay:-${delay}s">${spines}${back?'':tail}<ellipse cy="-13" rx="12" ry="15" fill="${c[0]}"/><ellipse cx="${back?3:-2}" cy="-15" rx="8" ry="12" fill="${c[1]}"/><ellipse data-animal-foot="left" cx="-7" cy="-1" rx="6" ry="3" fill="${c[0]}"/><ellipse data-animal-foot="right" cx="7" cy="-1" rx="6" ry="3" fill="${c[0]}"/>${ears}<ellipse cy="-29" rx="14" ry="13" fill="${c[0]}"/><ellipse cx="3" cy="-31" rx="9" ry="10" fill="${c[1]}"/>`;
+ if(back){
+  svg+=`<path d="M0-22V-12" fill="none" stroke="${c[0]}" stroke-width="1.5" opacity=".55"/>${tail}`;
+ }else if(owl){
+  svg+='<ellipse cx="-8" cy="-29" rx="6" ry="8" fill="#e8dcb7"/><circle cx="-10" cy="-29" r="2.3" fill="#343d31"/><path d="M-13-26L-20-23-13-20Z" fill="#c19a43"/><path d="M4-22Q15-16 8-5Q0-12 4-22Z" fill="#897253"/>';
+ }else{
+  svg+=`<path d="M-8-28Q-14-27-${wolf?22:19}-23Q-20-17-9-18L-5-23Z" fill="${wolf?'#dce0ce':'#e9d8b9'}"/><ellipse cx="-19" cy="-23" rx="2.6" ry="2" fill="#354039"/><ellipse cx="-8" cy="-31" rx="${wolf?3.3:2}" ry="${wolf?2.5:2}" fill="${wolf?'#ecd395':'#303c36'}"/>`;
+  if(wolf)svg+='<ellipse cx="-8.8" cy="-30.5" rx="1.1" ry="1.8" fill="#283b42"/><path d="M-12-36L-4-33" stroke="#344953" stroke-width="3" stroke-linecap="round"/><path d="M-16-19l1 3q1 .5 1-3" fill="#fffaf0"/>';
+  if(kind==='🐈')svg+='<path d="M-13-21l-10-2m10 5-9 1" stroke="#88683e" stroke-width="1"/>';
+ }
+ return svg+'</g></g>';
+}
+function characterArt(kind,view='front'){
+if(view!=='front')return animalDirectionalArt(kind,view);
 const shadow='<ellipse cx="3" cy="1" rx="13" ry="4.5" fill="#3c5036" opacity=".23"/>';
 if(kind==='👦')return '<ellipse data-walk-part="shadow" cx="3" cy="1" rx="13" ry="4.5" fill="#3c5036" opacity=".23"/><g data-walk-part="body"><g data-walk-part="left-leg"><path d="M-9-15L-8-2H-2L0-14Z" fill="#41647a"/><path d="M-8-2h6v4h-9q-2-3 3-4" fill="#654e3c"/></g><g data-walk-part="right-leg"><path d="M0-14L2-2H8L9-15Z" fill="#41647a"/><path d="M3-2h5q5 1 4 4H3Z" fill="#654e3c"/></g><path d="M-9-28Q0-33 9-28L11-13Q0-8-11-13Z" fill="#c88440"/><path d="M-9-28Q-4-31 0-30V-12Q-7-11-11-13Z" fill="#e7a955"/><g data-walk-part="left-arm"><path d="M-9-26l-5 11" stroke="#edbd8b" stroke-width="5" stroke-linecap="round"/></g><g data-walk-part="right-arm"><path d="M9-26l5 11" stroke="#edbd8b" stroke-width="5" stroke-linecap="round"/></g>'+childFace(kind)+'</g>';
 if(kind==='👧')return shadow+'<path d="M-7-14L-6-1M6-14L7-1" stroke="#edbd8b" stroke-width="5"/><path d="M-9-2h6v4h-8ZM4-2h6l3 4H4Z" fill="#8a514d"/><path d="M-9-28Q0-34 9-28L15-11Q0-5-14-11Z" fill="#bb7290"/><path d="M-9-28Q-5-31-1-30L-2-9-14-11Z" fill="#dfa1b7"/><path d="M-9-25l-4 12m22-12 4 12" stroke="#edbd8b" stroke-width="4" stroke-linecap="round"/>'+childFace(kind);
@@ -312,7 +337,7 @@ function canTalk(){const e=encounters[pos];return !!e&&!e.danger&&!done.has(pos)
 function showArrivalEvent(){if(!canTalk())showEvent()}
 function positionTalk(){
  const button=$('#talk');button.hidden=true;
- if(!canTalk())return;
+ if(!canTalk()||(viewMode==='fpv'&&!ForestFPV.animalPose({maze,pos,facing},pos).visible))return;
  const actor=$(`#map [data-encounter="${pos}"]`);if(!actor)return;
  const area=$('.mapwrap').getBoundingClientRect(),r=actor.getBoundingClientRect();
  if(area.width<44||area.height<44||r.width<=0||r.height<=0)return;
@@ -347,14 +372,14 @@ function updateControls(){
   const d=Number(b.dataset.dir),turn=fpv&&(d===1||d===3),world=fpv?(facing+(d===2?2:0))%4:d;
   b.textContent=fpv?['↑','↷','↓','↶'][d]:['↑','→','↓','←'][d];
   b.setAttribute('aria-label',fpv?['Idź do przodu','Obróć się w prawo','Idź do tyłu','Obróć się w lewo'][d]:['Idź w górę','Idź w prawo','Idź w dół','Idź w lewo'][d]);
-  b.disabled=!!walking||!!fleeing||won||lost||dangerPending()||(!turn&&!maze.cells[pos].links.includes(target(world)));
+  b.disabled=!!walking||!!fleeing||won||lost||(!turn&&(dangerPending()||!maze.cells[pos].links.includes(target(world))));
  });
 }
 function handleDirection(d){
  if(walking||fleeing)return;
  if(viewMode!=='fpv'){move(d);return}
  if($('#event').open||$('#menu').open||won)return;
- if(lost||dangerPending()){render();showEvent();return}
+ if(lost||(dangerPending()&&d!==1&&d!==3)){render();showEvent();return}
  if(d===1||d===3){facing=(facing+(d===1?1:3))%4;render()}
  else move((facing+(d===2?2:0))%4);
 }
@@ -405,12 +430,12 @@ function cancelFlee(){const f=fleeing;fleeing=null;if(f&&typeof cancelAnimationF
 function finishFlee(){if(!fleeing)return;cancelFlee();render()}
 function fleePose(cell,t,mode){
  const hop=Math.abs(Math.sin(t*Math.PI*5));
- if(mode==='fpv'){const z=.55+t*4,depth=z+.65;return {x:320+280*(.1+t*.75)/depth,y:145+280*.85/depth-hop*8*(1-t),scale:280/depth*.024,opacity:Math.min(1,(1-t)*2.5)}}
+ if(mode==='fpv'){const start=ForestFPV.animalPose({maze,pos,facing},cell),depth=start.depth+t*4+.65;return {x:320+280*(start.side+t*.75)/depth,y:145+280*.85/depth-hop*8*(1-t),scale:280/depth*.024,opacity:Math.min(1,(1-t)*2.5)}}
  const x=cell%maze.n*60+43,y=Math.floor(cell/maze.n)*60+41,dx=x+45<maze.n*60-8?45:-18;
  return {x:x+dx*t,y:y-35*t-hop*3,scale:.72*(1-.45*t),opacity:Math.min(1,(1-t)*2.5)};
 }
 function startFlee(cell){
- if(typeof requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){render();return}
+ if(typeof requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||(viewMode==='fpv'&&!ForestFPV.animalPose({maze,pos,facing},cell).visible)){render();return}
  const f=fleeing={cell,mode:viewMode,frame:0,started:null};render();
  const wolf=$('#map [data-wolf="true"]');if(!wolf){finishFlee();return}wolf.setAttribute('class','wolf-fleeing');
  const left=$('#map [data-wolf="true"] [data-animal-foot="left"]'),right=$('#map [data-wolf="true"] [data-animal-foot="right"]');
@@ -427,7 +452,10 @@ function startFlee(cell){
 let dialogueSteps=[],dialogueIndex=0;
 function closeEvent(){if($('#event').open)$('#event').close();$('#answers').hidden=false;$('#dialogue-next').hidden=true;document.querySelectorAll('#map [data-speaking]').forEach(el=>el.removeAttribute('data-speaking'))}
 function npcLine(e){return e.danger?e.text.replace('To groźny wilk. ',''):pos===keeper?`Dam ci klucz, jeśli dasz mi ${itemCatalog[e.answer].word}.`:e.text}
-function paintDialogue(){const step=dialogueSteps[dialogueIndex];$('#speaker-name').textContent=step.name;setSceneIcon(step.icon);$('#description').textContent=step.text;$('#event').dataset.speaker=step.speaker;const final=dialogueIndex===dialogueSteps.length-1;$('#answers').hidden=!final;$('#dialogue-next').hidden=false;$('#next').hidden=!(final&&(lost||won));positionBubble();}
+function paintDialogue(){
+ // Starting a conversation may turn the camera toward its fixed speaker.
+ if(viewMode==='fpv'&&dialogueSteps.some(step=>step.speaker==='animal')&&encounters[pos]&&!ForestFPV.animalPose({maze,pos,facing},pos).visible){facing=1;renderScene();updateControls()}
+ const step=dialogueSteps[dialogueIndex];$('#speaker-name').textContent=step.name;setSceneIcon(step.icon);$('#description').textContent=step.text;$('#event').dataset.speaker=step.speaker;const final=dialogueIndex===dialogueSteps.length-1;$('#answers').hidden=!final;$('#dialogue-next').hidden=false;$('#next').hidden=!(final&&(lost||won));positionBubble();}
 function positionBubble(){if(!$('#event').open)return;const card=$('.map-card'),box=$('#event'),r=card.getBoundingClientRect();if(viewMode==='fpv'&&!won){
  const vr=$('.mapwrap').getBoundingClientRect();box.style.setProperty('--bubble-max',Math.max(140,Math.min(330,r.height-40))+'px');
  const bw=box.offsetWidth,bh=box.offsetHeight;box.style.left=Math.max(10,(r.width-bw)/2)+'px';

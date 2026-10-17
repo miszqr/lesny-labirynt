@@ -30,6 +30,26 @@
     const depth = Math.max(.16, z + .65);
     return [320 + 280 * x / depth, 145 + 280 * (.85 - height) / depth];
   }
+  function worldToView({maze,pos,facing}, x, y) {
+    const dx=x-pos%maze.n*2,dy=y-Math.floor(pos/maze.n)*2;
+    const forward=vectors[facing],right=vectors[(facing+1)%4];
+    return [dx*right[0]+dy*right[1],dx*forward[0]+dy*forward[1]];
+  }
+  function animalWorldPose(maze,cell) {
+    // The same fixed offsets as on the map; all animals face west, toward the path.
+    return {x:cell%maze.n*2+13/30,y:Math.floor(cell/maze.n)*2+11/30,heading:3};
+  }
+  function animalPose(state,cell) {
+    const world=animalWorldPose(state.maze,cell),[side,depth]=worldToView(state,world.x,world.y);
+    const dx=state.pos%state.maze.n*2-world.x,dy=Math.floor(state.pos/state.maze.n)*2-world.y;
+    const distance=Math.hypot(dx,dy),forward=vectors[world.heading],right=vectors[(world.heading+1)%4];
+    const front=(dx*forward[0]+dy*forward[1])/distance,flank=dx*right[0]+dy*right[1];
+    // The visible side depends on the observer's location, never the camera's yaw.
+    const view=front>.6?'front':front<-.6?'back':flank>0?'right':'left';
+    const [x,y]=project(side,depth),scale=280/Math.max(.16,depth+.65)*.024;
+    const visible=depth>.04&&Math.abs(side)<depth*(320/280)+.24;
+    return {world,side,depth,x,y,scale,view,visible};
+  }
   const number = n => Number(n.toFixed(2));
   const points = vertices => vertices.map(v => project(...v).map(number).join(',')).join(' ');
   const polygon = (vertices, fill, extra = '') => `<polygon points="${points(vertices)}" fill="${fill}" ${extra}/>`;
@@ -140,8 +160,8 @@
     }
     // Project the map's curved, variable-width roads into the current view.
     // Clip at the camera before projection to keep near curves finite.
-    let floor='',pebbles='';const strips=new Set(),forward=vectors[facing],right=vectors[(facing+1)%4];
-    const local=([x,y])=>{const dx=(x-(pos%maze.n*60+30))/30,dy=(y-(Math.floor(pos/maze.n)*60+30))/30;return [dx*right[0]+dy*right[1],dx*forward[0]+dy*forward[1],0]};
+    let floor='',pebbles='';const strips=new Set();
+    const local=([x,y])=>[...worldToView(state,(x-30)/30,(y-30)/30),0];
     function clipNear(vertices){
       const clipped=[];
       for(let i=0;i<vertices.length;i++){
@@ -189,8 +209,8 @@
         const [x,y]=project(0,room.depth*2+.4),s=280/(room.depth*2+1.05)*.025;
         out+=`<g data-fpv-home="true" transform="translate(${number(x)} ${number(y)}) scale(${number(s)})"><rect x="-24" y="-37" width="48" height="37" rx="2" fill="#efd9a5"/><path d="M-31-35L0-59 31-35Z" fill="#b96846"/><rect x="-6" y="-22" width="12" height="22" rx="2" fill="#886143"/><rect x="12" y="-27" width="9" height="10" fill="#a1d7d0"/><path d="M16.5-27V-17M12-22H21" stroke="#fff0ca" stroke-width="1.5"/></g>`;
       } else if(encounters[room.cell]&&(!encounters[room.cell].danger||!done.has(room.cell)||state.fleeingCell===room.cell)) {
-        const e=encounters[room.cell],z=room.depth*2+.55,[x,y]=project(.1,z),s=280/(z+.65)*.024;
-        out+=`<g data-encounter="${room.cell}" data-wolf="${e.danger===true}" data-character="${room.depth===0?'animal':'distant-animal'}" transform="translate(${number(x)} ${number(y)}) scale(${number(s)})">${art.characterArt(e.icon)}${done.has(room.cell)&&!e.danger?'<circle cx="16" cy="-48" r="6" fill="#fff8da"/><path d="M13-48l2 2 4-5" fill="none" stroke="#5b8650" stroke-width="2"/>':''}</g>`;
+        const e=encounters[room.cell],p=animalPose(state,room.cell);
+        if(p.visible)out+=`<g data-encounter="${room.cell}" data-world-x="${p.world.x}" data-world-y="${p.world.y}" data-world-heading="${p.world.heading}" data-animal-view="${p.view}" data-wolf="${e.danger===true}" data-character="${room.depth===0?'animal':'distant-animal'}" transform="translate(${number(p.x)} ${number(p.y)}) scale(${number(p.scale)})">${art.characterArt(e.icon,p.view)}${done.has(room.cell)&&!e.danger?'<circle cx="16" cy="-48" r="6" fill="#fff8da"/><path d="M13-48l2 2 4-5" fill="none" stroke="#5b8650" stroke-width="2"/>':''}</g>`;
       }
       out+='</g>';
     }
@@ -200,7 +220,7 @@
     out+=compass(facing)+minimap(state)+'</g>';
     return out;
   }
-  const api = { neighbor, isGate, corridor, render };
+  const api = { neighbor, isGate, corridor, worldToView, animalWorldPose, animalPose, render };
   root.ForestFPV = api;
   if(typeof module==='object'&&module.exports) module.exports=api;
 })(typeof window==='object'?window:globalThis);

@@ -43,7 +43,8 @@ test('view switching preserves maze, hearts, key, completed tasks, and wolf draf
   assert.equal(run('JSON.stringify({maze,pos,hearts,hasKey,gateOpen,steps:encounters[pos].steps,visited:[...visited],done:[...done]})'),before);
   const pos=run('pos'),facing=run('facing');
   run('closeEvent();handleDirection(0)'); assert.equal(run('pos'),pos);
-  run('closeEvent();handleDirection(1)'); assert.equal(run('facing'),facing);
+  run('closeEvent();handleDirection(1)'); assert.equal(run('facing'),(facing+1)%4);
+  assert.equal(run('pos'),pos, 'looking around a wolf does not bypass its task');
 });
 
 for(const side of [0,1]) test(`FPV gate blocks crossing from endpoint ${side} until opened, then renders an open wicket`, () => {

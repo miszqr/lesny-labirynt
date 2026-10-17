@@ -169,3 +169,14 @@ Na polach z dwoma połączeniami `roadCurve()` wyznacza wspólną styczną obu o
 FPV rzutuje te same krzywe i profil szerokości na widok gracza, z poszerzeniem dostosowanym do perspektywy. Wielokąty są przycinane przed kamerą przed rzutowaniem. Kamienie leżą wzdłuż łuków, a roślinność, furtki i reguły widoczności pozostają osobnymi elementami.
 
 Trzy nowe testy `road-geometry.test.cjs` kontrolują ciągłość kierunku, zgodność szerokości na połączeniach, bezpieczne granice pasów oraz odwracalność trasy chodzenia i przecięcie środka furtki. Łącznie przeszły 34 testy geometrii, mgły, chodzenia, warstw furtki i FPV. Porównano rastry mapy oraz widoku FPV; testów w przeglądarce nie wykonano, ponieważ podgląd pozostaje niedostępny.
+
+
+### Stałe pozycje i orientacje zwierząt w FPV — 2026-10-17
+
+`animalWorldPose()` przypisuje zwierzęciu stałe współrzędne na jego polu, zgodne z przesunięciem rysunku na mapie, oraz kierunek zachodni. `worldToView()` obraca położenie względem gracza; korzystają z niego zwierzęta i ścieżki. Wcześniej zwierzak był umieszczany zawsze w tym samym miejscu przed kamerą. Teraz `animalPose()` odrzuca postacie za graczem lub poza polem widzenia. Dotychczasowy zasięg korytarza i zasłanianie przez zamkniętą furtkę pozostają zachowane.
+
+Widok przodu, tyłu lub profilu zależy od położenia obserwatora względem zwierzęcia, nie od obrotu kamery. Sam obrót w miejscu nie obraca zwierzaka; obejście go pokazuje inną stronę. `animalDirectionalArt()` dodaje boczne i tylne rysunki wszystkich siedmiu gatunków, zachowując kolory, animację oddechu i znaczniki łap. Rysunki z przodu i mapa pozostają bez zmian.
+
+Chmurka jest ukrywana, gdy przyjaciel znajduje się poza widokiem. Rozpoczęcie rozmowy przyciskiem „Pomóż” lub otwarcie spotkania z wilkiem kieruje kamerę ku rozmówcy, jeśli gracz patrzył w inną stronę. Po zamknięciu dialogu można się rozglądać także przy nierozwiązanym wilku; przejście nadal jest zablokowane. Ucieczka rozpoczyna się w pozycji aktualnie narysowanego wilka. Zwierzę znajdujące się poza ekranem nie uruchamia widocznej animacji ucieczki.
+
+Pięć testów `fpv-world-animals.test.cjs` obejmuje pełny obrót, obejście postaci, ściany i furtkę, chmurkę oraz początek ucieczki. Zaktualizowano oczekiwanie dotyczące rozglądania się przy wilku. Łącznie przeszło 31 testów FPV, rozmów, chodzenia i ucieczki. Obejrzano rastry czterech kierunków kamery oraz wszystkich wariantów postaci. Weryfikacja w przeglądarce pozostaje niewykonana z powodu niedostępnego podglądu.
