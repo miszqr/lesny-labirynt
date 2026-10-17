@@ -37,8 +37,8 @@ function game({ animation = false, reducedMotion = false, size = 4, seed = 123 }
 
 function supplyFixture(g) {
   g.run(`loot={items:{},chests:[],inventoryItemIds:[],consumedItemIds:[],completedRequestIds:[],unlockedGateIds:[],keyIds:[],requests:[]};
-    for(const [cell,e] of Object.entries(encounters))if(!e.danger){
-      const id='fixture-'+cell;loot.items[id]={id,typeId:e.answer};loot.inventoryItemIds.push(id);
+    for(const [cell,e] of Object.entries(encounters).sort(([a],[b])=>(Number(b)===pos)-(Number(a)===pos)))if(!e.danger){
+      const id='fixture-'+cell;if(loot.inventoryItemIds.length<ForestLoot.CAPACITY){loot.items[id]={id,typeId:e.answer};loot.inventoryItemIds.push(id)};
       loot.requests.push({id:'request-'+cell,cell:Number(cell),requiredTypeId:e.answer,rewardId:Number(cell)===keeper?'forest-key':null});
     }`);
 }

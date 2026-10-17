@@ -18,7 +18,7 @@ Nowe zmiany uporządkowane od najprostszych do najtrudniejszych. Ocena trudnośc
 ## Trudne
 
 - [x] **Zwierzęta w FPV:** naprawić pozycję i orientację obiektów; zwierzęta mają pozostawać nieruchome w świecie podczas obracania widoku.
-- [x] **Model przedmiotów i plecaka:** unikatowe egzemplarze przedmiotów, brak limitu pojemności, podgląd i liczniki.
+- [x] **Model przedmiotów i plecaka:** unikatowe egzemplarze przedmiotów, limit 2 egzemplarzy, podgląd, liczniki i odkładanie do skrzyni.
 - [x] **Skrzynki przy ścieżkach:** jedna skrzynka może zawierać kilka przedmiotów; można zabierać je pojedynczo i częściowo opróżniać skrzynkę.
 - [x] **Oddawanie przedmiotów zwierzętom:** możliwość oddania tylko posiadanego przedmiotu; zużycie jednego egzemplarza, jednorazowa nagroda.
 - [x] **Swobodne odkrywanie:** przedmioty można zbierać przed poznaniem potrzeb zwierząt.
@@ -43,7 +43,7 @@ Nowe zmiany uporządkowane od najprostszych do najtrudniejszych. Ocena trudnośc
 
 Szczegóły: [`LESNY_LABIRYNT_SPEC_SKRZYNKI_PLECAK.md`](LESNY_LABIRYNT_SPEC_SKRZYNKI_PLECAK.md).
 
-**Ustalenia:** skrzynka może zawierać wiele przedmiotów; każdy egzemplarz ma jedno zastosowanie i znika po oddaniu; swobodne odkrywanie; brak limitu plecaka; brak niedostępnych wymaganych przedmiotów.
+**Ustalenia:** skrzynka może zawierać wiele przedmiotów; każdy egzemplarz ma jedno zastosowanie i znika po oddaniu; swobodne odkrywanie; limit 2 egzemplarzy i możliwość odkładania do skrzyni; brak niedostępnych wymaganych przedmiotów.
 
 ## Stan wdrożenia — 2026-10-17
 

@@ -86,3 +86,7 @@ Sprawdzono składnię i wyliczenie **69 scenariuszy**; wszystkie **106 testów l
 ## Skrzynki i plecak — scenariusze przygotowane
 
 Dodano odbiór pojedynczy i całej zawartości, powrót do częściowo opróżnionej skrzynki, pustą skrzynkę, podgląd plecaka, brak zamknięcia po kliknięciu poza oknem oraz dostęp do sterowania po „Dalej” w mapie i FPV. Zaktualizowano sceny zwierząt do posiadania fizycznej instancji przedmiotu i podziękowania po oddaniu. Scenariusze pozostają niewykonane w przeglądarce.
+
+## Limit dwóch miejsc i odkładanie
+
+Scenariusz skrzyni obejmuje teraz zapełnienie dwóch miejsc, zablokowany trzeci odbiór, odłożenie jednej sztuki i ponowne odblokowanie odbioru. Zestaw nadal czeka na działający podgląd przeglądarkowy.

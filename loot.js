@@ -1,6 +1,7 @@
 /* Item instances are owned by exactly one chest, the backpack, or a completed request. */
 (function(root){
  'use strict';
+ const CAPACITY=2;
  function reachable(maze,open=false){
   const seen=new Set([maze.start]),queue=[maze.start];
   for(let i=0;i<queue.length;i++)for(const next of maze.cells[queue[i]].links){
@@ -34,8 +35,13 @@
  }
  function take(state,chestId,itemId){
   const chest=state.chests.find(c=>c.id===chestId),index=chest?.itemIds.indexOf(itemId)??-1;
-  if(index<0||!state.items[itemId]||state.inventoryItemIds.includes(itemId)||state.consumedItemIds.includes(itemId))return false;
+  if(state.inventoryItemIds.length>=CAPACITY||index<0||!state.items[itemId]||state.inventoryItemIds.includes(itemId)||state.consumedItemIds.includes(itemId))return false;
   chest.itemIds.splice(index,1);state.inventoryItemIds.push(itemId);return true;
+ }
+ function putBack(state,chestId,itemId){
+  const chest=state.chests.find(c=>c.id===chestId),index=state.inventoryItemIds.indexOf(itemId);
+  if(!chest||index<0||!state.items[itemId]||chest.itemIds.includes(itemId)||state.consumedItemIds.includes(itemId))return false;
+  state.inventoryItemIds.splice(index,1);chest.itemIds.push(itemId);return true;
  }
  function count(state,typeId){return state.inventoryItemIds.filter(id=>state.items[id].typeId===typeId).length}
  function deliver(state,requestId){
@@ -54,7 +60,7 @@
  }
  function invariant(state){
   const locations=[...state.chests.flatMap(c=>c.itemIds),...state.inventoryItemIds,...state.consumedItemIds];
-  return locations.length===Object.keys(state.items).length&&new Set(locations).size===locations.length&&locations.every(id=>state.items[id]?.id===id)&&new Set(state.completedRequestIds).size===state.completedRequestIds.length&&state.completedRequestIds.every(id=>state.requests.some(r=>r.id===id));
+  return state.inventoryItemIds.length<=CAPACITY&&locations.length===Object.keys(state.items).length&&new Set(locations).size===locations.length&&locations.every(id=>state.items[id]?.id===id)&&new Set(state.completedRequestIds).size===state.completedRequestIds.length&&state.completedRequestIds.every(id=>state.requests.some(r=>r.id===id));
  }
  function validate(maze,state){
   if(!invariant(state))return {ok:false,reason:'Nieprawidłowe właścicielstwo przedmiotów.'};
@@ -65,6 +71,8 @@
   function visit(completed){
    const signature=[...completed].sort().join('|');if(memo.has(signature))return memo.get(signature);states++;
    const open=state.requests.some(r=>completed.has(r.id)&&r.rewardId==='forest-key');
+   // Reachable stock includes chests, not one oversized inventory. Each request
+   // needs one item; free returns and permanently open gates allow repeated trips.
    const area=reachable(maze,open),stock={};
    for(const c of state.chests)if(area.has(c.cell))for(const id of c.itemIds){const type=state.items[id].typeId;stock[type]=(stock[type]||0)+1}
    for(const r of state.requests)if(completed.has(r.id))stock[r.requiredTypeId]=(stock[r.requiredTypeId]||0)-1;
@@ -75,6 +83,6 @@
   }
   const ok=visit(new Set());return {ok,states,reason:ok?'':'Brak przedmiotów dla jednej z kolejności zadań.'};
  }
- const api={reachable,create,take,count,deliver,unlock,invariant,validate};root.ForestLoot=api;
+ const api={CAPACITY,reachable,create,take,putBack,count,deliver,unlock,invariant,validate};root.ForestLoot=api;
  if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window==='object'?window:globalThis);

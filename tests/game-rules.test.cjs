@@ -83,8 +83,8 @@ function player(size, seed) {
   }
 
   function helpFriend() {
-    const cell = run('pos'), e = run('encounters[pos]'), before = run('hearts');
-    assert(e && !e.danger); readyTask();
+    const cell = run('pos'), e = run('encounters[pos]');
+    assert(e && !e.danger); collectFor(cell); const before = run('hearts'); readyTask();
     const request = run('loot.requests.find(r=>r.cell===pos)'), count = run(`ForestLoot.count(loot,'${e.answer}')`);
     assert(count > 0, 'items were collected through legal travel and chest controls');
     const originalText = $('#description').textContent;
@@ -120,15 +120,31 @@ function player(size, seed) {
     assert.equal(run('gateOpen'), true); assert.equal(run('hearts'), before);
   }
 
-  function gatherEarly() {
-    for (const chest of run('loot.chests')) {
-      if (!explore(maze, maze.start, false).parent.has(chest.cell)) continue;
-      travel(chest.cell); run('closeEvent()'); $('#interact').onclick();
-      assert.equal($('#storage').open, true);
-      $('#take-all').onclick(); $('#storage-next').onclick();
-      assert.equal(chest.itemIds.length, 0);
+  function collectFor(cell) {
+    const type=run(`encounters[${cell}].answer`);
+    if(!run(`ForestLoot.count(loot,'${type}')`)){
+      const state=run('loot'),area=explore(maze,maze.start,run('gateOpen')).parent;
+      const chest=state.chests.find(c=>area.has(c.cell)&&c.itemIds.some(id=>state.items[id].typeId===type));
+      assert(chest,'reachable matching item remains in a chest');
+      travel(chest.cell);run('closeEvent()');$('#interact').onclick();
+      if(state.inventoryItemIds.length===2){
+        const before=state.inventoryItemIds.length,returned=state.inventoryItemIds[0];
+        descendants($('#storage-backpack-grid')).find(b=>b.dataset.putBack===returned).onclick();
+        assert.equal(state.inventoryItemIds.length,before-1);assert(chest.itemIds.includes(returned));
+      }
+      const itemId=chest.itemIds.find(id=>state.items[id].typeId===type);
+      descendants($('#storage-grid')).find(b=>b.dataset.take===itemId).onclick();$('#storage-next').onclick();
+      assert(state.inventoryItemIds.length<=2);assert(run('ForestLoot.invariant(loot)'));
+      travel(cell);
     }
-    assert(run('loot.inventoryItemIds.length') > 0);
+  }
+
+  function gatherEarly() {
+    const chest=run('loot.chests[0]');travel(chest.cell);run('closeEvent()');$('#interact').onclick();
+    for(let i=0;i<2;i++)descendants($('#storage-grid')).find(b=>b.dataset.take).onclick();
+    assert.equal(run('loot.inventoryItemIds.length'),2);assert(chest.itemIds.length>0);
+    assert(descendants($('#storage-grid')).filter(b=>b.dataset.take).every(b=>b.disabled));
+    $('#storage-next').onclick();
   }
 
   function reachWolf() {

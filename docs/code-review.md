@@ -6,6 +6,14 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Plecak: dwa miejsca i odkładanie — 2026-10-17
+
+Plecak mieści teraz dokładnie dwa egzemplarze. Każda sztuka zajmuje osobne miejsce, nawet przy takim samym typie; klucz do furtki pozostaje osobną nagrodą. Pełny plecak blokuje odbiór na poziomie modelu i UI. „Zabierz wszystko” działa tylko wtedy, gdy mieści się cała zawartość.
+
+W oknie skrzyni widoczny jest także plecak, z przyciskiem „Odłóż do skrzyni” przy każdej sztuce. Odkładanie działa również w samym plecaku, gdy gracz stoi przy skrzyni. Można użyć dowolnej osiągalnej skrzyni, także pustej. Odłożony przedmiot zachowuje ID i można go znów zabrać; nie powstają kopie. Zmiany od razu odzwierciedlają licznik oraz wygląd skrzyni w mapie i FPV.
+
+**141 testów przeszło, 0 błędów.** Testy pojemności obejmują zablokowanie trzeciej sztuki, zwolnienie miejsca po oddaniu lub odłożeniu, inną i pustą skrzynię, nieaktualne akcje oraz niedozwolony zwrot z oddalonego pola. Zestaw 3000 układów wykonuje po sześć symulacji dostaw przy dwóch miejscach, z odkładaniem niepotrzebnych przedmiotów. Pełne rozgrywki pobierają teraz potrzebne przedmioty i wymieniają zawartość plecaka przez kontrolki gry; przeszło 300 wygranych i 30 przegranych. Podgląd przeglądarkowy i kontrola telefonu nadal są niedostępne; T03 pozostaje otwarte.
+
 ## Skrzynki i plecak — 2026-10-17
 
 Wdrożono załączoną specyfikację: stałą zawartość skrzynek, częściowy odbiór, plecak z ikonami i licznikami, jednorazowe oddawanie instancji i nagrody, podziękowania w ponownej rozmowie oraz wspólny stan mapy i FPV. Skrzynki stoją obok ścieżek, bez kolizji z dekoracjami; pustą skrzynkę wyróżnia otwarte wieko. Okna zamyka „Dalej” lub Escape; kliknięcia poza nimi nie zamykają ani nie uruchamiają sterowania.

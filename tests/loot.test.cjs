@@ -6,6 +6,26 @@ const {game}=require('./helpers/game.cjs');
 const {explore}=require('./helpers/routes.cjs');
 const all=node=>[node,...node.children.flatMap(all)];
 
+// Carry real instances with the two-slot limit, returning unwanted loot before each trip.
+function exerciseCapacity(maze,initial){
+ for(const order of [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]]){
+  const state=JSON.parse(JSON.stringify(initial)),first=state.chests[0];
+  for(const id of first.itemIds.slice(0,2))assert(L.take(state,first.id,id));
+  for(let step=0;step<state.requests.length;step++){
+   const area=explore(maze,maze.start,state.unlockedGateIds.length>0).parent;
+   const r=order.map(i=>state.requests[i]).find(r=>!state.completedRequestIds.includes(r.id)&&area.has(r.cell));assert(r);
+   if(!L.count(state,r.requiredTypeId)){
+    const chest=state.chests.find(c=>area.has(c.cell)&&c.itemIds.some(id=>state.items[id].typeId===r.requiredTypeId));assert(chest);
+    if(state.inventoryItemIds.length===2)assert(L.putBack(state,chest.id,state.inventoryItemIds[0]));
+    assert(L.take(state,chest.id,chest.itemIds.find(id=>state.items[id].typeId===r.requiredTypeId)));
+   }
+   const reward=L.deliver(state,r.id);assert(reward);if(reward.rewardId)assert(L.unlock(state,'forest-gate',reward.rewardId));
+   assert(state.inventoryItemIds.length<=2);assert(L.invariant(state));
+  }
+  assert(explore(maze,maze.start,state.unlockedGateIds.length>0).parent.has(maze.exit));
+ }
+}
+
 for(const n of [4,6,8])test(`${n}x${n}: 1000 generated inventories remain solvable in every delivery order, including duplicate types`,()=>{
  for(let seed=0;seed<1000;seed++){
   const random=seededRandom(seed),maze=generateMaze(n,random);
@@ -13,7 +33,7 @@ for(const n of [4,6,8])test(`${n}x${n}: 1000 generated inventories remain solvab
   const spots=maze.cells.filter(c=>!maze.places.includes(c.id)&&!maze.gate.includes(c.id)&&c.id!==maze.exit).map(c=>({cell:c.id,position:{x:c.id%n*60+48,z:Math.floor(c.id/n)*60+48}}));
   const state=L.create({maze,requests,spots,typeIds:['apple','milk','ball'],random});
   assert(L.validate(maze,state).ok,`size=${n} seed=${seed}`);
-  assert(L.invariant(state));
+  assert(L.invariant(state));exerciseCapacity(maze,state);
   const reachable=explore(maze,maze.start,false).parent,stock={};
   for(const chest of state.chests){
    const types=new Set(chest.itemIds.map(id=>state.items[id].typeId));assert(types.size>=2&&types.size<=3);
@@ -46,23 +66,26 @@ test('instances transfer once, partial chests retain contents, and delivery cons
  assert.equal(state.unlockedGateIds.length,1);assert(L.invariant(state));
 });
 
-test('chest UI supports early discovery, individual pickup, partial reopening, empty state and stale clicks',()=>{
+test('chest UI limits pickup to two, supports partial reopening and return without stale transfers',()=>{
  const g=game(),{$,run}=g;run('closeEvent()');
- assert.equal(run('pos'),run('loot.chests[0].cell'));
- assert.equal(run('done.size'),0);
+ assert.equal(run('pos'),run('loot.chests[0].cell'));assert.equal(run('done.size'),0);
  $('#chest-interact').onclick();assert.equal($('#storage').open,true);
  const chest=run('currentChest()'),before=chest.itemIds.length,first=all($('#storage-grid')).find(b=>b.dataset.take);
  first.onclick();first.onclick();assert.equal(chest.itemIds.length,before-1);assert.equal(run('loot.inventoryItemIds.length'),1);
  const second=all($('#storage-grid')).find(b=>b.dataset.take);
  $('#storage-next').onclick();second.onclick();assert.equal(chest.itemIds.length,before-1);
- $('#interact').onclick();second.onclick();assert.equal(chest.itemIds.length,before-1,'stale DOM from previous opening ignored');
- $('#take-all').onclick();assert.equal(chest.itemIds.length,0);assert.equal($('#storage-subtitle').textContent,'Pusta. Wszystko zostało zabrane.');
- const count=run('loot.inventoryItemIds.length');$('#storage-next').onclick();$('#chest-interact').onclick();$('#take-all').onclick();
- assert.equal(run('loot.inventoryItemIds.length'),count);assert.match($('#storage-grid').children[0].textContent,/Pusta/);
+ $('#interact').onclick();second.onclick();assert.equal(chest.itemIds.length,before-1,'stale previous opening ignored');
+ $('#take-all').onclick();assert.equal(run('loot.inventoryItemIds.length'),1,'bulk pickup is all-or-none when remaining items do not fit');
+ all($('#storage-grid')).find(b=>b.dataset.take).onclick();assert.equal(run('loot.inventoryItemIds.length'),2);
+ const blocked=all($('#storage-grid')).find(b=>b.dataset.take);assert.equal(blocked.disabled,true);blocked.onclick();assert.equal(run('loot.inventoryItemIds.length'),2);
+ assert.equal($('#backpack-count').textContent,'2 / 2');assert.match($('#storage-subtitle').textContent,/Pełny plecak/);
+ const returned=all($('#storage-backpack-grid')).find(b=>b.dataset.putBack),itemId=returned.dataset.putBack;
+ returned.onclick();returned.onclick();assert.equal(run('loot.inventoryItemIds.length'),1);assert.equal(chest.itemIds.filter(id=>id===itemId).length,1);
+ assert.equal(all($('#storage-grid')).find(b=>b.dataset.take===itemId).disabled,false);
  $('#storage-next').onclick();$('#backpack-toggle').onclick();
  assert.equal($('#storage-title').textContent,'🎒 Plecak');assert.equal($('#take-all').hidden,true);
- const counts=all($('#storage-grid')).filter(e=>e.className==='item-count').map(e=>Number(e.textContent.slice(2)));
- assert.equal(counts.reduce((a,b)=>a+b,0),count);assert.equal($('#backpack-count').textContent,String(count));
+ const count=all($('#storage-grid')).filter(e=>e.className==='item-count').reduce((sum,e)=>sum+Number(e.textContent.slice(2)),0);assert.equal(count,1);
+ all($('#storage-grid')).find(b=>b.dataset.putBack).onclick();assert.equal(run('loot.inventoryItemIds.length'),0);
  assert.equal(run('ForestLoot.invariant(loot)'),true);
 });
 
@@ -74,11 +97,11 @@ for(const mode of ['map','fpv'])test(`${mode}: storage blocks outside clicks and
  const pos=run('pos'),facing=run('facing');g.buttons.forEach(b=>b.onclick());
  events.keydown({key:'ArrowUp',target:{tagName:'BUTTON'},preventDefault(){}});
  assert.equal(run('pos'),pos);assert.equal(run('facing'),facing);
- const stale=all($('#storage-grid')).find(b=>b.dataset.take);$('#take-all').onclick();$('#storage-next').onclick();
+ const stale=all($('#storage-grid')).find(b=>b.dataset.take);stale.onclick();$('#storage-next').onclick();
  const snapshot=run('JSON.stringify(loot)');$('#view-toggle').onclick();assert.equal(run('JSON.stringify(loot)'),snapshot);
  const chest=run('currentChest()');
  if(run('viewMode')==='fpv')run('openStorage(currentChest().id);closeStorage()');
- assert(g.$('#map').innerHTML.includes(`data-chest="${chest.id}" data-empty="true"`));
+ assert(g.$('#map').innerHTML.includes(`data-chest="${chest.id}" data-empty="false"`));
  run('start();closeEvent();openStorage(currentChest().id)');stale.onclick();
  assert.equal(run('loot.inventoryItemIds.length'),0);assert.equal(run('loot.consumedItemIds.length'),0);
  assert.equal(run('ForestLoot.invariant(loot)'),true);

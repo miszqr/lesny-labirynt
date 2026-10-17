@@ -9,7 +9,7 @@ Wprowadzić swobodne odkrywanie przedmiotów w skrzynkach przy ścieżkach, prze
 - Skrzynka może zawierać **wiele przedmiotów** (także różne typy).
 - Każdy **egzemplarz** przedmiotu może zostać przekazany tylko raz i po przekazaniu znika z plecaka.
 - Przedmioty są dostępne od początku w ramach osiągalnego obszaru, niezależnie od aktywacji dialogu lub zadania.
-- Nie ma limitu pojemności plecaka.
+- Plecak mieści 2 egzemplarze przedmiotów; dwa takie same przedmioty zajmują dwa miejsca. Klucz do furtki jest nagrodą przechowywaną osobno.
 - Skrzynki stoją przy dostępnych ścieżkach, nie blokują przejścia.
 - Zawartość skrzynek ustalana jest podczas generowania mapy, nie w momencie otwarcia.
 - Skrzynki nie wymagają kluczy; klucze od zwierząt służą do bram.
@@ -68,7 +68,7 @@ type GameState = {
 - Stały przycisk z ikoną plecaka w interfejsie gry.
 - Siatka dużych ikon z czytelnymi podpisami przedmiotów.
 - Wiele egzemplarzy jednego typu może być pokazanych jako jedna ikona z licznikiem, ale w stanie gry pozostają oddzielnymi egzemplarzami.
-- Plecak służy do podglądu; brak ręcznego wyrzucania lub przekazywania przedmiotów między polami.
+- Przy dostępnej skrzyni można odłożyć do niej pojedynczy egzemplarz z plecaka. Można to zrobić w oknie skrzyni albo w plecaku, gdy gracz stoi przy skrzyni. Nie można wyrzucać przedmiotów na ziemię.
 - Plecak nie zasłania trwale sterowania; zamykany przyciskiem „Dalej”.
 
 ## 6. Interakcja ze zwierzęciem
@@ -132,12 +132,21 @@ Walidator symuluje zbieranie wszystkich dostępnych przedmiotów, wykonanie moż
 
 ## 11. Poza zakresem pierwszej wersji
 
-- Limit pojemności lub ciężaru plecaka.
+- Waga przedmiotów.
 - Ręczne upuszczanie przedmiotów.
-- Handel, crafting, przenoszenie między skrzynkami.
+- Handel, crafting i bezpośrednie przenoszenie między skrzynkami bez udziału plecaka.
 - Losowanie zawartości podczas otwierania.
 - Skrzynki zamykane na klucz.
 
 ## Stan wdrożenia — 2026-10-17
 
 Pola zaznaczone oznaczają wdrożenie w kodzie. Reguły i stan UI sprawdzono w Node z atrapą DOM, a grafikę mapy i FPV na rastrach SVG. Kontrola rzeczywistego układu, dotyku i telefonu pozostaje otwarta w T03 z powodu niedostępnego zarządzanego podglądu. Stan przygody trwa w pamięci; projekt nie posiada zapisu gry.
+
+## Aktualizacja zasad — 2026-10-17, limit plecaka
+
+Nowsze polecenie użytkownika wprowadza dwa miejsca i odkładanie do skrzyni. Pełny plecak blokuje odbiór bez utraty przedmiotu. „Zabierz wszystko” działa tylko wtedy, gdy zmieści się cała pozostała zawartość. Odłożony przedmiot zachowuje ID i można go ponownie zabrać, także z innej skrzyni. Skrzynie nie mają limitu pojemności. Po oddaniu zwierzakowi zwalnia się jedno miejsce. Stan pozostaje wspólny dla mapy i FPV.
+
+- [x] Nie można mieć więcej niż dwóch egzemplarzy w plecaku.
+- [x] Oddanie lub odłożenie jednej sztuki zwalnia dokładnie jedno miejsce.
+- [x] Przedmiot można odłożyć do aktualnej skrzyni i ponownie go zabrać bez duplikacji.
+- [x] Odkładanie z oddalonego pola lub przez nieaktualny przycisk jest blokowane.

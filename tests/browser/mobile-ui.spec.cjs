@@ -98,15 +98,20 @@ for (const mode of ['map', 'fpv']) {
     const original=await page.locator('[data-take]').count();expect(original).toBeGreaterThanOrEqual(3);
     await page.locator('[data-take]').first().tap();
     await expect(page.locator('[data-take]')).toHaveCount(original-1);
-    await expect(page.locator('#backpack-count')).toHaveText('1');
+    await expect(page.locator('#backpack-count')).toHaveText('1 / 2');
     await page.touchscreen.tap(2,2);await expect(page.locator('#storage')).toBeVisible();
     await page.locator('#storage-next').tap();await controlsFit(page);
     await page.locator('#interact').tap();await expect(page.locator('[data-take]')).toHaveCount(original-1);
-    await page.locator('#take-all').tap();await expect(page.locator('.storage-empty')).toHaveText('Pusta');
+    await page.locator('[data-take]').first().tap();
+    await expect(page.locator('#backpack-count')).toHaveText('2 / 2');
+    await expect(page.locator('[data-take]').first()).toBeDisabled();
+    await page.locator('[data-put-back]').first().tap();
+    await expect(page.locator('#backpack-count')).toHaveText('1 / 2');
+    await expect(page.locator('[data-take]').first()).toBeEnabled();
     await page.locator('#storage-next').tap();await page.locator('#backpack-toggle').tap();
     await expect(page.locator('#storage-title')).toHaveText('🎒 Plecak');
     await expect(page.locator('#take-all')).not.toBeVisible();
-    expect(await page.locator('.storage-item').count()).toBeGreaterThanOrEqual(2);
+    expect(await page.locator('.storage-item:visible').count()).toBe(1);
     await page.locator('#storage-next').tap();await controlsFit(page);await pageFits(page);
   });
 

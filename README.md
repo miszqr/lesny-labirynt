@@ -17,8 +17,8 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 - Losowy labirynt 4×4, 6×6 lub 8×8; cel: dotrzeć do domu. W 2D Adam odsłania okolicę z dodatkowym zasięgiem około pół pola. Mgła ma nieregularny, miękko cieniowany brzeg. Każdy odsłonięty fragment, także na obrzeżach zasięgu, pozostaje widoczny do końca tej przygody. Samo zobaczenie fragmentu pola nie zalicza go jako odwiedzonego.
 - Ścieżki mają miękkie, rozmyte brzegi przechodzące w trawę, przy zachowaniu czytelnego środka. W FPV kolejne odcinki mają wspólną kolorystykę bez ostrych łączeń.
 - Krajobraz urozmaicają trawiaste pagórki z cieniowanymi stokami, kamieniami i drobnymi kwiatami. FPV pokazuje te same drzewa, jeziora i pagórki w szerszej perspektywie. Pagórki nie zmieniają przejść labiryntu.
-- Przy ścieżkach stoją skrzynki z kilkoma przedmiotami. Można zabierać je pojedynczo lub wszystkie naraz, również przed rozmową ze zwierzakiem. Częściowo opróżniona skrzynka zachowuje resztę, a pusta zostaje na mapie.
-- 🎒 Plecak pokazuje duże ikony, nazwy i liczniki. Nie ma limitu pojemności. Każdy egzemplarz jest osobny; przycisk „Daj…” zużywa jeden pasujący przedmiot i daje nagrodę tylko raz. Bez przedmiotu widoczna jest sama prośba zwierzaka. Przycisk „Daj…” zawiera sam tekst, aby zadanie wymagało czytania; ikony przedmiotów są w skrzynkach i plecaku.
+- Przy ścieżkach stoją skrzynki z kilkoma przedmiotami. Można zabierać je pojedynczo lub wszystkie naraz, jeśli mieszczą się w plecaku, również przed rozmową ze zwierzakiem. Częściowo opróżniona skrzynka zachowuje resztę, a pusta zostaje na mapie.
+- 🎒 Plecak pokazuje duże ikony, nazwy i liczniki. Plecak mieści **2 egzemplarze** przedmiotów, a licznik pokazuje zajęte miejsca, np. „1 / 2”. Przy dowolnej dostępnej skrzyni można wybrać „Odłóż do skrzyni”, również z okna plecaka. Każdy egzemplarz zajmuje jedno miejsce, także gdy oba są tego samego typu. Klucz do furtki jest osobną nagrodą i nie zajmuje miejsca na przedmioty. Każdy egzemplarz jest osobny; przycisk „Daj…” zużywa jeden pasujący przedmiot i daje nagrodę tylko raz. Bez przedmiotu widoczna jest sama prośba zwierzaka. Przycisk „Daj…” zawiera sam tekst, aby zadanie wymagało czytania; ikony przedmiotów są w skrzynkach i plecaku.
 - Prośba losuje się z ulubionych rzeczy zwierzaka raz na przygodę. Wszystkie wymagane egzemplarze są dostępne przed furtką, także przy powtarzających się typach. Generator sprawdza każdą możliwą kolejność oddawania.
 - Jeden zwierzak daje klucz do furtki. Jest dostępny przed zamkniętą furtką. Jego prośba zaczyna się od „Dam ci klucz, jeśli…” i wskazuje wylosowany przedmiot.
 - Po dojściu do przyjaznego zwierzaka pojawia się przy nim mała chmurka z trzema kropkami. Kliknięcie chmurki otwiera rozmowę; działa też Tab i Enter. Chmurka jest dostępna w mapie i FPV, wraca po zamknięciu rozmowy i znika po odejściu. Po wykonaniu zadania rozmowa wyświetla podziękowanie.
@@ -35,7 +35,7 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 ## Pliki
 
 - `index.html`: interfejs, style, ilustracje SVG i logika rozgrywki.
-- `loot.js`: egzemplarze przedmiotów, skrzynki, plecak, jednorazowe oddawanie, otwieranie furtki i walidator wszystkich kolejności zadań.
+- `loot.js`: egzemplarze przedmiotów, skrzynki, plecak, jednorazowe oddawanie, limit dwóch miejsc, odkładanie do skrzyni, otwieranie furtki i walidator wszystkich kolejności zadań.
 - `maze.js`: generator labiryntu, furtki i położenia zwierzaka z kluczem.
 - `fpv.js`: perspektywiczny widok leśnych korytarzy SVG, wyznaczany z połączeń tej samej mapy.
 - `assets/home-reunion.png`: zaakceptowana ilustracja finałowa — brat i siostra radośnie idą ku sobie.
@@ -68,7 +68,8 @@ Polecenie uruchamia cały zestaw, w tym testy dodane w T01:
 | Obszar | Zakres domyślny |
 | --- | --- |
 | `maze.test.cjs` | 3000 map: rozmiary 4, 6, 8 i ziarna 1–1000; spójne drzewo, poprawni sąsiedzi, furtka, dostępny klucz i miejsca spotkań. |
-| `loot.test.cjs` | 3000 układów przedmiotów, w tym powtarzające się typy; wszystkie kolejności zadań, błędne układy, podwójne kliknięcia, częściowy odbiór, okna, wspólny stan mapy i FPV, rozmieszczenie bez przeszkód. |
+| `backpack-capacity.test.cjs` | Limit dwóch egzemplarzy, zwrot do innej i pustej skrzyni, brak duplikacji, zwolnienie miejsca po oddaniu, stare akcje i spójność mapy/FPV. |
+| `loot.test.cjs` | 3000 układów przedmiotów oraz po sześć symulacji kolejności dostaw z limitem dwóch miejsc i odkładaniem, w tym powtarzające się typy; wszystkie kolejności zadań, błędne układy, podwójne kliknięcia, częściowy odbiór, okna, wspólny stan mapy i FPV, rozmieszczenie bez przeszkód. |
 | `game-rules.test.cjs` | 300 pełnych rozgrywek: każdy rozmiar i ziarna 1–100, naprzemiennie mapa oraz FPV; zbieranie ze skrzynek przez legalne dojście, oddawanie, klucz, zamknięta furtka, jednorazowe nagrody, finał i restart. |
 | `game-rules.test.cjs` | 30 przegranych: każdy rozmiar i ziarna 1–10; zejście do zera serc, blokada ruchu, pełny restart z menu. Dodatkowo restart po niedokończonej odpowiedzi wilkowi w każdym rozmiarze. |
 
