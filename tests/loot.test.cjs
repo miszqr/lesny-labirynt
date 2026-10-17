@@ -84,10 +84,10 @@ for(const mode of ['map','fpv'])test(`${mode}: storage blocks outside clicks and
  assert.equal(run('ForestLoot.invariant(loot)'),true);
 });
 
-test('a missing item offers a clue, delivery becomes available after collection, and thanks never consume again',()=>{
+test('without an item only the request is shown; collection enables delivery and thanks never consume again',()=>{
  const g=game(),{$,run}=g;run('closeEvent();pos=keeper;render();showEvent()');$('#dialogue-next').onclick();
  assert.match($('#description').textContent,/^Dam ci klucz, jeśli /);
- assert.equal($('#answers').children.some(b=>b.dataset.item),false);assert.equal($('#answers').children[0].className,'need-item');
+ assert.equal($('#answers').children.length,0);
  const request=run('loot.requests.find(r=>r.cell===keeper)'),item=run('Object.values(loot.items).find(i=>i.typeId===encounters[keeper].answer)');
  run(`closeEvent();pos=loot.chests.find(c=>c.itemIds.includes('${item.id}')).cell;render();openStorage(currentChest().id)`);
  all($('#storage-grid')).find(b=>b.dataset.take===item.id).onclick();$('#storage-next').onclick();
