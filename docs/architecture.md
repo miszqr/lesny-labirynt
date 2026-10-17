@@ -135,3 +135,10 @@ Możliwe dalsze usprawnienia, jeszcze niewdrożone: wydzielenie stanu i reguł z
 `#talk` jest przyciskiem HTML nad sceną, z małą chmurką SVG i obszarem dotyku 44×44 px. `positionTalk()` kotwiczy go przy `data-encounter` równym aktualnemu polu i ogranicza do obszaru mapy. Oba renderery oznaczają zwierzęta identyfikatorem pola; odległe postacie nie otrzymują przycisku. Położenie aktualizuje się po renderowaniu i zmianie rozmiaru. Ikona jest ukryta podczas dialogu/menu, chodzenia, ucieczki wilka, po wykonaniu zadania i po końcu gry.
 
 Po wejściu na pole przyjaznego zwierzaka `showArrivalEvent()` pozostawia rozmowę do otwarcia chmurką lub dotychczasowym przyciskiem pod mapą. Wilk, furtka i finał zachowują dotychczasową obsługę. „Dalej” bez rozwiązania zadania przywraca dostęp do chmurki. Ukończone zadanie usuwa ją; ponowne otwarcie nie daje nagrody. `tests/conversation-icon.test.cjs` i test chodzenia sprawdzają te przejścia w mapie oraz FPV. Przypadki dotyku, klawiatury i granic mapy dodano do oczekującego zestawu przeglądarkowego T03.
+
+
+### Wygląd wilka — 2026-10-17
+
+`characterArt('🐺')` ma osobny rysunek SVG: wyraźne brwi, bursztynowe oczy, małe kły, kudłate policzki i pierś oraz szerzej ustawione łapy. Chłodne szarości i proste kształty zachowują stylistykę pozostałych zwierząt. Wszystkie widoki korzystają z tej samej ilustracji. Zachowano `animal-idle` i znaczniki `data-animal-foot`, więc oddychanie oraz ucieczka nadal działają.
+
+Sprawdzono raster SVG starego i nowego rysunku oraz 45 istniejących testów przedmiotów/zadania wilka, FPV i ucieczki; wszystkie przeszły. To weryfikacja grafiki i logiki, bez kontroli całego układu w przeglądarce — podgląd nadal jest niedostępny.

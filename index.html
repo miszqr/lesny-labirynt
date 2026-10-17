@@ -151,7 +151,29 @@ function characterArt(kind){
 const shadow='<ellipse cx="3" cy="1" rx="13" ry="4.5" fill="#3c5036" opacity=".23"/>';
 if(kind==='👦')return '<ellipse data-walk-part="shadow" cx="3" cy="1" rx="13" ry="4.5" fill="#3c5036" opacity=".23"/><g data-walk-part="body"><g data-walk-part="left-leg"><path d="M-9-15L-8-2H-2L0-14Z" fill="#41647a"/><path d="M-8-2h6v4h-9q-2-3 3-4" fill="#654e3c"/></g><g data-walk-part="right-leg"><path d="M0-14L2-2H8L9-15Z" fill="#41647a"/><path d="M3-2h5q5 1 4 4H3Z" fill="#654e3c"/></g><path d="M-9-28Q0-33 9-28L11-13Q0-8-11-13Z" fill="#c88440"/><path d="M-9-28Q-4-31 0-30V-12Q-7-11-11-13Z" fill="#e7a955"/><g data-walk-part="left-arm"><path d="M-9-26l-5 11" stroke="#edbd8b" stroke-width="5" stroke-linecap="round"/></g><g data-walk-part="right-arm"><path d="M9-26l5 11" stroke="#edbd8b" stroke-width="5" stroke-linecap="round"/></g>'+childFace(kind)+'</g>';
 if(kind==='👧')return shadow+'<path d="M-7-14L-6-1M6-14L7-1" stroke="#edbd8b" stroke-width="5"/><path d="M-9-2h6v4h-8ZM4-2h6l3 4H4Z" fill="#8a514d"/><path d="M-9-28Q0-34 9-28L15-11Q0-5-14-11Z" fill="#bb7290"/><path d="M-9-28Q-5-31-1-30L-2-9-14-11Z" fill="#dfa1b7"/><path d="M-9-25l-4 12m22-12 4 12" stroke="#edbd8b" stroke-width="4" stroke-linecap="round"/>'+childFace(kind);
-const colors={'🐈':['#d8974c','#f2bb73'],'🐇':['#c1b6aa','#e7ddd1'],'🐻':['#8c6142','#b98958'],'🦔':['#825c42','#c69d76'],'🐕':['#a67246','#d3a16b'],'🦉':['#897253','#baa278'],'🐺':['#64757a','#9cabad']};const c=colors[kind];if(!c)return '';let ears='';
+// A watchful storybook wolf: stronger silhouette and brows, with small rounded fangs.
+if(kind==='🐺')return shadow+`<g class="animal-idle" data-art="storybook-wolf" style="--idle-delay:-${((Date.now()%3600+kind.codePointAt(0)*37)%3600)/1000}s">
+ <path d="M9-15Q18-18 19-26Q24-17 18-8L11-4Z" fill="#526570"/><path d="M19-26Q23-20 21-16L17-18Z" fill="#aab8ba"/>
+ <path d="M-11-23Q-17-20-18-10L-16-5-11-7-9-2H9L11-8 16-5 18-9Q17-20 10-24Z" fill="#526570"/>
+ <path d="M-8-24Q0-27 8-23L10-13 5-15 5-8 0-11-4-7-5-15-10-12Z" fill="#b7c3c1"/>
+ <path d="M-13-15l-2 7M13-15l2 7" stroke="#788d94" stroke-width="3.5" stroke-linecap="round"/>
+ <g data-animal-foot="left"><ellipse cx="-9" cy="-1" rx="7" ry="3.2" fill="#455762"/><path d="M-12-2v2m4-2v2" stroke="#9babad" stroke-width=".8" stroke-linecap="round"/></g>
+ <g data-animal-foot="right"><ellipse cx="9" cy="-1" rx="7" ry="3.2" fill="#455762"/><path d="M7-2v2m4-2v2" stroke="#9babad" stroke-width=".8" stroke-linecap="round"/></g>
+ <path d="M-13-31L-16-48Q-9-46-5-38M5-38Q9-46 16-48L13-31Z" fill="#526570" stroke="#455762" stroke-width="1" stroke-linejoin="round"/>
+ <path d="M-12-41l1 8 4-4M7-37l4 4 1-8" fill="#b5a99e"/>
+ <path d="M-12-39Q0-46 12-39L16-30 19-28 15-25 17-21 11-21Q0-14-11-21L-17-21-15-25-19-28-16-30Z" fill="#687e87"/>
+ <path d="M-12-38Q-7-42 0-41L-1-24-10-21-13-28Z" fill="#91a4a8"/>
+ <path d="M-5-41l3-3 2 2 3-3 3 5" fill="#687e87"/>
+ <ellipse cx="-6.5" cy="-31.5" rx="3.3" ry="2.5" fill="#ecd395"/><ellipse cx="6.5" cy="-31.5" rx="3.3" ry="2.5" fill="#ecd395"/>
+ <ellipse cx="-5.8" cy="-31" rx="1.3" ry="1.9" fill="#283b42"/><ellipse cx="5.8" cy="-31" rx="1.3" ry="1.9" fill="#283b42"/>
+ <circle cx="-6.2" cy="-31.7" r=".5" fill="#fff9e9"/><circle cx="5.4" cy="-31.7" r=".5" fill="#fff9e9"/>
+ <path d="M-11-36Q-7-35-2.5-32.5M2.5-32.5Q7-35 11-36" fill="none" stroke="#344953" stroke-width="3.2" stroke-linecap="round"/>
+ <path d="M-9-27Q0-30 9-27L11-22Q9-16 0-16-9-16-11-22Z" fill="#dce0ce"/>
+ <path d="M-4-27Q0-29 4-27Q3-23 0-23-3-23-4-27Z" fill="#30454d"/><path d="M-1.7-26.6h2" stroke="#879c9f" stroke-width=".8" stroke-linecap="round"/>
+ <path d="M0-23v2M-7-20Q0-23 7-20" fill="none" stroke="#455762" stroke-width="1.5" stroke-linecap="round"/>
+ <path d="M-6-20.5L-4.2-17.7Q-3.4-17.2-3.4-18.2L-3-21M3-21l.4 2.8q0 1 .8.5L6-20.5" fill="#fffaf0" stroke="#7a8b8c" stroke-width=".5" stroke-linejoin="round"/>
+ </g>`;
+const colors={'🐈':['#d8974c','#f2bb73'],'🐇':['#c1b6aa','#e7ddd1'],'🐻':['#8c6142','#b98958'],'🦔':['#825c42','#c69d76'],'🐕':['#a67246','#d3a16b'],'🦉':['#897253','#baa278']};const c=colors[kind];if(!c)return '';let ears='';
 if(kind==='🐇')ears='<ellipse cx="-7" cy="-40" rx="4" ry="14" fill="#c1b6aa"/><ellipse cx="7" cy="-41" rx="4" ry="14" fill="#e7ddd1"/><path d="M-7-49v14M7-50v14" stroke="#cf9c9b" stroke-width="2.5" stroke-linecap="round"/>';
 else if(kind==='🐻')ears='<circle cx="-10" cy="-35" r="6" fill="#8c6142"/><circle cx="10" cy="-35" r="6" fill="#8c6142"/><circle cx="-10" cy="-35" r="3" fill="#c29465"/><circle cx="10" cy="-35" r="3" fill="#c29465"/>';
 else if(kind==='🐕')ears='<ellipse cx="-12" cy="-27" rx="5" ry="11" fill="#704c35"/><ellipse cx="12" cy="-27" rx="5" ry="11" fill="#704c35"/>';
