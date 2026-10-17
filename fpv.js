@@ -84,8 +84,13 @@
     </defs><g clip-path="url(#fpv-frame)">
       <rect width="640" height="460" fill="url(#fpv-sky)"/>
       <circle cx="480" cy="66" r="32" fill="#fff5c4" opacity=".8"/>
-      <path d="M0 157Q76 103 155 145T320 133T485 141T640 119V230H0Z" fill="#91b49a"/>
-      <path d="M0 178Q87 127 170 167T340 158T495 162T640 148V240H0Z" fill="#759c7e"/>
+      <g data-scenery="distant-hills">
+        <path d="M0 159C52 151 70 105 119 111S179 154 235 143 302 96 353 114 411 153 465 136 550 93 596 110L640 130V235H0Z" fill="#99b99b"/>
+        <path d="M40 141C76 115 90 107 119 111S179 154 235 143C193 164 152 135 121 129S70 141 40 141Z" fill="#b7ceac" opacity=".65"/>
+        <path d="M0 183C53 177 77 134 128 143S200 189 259 164 323 123 368 142 428 184 492 159 582 128 640 153V240H0Z" fill="#7fa276"/>
+        <path d="M62 161C89 141 104 138 128 143S200 189 259 164C205 198 164 172 134 160S89 159 62 161Z" fill="#abc18a"/>
+        <path d="M321 136C339 133 352 135 368 142S428 184 492 159C452 190 413 177 384 164S344 143 321 136Z" fill="#668f6c" opacity=".55"/>
+      </g>
       <path d="M0 186H640V460H0Z" fill="url(#fpv-grass)"/>`;
 
     function tree(x, z, variant, scale = 1) {

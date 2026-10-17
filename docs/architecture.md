@@ -1,6 +1,6 @@
 # Architektura — Adam w lesie
 
-Stan opisany: 2026-10-16. Dokument opisuje obecną implementację. Uzasadnienia wyborów i ich zmiany zapisujemy w [ADR](decisions/README.md).
+Stan opisany: 2026-10-17. Dokument opisuje obecną implementację. Uzasadnienia wyborów i ich zmiany zapisujemy w [ADR](decisions/README.md).
 
 ## Cel i granice systemu
 
@@ -102,7 +102,7 @@ Zobacz [ADR-0005](decisions/0005-first-person-view.md).
 
 ## Grafika i układ
 
-Mapa jest płaska, a elementy mają styl 2,5D dzięki kształtom, cieniom i kolejności rysowania SVG. To nie jest silnik 3D. Krzywe ścieżki wynikają z połączeń grafu; dekoracje nie zmieniają zasad ruchu. Zwierzęta na mapie 2D zawsze stoją po prawej stronie swojego pola, w tej samej pozycji i skali co podczas spotkania z Adamem. Podejście i odejście chłopca nie przesuwa ani nie skaluje zwierząt. Widoczne zwierzęta w 2D oraz FPV delikatnie kołyszą się i oddychają dzięki animacji CSS wewnętrznej grupy SVG; cień i pozycja na mapie pozostają stałe. Faza animacji wynika ze wspólnego zegara i gatunku, aby odrysowanie mapy nie rozpoczynało jej od nowa. Preferencja ograniczenia ruchu wyłącza tę animację.
+Mapa jest płaska, a elementy mają styl 2,5D dzięki kształtom, cieniom i kolejności rysowania SVG. To nie jest silnik 3D. Krzywe ścieżki wynikają z połączeń grafu; dekoracje nie zmieniają zasad ruchu. `placeHills()` wybiera według ziarna przygody część narożników między polanami, z pominięciem wody i zewnętrznej krawędzi mapy. `hillArt()` rysuje pagórki z jasnym stokiem, cieniem, kamieniami i okazjonalnym kwiatem. Trafiają do `terrainCache`, pod ścieżkami i postaciami, więc podlegają tej samej zapamiętywanej masce mgły. FPV ma dodatkowo cieniowane wzgórza w tle; są dekoracją horyzontu, nie dodatkowymi przejściami. Zwierzęta na mapie 2D zawsze stoją po prawej stronie swojego pola, w tej samej pozycji i skali co podczas spotkania z Adamem. Podejście i odejście chłopca nie przesuwa ani nie skaluje zwierząt. Widoczne zwierzęta w 2D oraz FPV delikatnie kołyszą się i oddychają dzięki animacji CSS wewnętrznej grupy SVG; cień i pozycja na mapie pozostają stałe. Faza animacji wynika ze wspólnego zegara i gatunku, aby odrysowanie mapy nie rozpoczynało jej od nowa. Preferencja ograniczenia ruchu wyłącza tę animację.
 
 `positionBubble()` używa prostokątów ekranowych SVG i kontenera mapy. Wybiera miejsce nad lub pod postacią, ogranicza dymek do kontenera i aktualizuje położenie przy zmianie rozmiaru. Zwierzak jest obecnie wybierany jako najbliższy widoczny zwierzak względem Adama. To zależność, którą trzeba uwzględnić przy zmianie układu postaci.
 

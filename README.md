@@ -15,6 +15,7 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 ## Rozgrywka
 
 - Losowy labirynt 4×4, 6×6 lub 8×8; cel: dotrzeć do domu. W 2D Adam odsłania okolicę z dodatkowym zasięgiem około pół pola. Mgła ma nieregularny, miękko cieniowany brzeg. Każdy odsłonięty fragment, także na obrzeżach zasięgu, pozostaje widoczny do końca tej przygody. Samo zobaczenie fragmentu pola nie zalicza go jako odwiedzonego.
+- Krajobraz urozmaicają trawiaste pagórki z cieniowanymi stokami, kamieniami i drobnymi kwiatami. W FPV widać wzgórza w oddali. Pagórki nie zmieniają przejść labiryntu.
 - Pomoc zwierzakom polega na czytaniu krótkiej prośby i wybieraniu obrazka spośród trzech odpowiedzi. Przedmiot losuje się z listy ulubionych rzeczy zwierzaka raz na przygodę; ponowne otwarcie rozmowy nie zmienia prośby ani odpowiedzi.
 - Jeden zwierzak daje klucz do furtki. Jest dostępny przed zamkniętą furtką.
 - Wilk losuje od jednego do pięciu kroków oraz kierunek: w górę, w prawo, w dół lub w lewo. Gracz czyta polecenie, klika strzałkę odpowiednią liczbę razy i wybiera „Zatwierdź”. Rząd strzałek pokazuje wybrane kroki; „Cofnij” usuwa ostatni bez kary. Po poprawnej odpowiedzi wilk ucieka i znika z mapy, również w FPV.

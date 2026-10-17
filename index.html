@@ -39,7 +39,7 @@ function createEncounter(animal){
  const distractors=shuffled(Object.keys(itemCatalog).filter(id=>id!==answer)).slice(0,2);
  return {...animal,text:`Chcę ${item.word}. Daj mi ${item.word}.`,answer,options:shuffled([answer,...distractors])};
 }
-function start(){cancelWalk();cancelFlee();if($('#menu').open)$('#menu').close();maze=generateMaze(Number($('#size').value));pos=maze.start;facing=[0,1,2,3].find(d=>maze.cells[pos].links.includes(target(d)))??0;visited=new Set([pos]);done=new Set;encounters={};won=false;lost=false;hearts=3;hasKey=false;gateOpen=false;keeper=maze.keeper;shuffled(bank).slice(0,3).forEach((e,i)=>encounters[maze.places[i]]=createEncounter(e));addDanger();artSeed=Math.floor(Math.random()*1000000);seenSamples=new Set;seenPath='';terrain=[];for(let vy=0;vy<=maze.n;vy++)for(let vx=0;vx<=maze.n;vx++){terrain.push({x:vx*60,y:vy*60,type:Math.random()<.16?'water':Math.random()<.7?'forest':'meadow',variant:Math.random()})}terrainCache=terrainArt();$('#reveal').checked=false;closeEvent();render();showEvent(true)}
+function start(){cancelWalk();cancelFlee();if($('#menu').open)$('#menu').close();maze=generateMaze(Number($('#size').value));pos=maze.start;facing=[0,1,2,3].find(d=>maze.cells[pos].links.includes(target(d)))??0;visited=new Set([pos]);done=new Set;encounters={};won=false;lost=false;hearts=3;hasKey=false;gateOpen=false;keeper=maze.keeper;shuffled(bank).slice(0,3).forEach((e,i)=>encounters[maze.places[i]]=createEncounter(e));addDanger();artSeed=Math.floor(Math.random()*1000000);seenSamples=new Set;seenPath='';terrain=[];for(let vy=0;vy<=maze.n;vy++)for(let vx=0;vx<=maze.n;vx++){terrain.push({x:vx*60,y:vy*60,type:Math.random()<.16?'water':Math.random()<.7?'forest':'meadow',variant:Math.random()})}placeHills();terrainCache=terrainArt();$('#reveal').checked=false;closeEvent();render();showEvent(true)}
 const jumpDirections=[{icon:'↑',word:'w górę',area:'up'},{icon:'→',word:'w prawo',area:'right'},{icon:'↓',word:'w dół',area:'down'},{icon:'←',word:'w lewo',area:'left'}];
 function addDanger(){
  const parent=Array(maze.cells.length).fill(-1),queue=[maze.start];parent[maze.start]=maze.start;for(let i=0;i<queue.length;i++)for(const b of maze.cells[queue[i]].links)if(parent[b]===-1){parent[b]=queue[i];queue.push(b)}
@@ -79,12 +79,33 @@ function renderWolfTask(e){
 }
 function artNoise(a,b=0){const v=Math.sin(a*127.1+b*311.7+artSeed)*43758.5453;return v-Math.floor(v)}
 function blob(x,y,r,v){return `M${x-r} ${y-3}C${x-r-7} ${y-r} ${x-4} ${y-r*(.7+v*.3)} ${x+7} ${y-r}S${x+r+8} ${y-5} ${x+r} ${y+7}S${x+3} ${y+r+5} ${x-9} ${y+r*.8}S${x-r-5} ${y+7} ${x-r} ${y-3}Z`}
+function placeHills(){
+ // Grid corners sit between the clearings; keep water and the map's outer edge intact.
+ const L=maze.n*60,candidates=terrain.filter(t=>t.type!=='water'&&t.x>0&&t.y>0&&t.x<L&&t.y<L);
+ candidates.sort((a,b)=>artNoise(a.x+317,a.y)-artNoise(b.x+317,b.y));
+ for(const t of candidates.slice(0,Math.ceil(maze.n*maze.n*.16)))t.type='hill';
+}
+function hillArt(x,y,v){
+ const sx=.82+v*.18,sy=.78+v*.22;
+ return `<g data-scenery="hill" transform="translate(${x} ${y}) scale(${sx} ${sy})">
+ <ellipse cx="2" cy="11" rx="26" ry="8" fill="#526e46" opacity=".16"/>
+ <path d="M-24 8C-17 3-16-17-5-20C6-24 13-11 17-4Q21 4 25 8C15 18-14 18-24 8Z" fill="#91ae68"/>
+ <path d="M-24 8C-17 3-16-17-5-20C2-23 8-16 11-11C1-15-5-8-8-1Q-13 6-24 8Z" fill="#b9cc87"/>
+ <path d="M3-19C11-16 13-8 17-4Q21 4 25 8C17 15 8 16-1 15C10 8 12-1 8-9Z" fill="#77965b" opacity=".65"/>
+ <path d="M-16 7Q-8 11 0 9M-11-1Q-7-6-2-6" fill="none" stroke="#d0dc9e" stroke-width="1.2" stroke-linecap="round" opacity=".65"/>
+ <path d="M-12 4l-1-3m1 3 2-2M1 7V4m0 3 2-2" fill="none" stroke="#708d50" stroke-width="1" stroke-linecap="round"/>
+ <ellipse cx="13" cy="12" rx="6" ry="2.2" fill="#566f46" opacity=".18"/>
+ <path d="M8 11l2-4 4-1 4 4-2 3H10Z" fill="#a6a68b"/><path d="M8 11l2-4 4-1-1 5Z" fill="#d1ccb0"/>
+ ${v>.45?'<path d="M-5 8V4m0 2 2-1" stroke="#718b50" stroke-width=".8"/><circle cx="-5" cy="3.5" r="1.4" fill="#f1d875"/>':''}
+ </g>`;
+}
 function terrainArt(){let out='';const L=maze.n*60;
 for(let i=0;i<maze.n*maze.n*3;i++){const x=artNoise(i,1)*L,y=artNoise(i,2)*L,r=10+artNoise(i,3)*24;const colors=['#bbca8c','#9db67c','#c0c98e','#8eaa73','#c4bf8b'];out+=`<path d="${blob(x,y,r,artNoise(i,4))}" fill="${colors[i%5]}" opacity=".3"/>`}
 for(const t of terrain){const {x,y,type,variant:v}=t;const r=14+v*5;
 if(type==='water'){out+=`<path d="${blob(x,y,r+3,v)}" fill="#bfc99b"/><path d="${blob(x,y,r,v)}" fill="${v>.5?'#7db9bd':'#8ec4bf'}"/><path d="${blob(x+2,y+1,r*.6,v)}" fill="#66aab5" opacity=".35"/><path d="M${x-8} ${y-3}q5-2 11 0m-7 9q5-2 10 0" stroke="#c7e5d4" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M${x-r} ${y+6}v-7m3 9v-6" stroke="#69875c" stroke-width="1.5"/>`}
 else{out+=`<path d="${blob(x,y,17+v*5,v)}" fill="${type==='forest'?'#8ea972':'#c1cd95'}" opacity=".6"/>`;if(type==='meadow')for(let j=0;j<4;j++){const dx=(artNoise(x+j,y)-.5)*30,dy=(artNoise(y+j,x)-.5)*26;out+=`<path d="M${x+dx} ${y+dy}l-2-3m2 3 2-4" stroke="#819d63" stroke-width="1.1" fill="none"/>`}}}
 for(let i=0;i<maze.n*maze.n*14;i++){const x=artNoise(i,6)*L,y=artNoise(i,7)*L,v=artNoise(i,8);out+=v<.7?`<path d="M${x.toFixed(1)} ${y.toFixed(1)}l1-2m-1 2-1-1" stroke="${v<.3?'#789563':'#d3d6a4'}" stroke-width=".7" opacity=".55"/>`:`<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${(.7+v).toFixed(1)}" ry=".8" fill="#b4ad89" opacity=".65"/>`}
+for(const t of terrain)if(t.type==='hill')out+=hillArt(t.x,t.y,t.variant);
 return out}
 function edgePoint(a,b){const n=maze.n,low=Math.min(a,b),high=Math.max(a,b),shift=(artNoise(low,high)-.5)*12;const x=((a%n+b%n)/2)*60+30,y=((Math.floor(a/n)+Math.floor(b/n))/2)*60+30;return Math.abs(a-b)===1?[x,y+shift]:[x+shift,y]}
 function roadCurve(a,b){const n=maze.n,x=a%n*60+30,y=Math.floor(a/n)*60+30,[ex,ey]=edgePoint(a,b),horizontal=Math.abs(a-b)===1,dx=Math.sign(ex-x),dy=Math.sign(ey-y),bend=(artNoise(a,b+90)-.5)*8;return [[x,y],[horizontal?x+dx*13:x+bend,horizontal?y+bend:y+dy*13],[horizontal?ex-dx*10:ex,horizontal?ey:ey-dy*10],[ex,ey]]}
