@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.min.js';
-import {createWorld,cellPoint,posePoint,clampZoom,cameraFrame,applyCamera,projectPoint} from './world.mjs';
+import {createWorld,cellPoint,posePoint,clampZoom,cameraFrame,applyCamera,projectPoint,headingRotation} from './world.mjs';
 
 export function createTilesView({host,svg,readState,geometry,positionOverlays,onFailure}) {
   const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'});
@@ -94,11 +94,12 @@ export function createTilesView({host,svg,readState,geometry,positionOverlays,on
     world.sync(s);resetAnchors(s);fog(s);resize();paint(performance.now(),true);
   }
   function animate(s,now){
+    // Walking backwards changes position, not the direction Adam is facing.
+    world.player.rotation.y=headingRotation(s.walking?.heading??s.facing);
     const moving=s.walking&&s.walking.started!==null;
     if(moving){
       const t=Math.min(1,(now-s.walking.started)/360),pose=geometry.walkPose(s.walking.from,s.walking.to,t),p=posePoint(pose);
       world.player.position.set(p.x,Math.abs(pose.bob)/60,p.z);
-      world.player.rotation.y=[Math.PI,Math.PI/2,0,-Math.PI/2][s.walking.d];
       world.player.userData.limbs.forEach((limb,i)=>limb.rotation.x=Math.sin(t*Math.PI*4)*(i%2?1:-1)*.45);
       anchorDirty=true;if(follow)cameraDirty=true;
     }else world.player.userData.limbs.forEach(limb=>limb.rotation.x=0);

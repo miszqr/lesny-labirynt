@@ -7,7 +7,7 @@ const root=process.env.GAME_ROOT||path.resolve(__dirname,'..');
 const modulePromise=import(pathToFileURL(path.join(root,'tiles3d/world.mjs')));
 const threePromise=import(pathToFileURL(path.join(root,'tiles3d/vendor/three.module.min.js')));
 
-function snapshot(g){return g.run(`({maze,pos,encounters,chests:loot.chests,gateOpen,landscape:landscapeObjects(),animalPresent})`)}
+function snapshot(g){return g.run(`({maze,pos,facing,encounters,chests:loot.chests,gateOpen,landscape:landscapeObjects(),animalPresent})`)}
 function geometry(g){return g.run('({roadCurve,roadPoint,roadHalfWidth,edgePoint,walkPose,fleePose})')}
 function enable(g){
   g.$('#view-mode').prepend=()=>{};g.$('#view-mode').after=()=>{};
@@ -98,3 +98,60 @@ test('3D wolf escapes once to another cell without giving a heart',()=>{
   assert.equal(g.run('hearts'),before);assert.equal(g.run('encounters[wolf3d]'),undefined);assert.equal(g.run('isEnemy(encounters['+destination+'])'),true);assert.equal(g.run('fleeing'),null);
 });
 test('zoom is bounded on phones',async()=>{const {clampZoom}=await modulePromise;assert.equal(clampZoom(.01),.8);assert.equal(clampZoom(100),3);assert.equal(clampZoom(1.4),1.4)});
+
+function relativeGame(options={}){
+  const g=enable(game({size:6,...options}));
+  g.run('closeEvent();pos=14;maze.exit=35;maze.gate=[34,35];encounters={};gateOpen=true;visited=new Set([14]);maze.cells[14].links=[8,15,20,13];for(const id of [8,15,20,13])maze.cells[id].links=[14];render()');
+  return g;
+}
+test('3D turns rotate Adam in place; keyboard, buttons and help use relative controls',()=>{
+  const g=relativeGame(),start=g.run('facing'),seen=g.run('seenPath'),position=g.run('pos');
+  assert.equal(g.buttons[1].textContent,'↷');assert.equal(g.buttons[3].textContent,'↶');assert.equal(g.buttons[2].attrs['aria-label'],'Idź do tyłu');assert.equal(g.$('#fpv-hint').hidden,false);
+  for(let i=0;i<4;i++)g.buttons[1].onclick();
+  assert.equal(g.run('facing'),start);assert.equal(g.run('pos'),position);assert.equal(g.run('seenPath'),seen);assert.equal(g.run('visited.size'),1);
+  const key=(key,repeat=false)=>g.events.keydown({key,repeat,target:{tagName:'BODY'},preventDefault(){}});
+  key('ArrowLeft');assert.equal(g.run('facing'),(start+3)%4);
+  key('ArrowLeft',true);assert.equal(g.run('facing'),(start+3)%4);
+  key('ArrowRight');assert.equal(g.run('facing'),start);
+  g.$('#menu').showModal();key('ArrowRight');assert.equal(g.run('facing'),start);g.$('#menu').close();
+  g.$('#event').show();key('ArrowLeft');assert.equal(g.run('facing'),start);
+});
+for(const mode of ['animated','instant','reduced'])for(let facing=0;facing<4;facing++)test(`3D ${mode}: back then forward preserves heading ${facing}`,()=>{
+  const g=relativeGame({animation:mode!=='instant',reducedMotion:mode==='reduced'});
+  g.run(`facing=${facing};render()`);g.buttons[2].onclick();
+  if(mode==='animated'){
+    assert.equal(g.run('walking.heading'),facing);assert.equal(g.run('walking.d'),(facing+2)%4);
+    g.tick(0);g.tick(180);assert.equal(g.run('facing'),facing);assert.equal(g.run('pos'),14);g.tick(360);
+  }
+  assert.equal(g.run('pos'),[8,15,20,13][(facing+2)%4]);assert.equal(g.run('facing'),facing);
+  g.run('closeEvent()');g.buttons[0].onclick();
+  if(mode==='animated'){g.tick(1000);g.tick(1360)}
+  assert.equal(g.run('pos'),14);assert.equal(g.run('facing'),facing);
+});
+test('3D movement still respects walls, closed gates and wolf tasks',()=>{
+  const g=relativeGame();g.run('facing=1;maze.cells[pos].links=[15];render()');
+  assert.equal(g.buttons[2].disabled,true);g.buttons[2].onclick();assert.equal(g.run('pos'),14);
+  assert.equal(g.buttons[1].disabled,false);assert.equal(g.buttons[3].disabled,false);
+  g.run('maze.gate=[14,15];gateOpen=false;render()');g.buttons[0].onclick();assert.equal(g.run('pos'),14);assert.equal(g.$('#event').open,true);
+  g.run('closeEvent();gateOpen=true;encounters[pos]=createWolf(null,true);render()');g.buttons[1].onclick();assert.equal(g.run('facing'),2);assert.equal(g.run('pos'),14);
+  g.buttons[0].onclick();assert.equal(g.run('pos'),14);assert.equal(g.run('hearts'),3);assert.equal(g.$('#event').open,true);
+});
+test('switching to 2D restores cardinal controls without changing position or heading',()=>{
+  const g=relativeGame();g.run('facing=1;setView("map")');
+  assert.equal(g.buttons[1].textContent,'→');assert.equal(g.buttons[0].attrs['aria-label'],'Idź w górę');assert.equal(g.run('pos'),14);assert.equal(g.run('facing'),1);assert.equal(g.$('#fpv-hint').hidden,true);
+  g.buttons[0].onclick();assert.equal(g.run('pos'),8);g.run('closeEvent();setView("tiles")');assert.equal(g.run('pos'),8);assert.equal(g.buttons[1].textContent,'↷');
+});
+test('finishing a backward animation during a view change keeps its heading',()=>{
+  const g=relativeGame({animation:true});g.run('facing=0;render();handleDirection(2)');g.tick(0);g.tick(120);g.run('setView("map")');
+  assert.equal(g.run('pos'),20);assert.equal(g.run('facing'),0);assert.equal(g.run('walking'),null);
+  g.run('setView("tiles")');g.tick(1000);assert.equal(g.run('pos'),20);assert.equal(g.run('facing'),0);
+});
+test('the 3D model visibly faces the game heading while standing in place',async()=>{
+  const {createWorld}=await modulePromise,{Vector3}=await threePromise,g=relativeGame(),s=snapshot(g),world=createWorld(s,geometry(g));
+  const initial=world.player.position.clone(),directions=[[0,0,-1],[1,0,0],[0,0,1],[-1,0,0]];
+  for(let facing=0;facing<4;facing++){
+    g.run(`facing=${facing}`);world.sync(snapshot(g));const front=new Vector3(0,0,1).applyQuaternion(world.player.quaternion);
+    assert.ok(front.distanceTo(new Vector3(...directions[facing]))<1e-10);assert.deepEqual(world.player.position,initial);
+  }
+  world.dispose();
+});

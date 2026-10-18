@@ -3,6 +3,7 @@ import * as THREE from './vendor/three.module.min.js';
 // Game coordinates are 60 units per cell. The scene uses one metre per cell,
 // with Y up and +Z south. Camera changes never rewrite game coordinates.
 export const TILE_SIZE = 60;
+export function headingRotation(facing=2){return [Math.PI,Math.PI/2,0,-Math.PI/2][facing]}
 export function cellPoint(cell, n, dx = 0, dz = 0) {
   return { x: cell % n + .5 + dx / TILE_SIZE, z: Math.floor(cell / n) + .5 + dz / TILE_SIZE };
 }
@@ -196,7 +197,7 @@ export function createWorld(state, geometry, material = color => new THREE.MeshL
       const p=cellPoint(Number(cell),n,13,11);actor.position.set(p.x,0,p.z);
       actor.visible=s.animalPresent(Number(cell));
     }
-    const p=cellPoint(s.pos,n,s.encounters[s.pos]?-14:0,12);player.position.set(p.x,0,p.z);
+    const p=cellPoint(s.pos,n,s.encounters[s.pos]?-14:0,12);player.position.set(p.x,0,p.z);player.rotation.y=headingRotation(s.facing);
     for(const c of s.chests)chests.get(c.id).userData.lid.rotation.x=c.itemIds.length?0:-1.15;
     door.rotation.y=s.gateOpen?-Math.PI*.53:0;lock.visible=!s.gateOpen;
   }

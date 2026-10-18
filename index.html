@@ -574,29 +574,30 @@ function setView(mode){
  viewMode=mode==='fpv'?'fpv':'map';$('#view-mode').value=viewMode;
  if($('#menu').open)$('#menu').close();render();if($('#event').open)paintDialogue();
 }
+function relativeControls(){return viewMode==='fpv'||!!tileRenderer?.active}
 function updateControls(){
- const fpv=viewMode==='fpv';$('#view-mode').value=viewMode;
+ const fpv=viewMode==='fpv',relative=relativeControls();$('#view-mode').value=viewMode;
  $('#view-toggle').textContent=fpv?'🗺 Mapa':'👁 FPV';$('#view-toggle').setAttribute('aria-pressed',String(fpv));
  $('#view-toggle').setAttribute('aria-label',fpv?'Włącz mapę z góry':'Włącz widok z oczu Adama');
- $('#fpv-hint').hidden=!fpv||won;$('#interact').disabled=!!walking||!!fleeing||!!heartFlight;positionTalk();positionChest();
+ $('#fpv-hint').hidden=!relative||won;$('#interact').disabled=!!walking||!!fleeing||!!heartFlight;positionTalk();positionChest();
  if(tileRenderer){$('#view-mode').value=tileRenderer.active?'tiles':viewMode;$('#view-toggle').textContent=tileRenderer.active?'Mapa 2D':'Kafelki 3D';$('#view-toggle').setAttribute('aria-label',tileRenderer.active?'Przełącz na mapę 2D':'Przełącz na kafelki 3D');$('#view-toggle').setAttribute('aria-pressed',String(tileRenderer.active))}
  document.querySelectorAll('[data-dir]').forEach(b=>{
-  const d=Number(b.dataset.dir),turn=fpv&&(d===1||d===3),world=fpv?(facing+(d===2?2:0))%4:d;
-  b.textContent=fpv?['↑','↷','↓','↶'][d]:['↑','→','↓','←'][d];
-  b.setAttribute('aria-label',fpv?['Idź do przodu','Obróć się w prawo','Idź do tyłu','Obróć się w lewo'][d]:['Idź w górę','Idź w prawo','Idź w dół','Idź w lewo'][d]);
+  const d=Number(b.dataset.dir),turn=relative&&(d===1||d===3),world=relative?(facing+(d===2?2:0))%4:d;
+  b.textContent=relative?['↑','↷','↓','↶'][d]:['↑','→','↓','←'][d];
+  b.setAttribute('aria-label',relative?['Idź do przodu','Obróć się w prawo','Idź do tyłu','Obróć się w lewo'][d]:['Idź w górę','Idź w prawo','Idź w dół','Idź w lewo'][d]);
   b.disabled=!!walking||!!fleeing||!!heartFlight||won||lost||(!turn&&(dangerPending()||!maze.cells[pos].links.includes(target(world))));
  });
 }
 function handleDirection(d){
  if(walking||fleeing||heartFlight)return;
- if(viewMode!=='fpv'){move(d);return}
+ if(!relativeControls()){move(d);return}
  if($('#event').open||$('#menu').open||$('#storage').open||won)return;
  if(lost||(dangerPending()&&d!==1&&d!==3)){render();showEvent();return}
  if(d===1||d===3){facing=(facing+(d===1?1:3))%4;render()}
  else move((facing+(d===2?2:0))%4);
 }
 function target(d){return [pos-maze.n,pos%maze.n<maze.n-1?pos+1:-1,pos+maze.n,pos%maze.n>0?pos-1:-1][d]}
-function move(d){if(walking||fleeing||heartFlight)return;if($('#event').open||$('#menu').open||$('#storage').open)return;if(lost||dangerPending()){render();showEvent();return}const t=target(d);if(!won&&maze.cells[pos].links.includes(t)){if(!gateOpen&&maze.gate.includes(pos)&&maze.gate.includes(t)){render();$('#notice').textContent=hasKey?'Otwórz furtkę kluczem.':'Furtka jest zamknięta. Znajdź klucz.';showEvent();return}if(viewMode==='map'){startWalk(t,d);return}rememberWalk(pos,t);pos=t;visited.add(pos);render();showArrivalEvent()}}
+function move(d){if(walking||fleeing||heartFlight)return;if($('#event').open||$('#menu').open||$('#storage').open)return;if(lost||dangerPending()){render();showEvent();return}const t=target(d);if(!won&&maze.cells[pos].links.includes(t)){if(!gateOpen&&maze.gate.includes(pos)&&maze.gate.includes(t)){render();$('#notice').textContent=hasKey?'Otwórz furtkę kluczem.':'Furtka jest zamknięta. Znajdź klucz.';showEvent();return}if(viewMode==='map'){startWalk(t,d,tileRenderer?.active?facing:d);return}rememberWalk(pos,t);pos=t;visited.add(pos);render();showArrivalEvent()}}
 function heartFlightPose(cell,t){
  const [cx,cy]=project(cell%maze.n*60+30,Math.floor(cell/maze.n)*60+30);
  const from={x:cx+13,y:cy+11-20*.72},to={x:cx-14,y:cy+12-25*.72};
@@ -641,7 +642,7 @@ function cancelWalk(){
 }
 function finishWalk(){
  if(!walking)return;
- const {from,to,d}=walking;rememberWalk(from,to);cancelWalk();pos=to;facing=d;visited.add(pos);render();showArrivalEvent();
+ const {from,to,d,heading=d}=walking;rememberWalk(from,to);cancelWalk();pos=to;facing=heading;visited.add(pos);render();showArrivalEvent();
 }
 function walkPose(from,to,t){
  const eased=t*t*(3-2*t),u=eased<.5?eased*2:(1-eased)*2,curve=eased<.5?roadCurve(from,to):roadCurve(to,from);
@@ -650,10 +651,10 @@ function walkPose(from,to,t){
  p[0]-=(encounters[from]?14:0)*(1-eased)+(encounters[to]?14:0)*eased;p[1]+=12;
  return {x:p[0],y:p[1],scale:fromScale+(toScale-fromScale)*eased,swing:Math.sin(t*Math.PI*4)*19,stride:Math.sin(t*Math.PI*4)*2.5,bob:-Math.abs(Math.sin(t*Math.PI*4))*1.5};
 }
-function startWalk(to,d){
+function startWalk(to,d,heading=d){
  // Respect reduced motion, and keep movement usable if animation APIs are absent.
- if(typeof requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){rememberWalk(pos,to);pos=to;facing=d;visited.add(pos);render();showArrivalEvent();return}
- const w=walking={from:pos,to,d,frame:0,started:null};draw();updateControls();
+ if(typeof requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){rememberWalk(pos,to);pos=to;facing=heading;visited.add(pos);render();showArrivalEvent();return}
+ const w=walking={from:pos,to,d,heading,frame:0,started:null};draw();updateControls();
  if(tileRenderer?.active){
   const frame=now=>{if(walking!==w)return;if(w.started===null)w.started=now;const t=Math.min(1,(now-w.started)/360);rememberWalk(w.from,w.to,t);if(t>=1){finishWalk();return}w.frame=requestAnimationFrame(frame)};
   w.frame=requestAnimationFrame(frame);return;
@@ -774,7 +775,7 @@ $('#menu-toggle').onclick=()=>{if($('#storage').open)return;finishWalk();finishF
 $('#talk').onclick=()=>{if(!canTalk()||$('#event').open||$('#menu').open||$('#storage').open)return;render();showEvent()};
 $('#backpack-toggle').onclick=()=>openStorage();$('#chest-interact').onclick=()=>{if(canOpenChest())openStorage(currentChest().id)};$('#storage-next').onclick=closeStorage;$('#storage').oncancel=e=>{e.preventDefault();closeStorage()};
 $('#view-toggle').onclick=()=>setView(tileRenderer?(tileRenderer.active?'map':'tiles'):(viewMode==='fpv'?'map':'fpv'));$('#view-mode').onchange=()=>setView($('#view-mode').value);
-document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>handleDirection(Number(b.dataset.dir)));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#storage').open){e.preventDefault();closeStorage();return}if(e.key==='Escape'&&$('#event').open){e.preventDefault();dismissEvent();return}if($('#event').open||$('#menu').open||$('#storage').open||['SELECT','INPUT','TEXTAREA'].includes(e.target.tagName))return;let d=['ArrowUp','ArrowRight','ArrowDown','ArrowLeft'].indexOf(e.key);if(d>=0){e.preventDefault();if(viewMode==='fpv'&&e.repeat)return;handleDirection(d)}});$('#new').onclick=start;$('#next').onclick=start;$('#size').onchange=start;$('#reveal').onchange=()=>{finishWalk();finishFlee();finishHeartFlight();renderScene()};
+document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>handleDirection(Number(b.dataset.dir)));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#storage').open){e.preventDefault();closeStorage();return}if(e.key==='Escape'&&$('#event').open){e.preventDefault();dismissEvent();return}if($('#event').open||$('#menu').open||$('#storage').open||['SELECT','INPUT','TEXTAREA'].includes(e.target.tagName))return;let d=['ArrowUp','ArrowRight','ArrowDown','ArrowLeft'].indexOf(e.key);if(d>=0){e.preventDefault();if(relativeControls()&&e.repeat)return;handleDirection(d)}});$('#new').onclick=start;$('#next').onclick=start;$('#size').onchange=start;$('#reveal').onchange=()=>{finishWalk();finishFlee();finishHeartFlight();renderScene()};
 $('#microphone').onclick=()=>wolfSpeech.requestPermission(true);
 wolfSpeech.subscribe(state=>{
  $('#microphone').disabled=state==='pending'||state==='unavailable'||state==='granted';
@@ -789,11 +790,11 @@ wolfSpeech.requestPermission();start();
 // remain owned by this game; the renderer can only read their state.
 window.enableForestTiles=createView=>{
  let cachedMaze=null,cachedLandscape=[];
- const readState=()=>{if(cachedMaze!==maze){cachedMaze=maze;cachedLandscape=landscapeObjects()}return {maze,pos,encounters,chests:loot?.chests||[],gateOpen,landscape:cachedLandscape,seenPath,reveal:$('#reveal').checked,walking,fleeing,heartFlight,animalPresent}};
+ const readState=()=>{if(cachedMaze!==maze){cachedMaze=maze;cachedLandscape=landscapeObjects()}return {maze,pos,facing,encounters,chests:loot?.chests||[],gateOpen,landscape:cachedLandscape,seenPath,reveal:$('#reveal').checked,walking,fleeing,heartFlight,animalPresent}};
  tileRenderer=createView({host:$('.mapwrap'),svg:$('#map'),readState,geometry:{roadCurve,roadPoint,roadHalfWidth,edgePoint,walkPose,fleePose},positionOverlays,onFailure:window.forestTilesFailure});
  tilesEnabled=true;viewMode='map';
  const option=document.createElement('option');option.value='tiles';option.textContent='Kafelki 3D';$('#view-mode').prepend(option);
- const note=document.createElement('p');note.className='tiles-status';note.textContent='Wersja 3D · obróć mapę przeciągnięciem. Strzałki nadal odpowiadają kierunkom mapy: ↑ północ, → wschód. Kompas wskazuje północ.';$('#view-mode').after(note);
+ const note=document.createElement('p');note.className='tiles-status';note.textContent='Wersja 3D · ↑ krok do przodu, ↓ krok do tyłu, ↶ ↷ obrót Adama w miejscu. Mapę obrócisz przeciągnięciem. Kompas wskazuje północ.';$('#view-mode').after(note);
  finishWalk();finishFlee();finishHeartFlight();render();if($('#event').open)paintDialogue();
 };
 window.forestTilesFailure=error=>{

@@ -7,7 +7,7 @@ Tag pominięty zgodnie z decyzją użytkownika. `main` i działająca wersja Git
 
 Otwórz `index.html?view=3d` na serwerze HTTP/HTTPS. Przycisk w nagłówku przełącza 3D/2D bez rozpoczynania nowej gry. Zwykły `index.html` uruchamia mapę 2D i nie pobiera Three.js. Mikrofon wymaga HTTPS lub localhost i obsługi rozpoznawania mowy w przeglądarce, tak jak wcześniej.
 
-Przeciągnięcie obraca kamerę; kółko myszy, gest dwoma palcami i przyciski +/− zmieniają zoom. Przybliżenie centruje Adama; domek kamery przywraca całą mapę. Strzałki ruchu zachowują kierunki świata: ↑ północ, → wschód, ↓ południe, ← zachód. Kompas pokazuje północ po obrocie.
+Przeciągnięcie obraca kamerę; kółko myszy, gest dwoma palcami i przyciski +/− zmieniają zoom. Przybliżenie centruje Adama; domek kamery przywraca całą mapę. W trybie 3D ↑ oznacza krok do przodu, ↓ krok do tyłu, a ←/→ obrót Adama o 90° w miejscu. Cofanie zachowuje kierunek patrzenia postaci. Działa to zarówno dla klawiatury, jak i przycisków na ekranie. Obrót kamery jest niezależny od kierunku postaci. Po przełączeniu na 2D strzałki ponownie oznaczają kierunki mapy. Kompas pokazuje północ po obrocie.
 
 ## Architektura
 
@@ -33,3 +33,9 @@ W tej wersji menu zawiera wyłącznie 6×6 i 8×8; nowa gra domyślnie ma 6×6 p
 Granica planszy przycina wyłącznie powierzchnie ziemi, dróg, wody i cienie. Bryły drzew, pagórków i postaci mogą naturalnie wystawać poza krawędź. Odkrycie wystających części korzysta z maski przy najbliższej krawędzi, zamiast odcinać je pionową płaszczyzną. Mgła odkrywania pozostaje aktywna.
 
 Po tej poprawce przeszło 12 testów 3D, w tym kontrola pełnych koron drzew na brzegach dla plansz 6×6 i 8×8 przy różnych proporcjach ekranu i obrotach kamery. Sprawdzono także dostępne rozmiary w HTML i składnię modułu. Kontrola wyglądu w przeglądarce nadal oczekuje na działającą infrastrukturę podglądu.
+
+## Sterowanie względem Adama
+
+Kierunek postaci (`facing`) jest wspólny dla sterowania i modelu 3D. Lewo/prawo obraca Adama w miejscu o 90°, przód/tył porusza go względem tego kierunku. Animacja przechowuje oddzielnie kierunek kroku i kierunek patrzenia, więc cofanie nie odwraca postaci. Rozróżnienie działa także bez animacji, przy ograniczeniu ruchu i przy zmianie widoku w trakcie kroku. Klawisze i przyciski ekranowe używają tej samej obsługi; przytrzymanie klawisza obrotu nie wywołuje serii obrotów. Sterowanie w 2D pozostaje zgodne z kierunkami mapy.
+
+Przeszło 46 testów 3D, chodzenia i FPV: cztery kierunki, cofanie, obroty, klawiatura, blokady ścian/furtki/wilka, przełączanie widoku i rzeczywista orientacja bryły postaci. Sprawdzono składnię obu modułów. Kontrola wizualna w przeglądarce pozostaje niedostępna z powodu opisanej wyżej blokady infrastruktury.
