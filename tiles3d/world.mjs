@@ -1,4 +1,4 @@
-import * as THREE from './vendor/three.module.min.js';
+import {Vector3,Matrix,Viewport,Camera,Mesh,TransformNode,VertexData,CreateBox,CreateSphere,CreateCylinder,StandardMaterial,Color3} from './vendor/babylon.mjs';
 
 // Game coordinates are 60 units per cell. The scene uses one metre per cell,
 // with Y up and +Z south. Camera changes never rewrite game coordinates.
@@ -14,18 +14,20 @@ export function cameraFrame(n, aspect, azimuth, zoom = 1, focus = {x:n/2,z:n/2})
   return {
     left: -span * aspect / 2, right: span * aspect / 2,
     top: span / 2, bottom: -span / 2, zoom: clampZoom(zoom),
-    position: new THREE.Vector3(focus.x + Math.sin(azimuth) * n * 1.6, n * 1.8, focus.z + Math.cos(azimuth) * n * 1.6),
-    target: new THREE.Vector3(focus.x, .1, focus.z)
+    position: new Vector3(focus.x + Math.sin(azimuth) * n * 1.6, n * 1.8, focus.z + Math.cos(azimuth) * n * 1.6),
+    target: new Vector3(focus.x, .1, focus.z)
   };
 }
 export function applyCamera(camera, frame) {
-  Object.assign(camera, {left:frame.left,right:frame.right,top:frame.top,bottom:frame.bottom,zoom:frame.zoom});
-  camera.position.copy(frame.position); camera.lookAt(frame.target);
-  camera.updateProjectionMatrix(); camera.updateMatrixWorld();
+  camera.mode=Camera.ORTHOGRAPHIC_CAMERA;
+  camera.orthoLeft=frame.left/frame.zoom;camera.orthoRight=frame.right/frame.zoom;
+  camera.orthoTop=frame.top/frame.zoom;camera.orthoBottom=frame.bottom/frame.zoom;
+  camera.position.copyFrom(frame.position);camera.setTarget(frame.target);
+  camera.getViewMatrix(true);camera.getProjectionMatrix(true);
 }
 export function projectPoint(camera, point, width, height) {
-  const p = new THREE.Vector3(point.x, point.y || 0, point.z).project(camera);
-  return {x:(p.x+1)*width/2,y:(1-p.y)*height/2,visible:p.z>=-1&&p.z<=1};
+  const p=Vector3.Project(new Vector3(point.x,point.y||0,point.z),Matrix.Identity(),camera.getTransformationMatrix(),new Viewport(0,0,width,height));
+  return {x:p.x,y:p.y,visible:p.z>=0&&p.z<=1};
 }
 export function roadGeometry(a, b, geometry, shoulder = 0) {
   const curve = geometry.roadCurve(a,b), positions=[], indices=[];
@@ -36,32 +38,39 @@ export function roadGeometry(a, b, geometry, shoulder = 0) {
     for(const side of [-1,1])positions.push((p[0]-d[1]/length*width*side)/60,.023+(.8-shoulder)*.001,(p[1]+d[0]/length*width*side)/60);
     if(i<24){const j=i*2;indices.push(j,j+1,j+2,j+1,j+3,j+2)}
   }
-  const result=new THREE.BufferGeometry();
-  result.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));result.setIndex(indices);result.computeVertexNormals();return result;
+  const result=new VertexData(),normals=[];
+  VertexData.ComputeNormals(positions,indices,normals,{useRightHandedSystem:true});
+  result.positions=positions;result.indices=indices;result.normals=normals;return result;
 }
 
-export function createWorld(state, geometry, material = color => new THREE.MeshLambertMaterial({color})) {
-  const root=new THREE.Group(),actors=new Map(),chests=new Map(),animated=[];
-  root.name='forest-world';
-  const forms={box:new THREE.BoxGeometry(1,1,1),ball:new THREE.SphereGeometry(1,10,8),cone:new THREE.ConeGeometry(1,1,7),cylinder:new THREE.CylinderGeometry(1,1,1,10)};
+export function createWorld(state, geometry, scene, material) {
+  const ownedMaterials=new Map();
+  material??=(color,kind)=>{
+    const key=color+kind;if(ownedMaterials.has(key))return ownedMaterials.get(key);
+    const m=new StandardMaterial(key,scene);m.diffuseColor=Color3.FromHexString(color);m.specularColor=Color3.Black();m.backFaceCulling=false;ownedMaterials.set(key,m);return m;
+  };
+  const root=new TransformNode('forest-world',scene),actors=new Map(),chests=new Map();
+  const forms={box:CreateBox('template-box',{size:1},scene),ball:CreateSphere('template-ball',{diameter:2,segments:8},scene),cone:CreateCylinder('template-cone',{diameterTop:0,diameterBottom:2,height:1,tessellation:7},scene),cylinder:CreateCylinder('template-cylinder',{diameter:2,height:1,tessellation:10},scene)};
+  Object.values(forms).forEach(m=>m.setEnabled(false));
   function mesh(parent,form,color,x,y,z,sx,sy=sx,sz=sx,kind='object') {
-    const m=new THREE.Mesh(forms[form],material(color,kind));m.position.set(x,y,z);m.scale.set(sx,sy,sz);parent.add(m);return m;
+    const m=forms[form].clone(form,null,true);m.setEnabled(true);m.parent=parent;m.material=material(color,kind);
+    m.position.set(x,y,z);m.scaling.set(sx,sy,sz);m.isPickable=false;return m;
   }
   function shadow(parent,r=.22) { return mesh(parent,'cylinder','#5e7446',0,.006,0,r,.006,r*.65,'shadow'); }
-  function group(parent,x=0,y=0,z=0){const g=new THREE.Group();g.position.set(x,y,z);parent.add(g);return g;}
+  function group(parent,x=0,y=0,z=0){const g=new TransformNode('group',scene);g.metadata={};g.position.set(x,y,z);g.parent=parent;return g;}
   const n=state.maze.n;
   for(const cell of state.maze.cells) {
-    const p=cellPoint(cell.id,n),tile=group(root,p.x,-.105,p.z);tile.name=`tile-${cell.id}`;tile.userData.cell=cell.id;
+    const p=cellPoint(cell.id,n),tile=group(root,p.x,-.105,p.z);tile.name=`tile-${cell.id}`;tile.metadata.cell=cell.id;
     mesh(tile,'box','#9a7750',0,0,0,.994,.21,.994,'ground');
     mesh(tile,'box',cell.id%3===0?'#a8bd80':'#afc48a',0,.105,0,.994,.024,.994,'ground');
     for(const next of cell.links)for(const [extra,color] of [[2.8,'#b7c28a'],[1.6,'#c4c894'],[.7,'#d0cc9c'],[0,'#ded0a5']]) {
-      const road=new THREE.Mesh(roadGeometry(cell.id,next,geometry,extra),material(color,'road'));root.add(road);
+      const road=new Mesh('road',scene);roadGeometry(cell.id,next,geometry,extra).applyToMesh(road);road.material=material(color,'road');road.parent=root;road.isPickable=false;
     }
   }
   for(const t of state.landscape) {
     const p=posePoint(t),g=group(root,p.x,0,p.z);g.name=t.id;
     if(t.type==='tree') {
-      g.scale.setScalar(t.scale);shadow(g,.34);mesh(g,'cylinder','#8c6745',0,.32,0,.07,.64,.07);
+      g.scaling.setAll(t.scale);shadow(g,.34);mesh(g,'cylinder','#8c6745',0,.32,0,.07,.64,.07);
       if(t.variant>.42) {
         mesh(g,'cone','#2f7051',0,.68,0,.40,.68,.40);
         mesh(g,'cone','#43835b',0,.93,0,.32,.59,.32);
@@ -83,7 +92,7 @@ export function createWorld(state, geometry, material = color => new THREE.MeshL
       for(let i=0;i<3;i++)mesh(g,'cylinder','#688a51',-.28+i*.035,.08,.13,.008,.16,.008);
     }
   }
-  const stationary=[...root.children];
+  const stationary=[...root.getChildren()];
   function boy() {
     const g=group(root);g.name='adam';shadow(g,.2);const body=group(g);
     const limbs=[];
@@ -106,10 +115,10 @@ export function createWorld(state, geometry, material = color => new THREE.MeshL
     }
     mesh(body,'ball','#f4ba87',0,.62,.158,.031,.028,.028);
     mesh(body,'ball','#fff6de',0,.566,.13,.049,.018,.013);
-    g.userData={body,limbs,height:.88};return g;
+    g.metadata={body,limbs,height:.88};return g;
   }
   function animal(id) {
-    const g=new THREE.Group(),palette={cat:'#df9a45',dog:'#b28253',rabbit:'#c5b9a5',bear:'#9d6b46',hedgehog:'#8a6950',owl:'#b09563',wolf:'#596674'};
+    const g=group(root),palette={cat:'#df9a45',dog:'#b28253',rabbit:'#c5b9a5',bear:'#9d6b46',hedgehog:'#8a6950',owl:'#b09563',wolf:'#596674'};
     const fur=palette[id]||palette.wolf,body=group(g);shadow(g,.22);
     mesh(body,'ball',fur,0,.22,0,.18,.22,.16);mesh(body,'ball','#eee0bc',0,.23,.14,.12,.15,.045);
     mesh(body,'ball',fur,0,.47,.015,.21,.19,.18);
@@ -144,7 +153,7 @@ export function createWorld(state, geometry, material = color => new THREE.MeshL
     if(['cat','dog','wolf'].includes(id)){
       const tail=mesh(body,'ball',fur,.14,.19,-.19,.06,.14,.09);tail.rotation.x=-.7;
     }
-    g.userData={body,height:id==='rabbit'?1.03:.80};return g;
+    g.metadata={body,height:id==='rabbit'?1.03:.80};return g;
   }
   const player=boy();
   function makeChest(c) {
@@ -152,7 +161,7 @@ export function createWorld(state, geometry, material = color => new THREE.MeshL
     mesh(g,'box','#ae793d',0,.09,0,.29,.17,.22);
     const lid=group(g,0,.17,-.11);mesh(lid,'box','#d4a963',0,.025,.11,.31,.05,.24);
     for(const x of [-.10,.10])mesh(g,'box','#f0d082',x,.10,.115,.025,.18,.012);
-    mesh(g,'box','#ffe2a0',0,.14,.13,.045,.045,.018);g.userData={lid,height:.30};return g;
+    mesh(g,'box','#ffe2a0',0,.14,.13,.045,.045,.018);g.metadata={lid,height:.30};return g;
   }
   for(const c of state.chests)chests.set(c.id,makeChest(c));
   const [a,b]=state.maze.gate,[gx,gz]=geometry.edgePoint(a,b),gate=group(root,gx/60,0,gz/60);
@@ -172,37 +181,47 @@ export function createWorld(state, geometry, material = color => new THREE.MeshL
   stationary.push(home);
   // Batch stationary geometry by material. Camera orbit does not require a
   // draw call for every tree leaf or path segment, especially on an 8×8 phone map.
-  root.updateMatrixWorld(true);
   const batches=new Map();
-  for(const node of stationary)node.traverse(o=>{
-    if(!o.isMesh)return;
-    const source=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();source.applyMatrix4(o.matrixWorld);
-    const batch=batches.get(o.material)||{positions:[],normals:[]};batches.set(o.material,batch);
-    batch.positions.push(...source.attributes.position.array);batch.normals.push(...source.attributes.normal.array);
-    source.dispose();o.visible=false;
-  });
-  for(const [m,batch] of batches){
-    const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(batch.positions,3));geo.setAttribute('normal',new THREE.Float32BufferAttribute(batch.normals,3));
-    const merged=new THREE.Mesh(geo,m);merged.name='static-batch';root.add(merged);
+  for(const node of stationary)for(const m of node instanceof Mesh?[node]:node.getChildMeshes()){
+    m.computeWorldMatrix(true);const batch=batches.get(m.material)||[];batches.set(m.material,batch);batch.push(m);
   }
-  const gift=new THREE.Group(),heartShape=new THREE.Shape();
-  heartShape.moveTo(0,-.1);heartShape.bezierCurveTo(-.3,.09,-.12,.28,0,.13);heartShape.bezierCurveTo(.12,.28,.3,.09,0,-.1);
-  const heartMesh=new THREE.Mesh(new THREE.ExtrudeGeometry(heartShape,{depth:.04,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.015,bevelThickness:.015,curveSegments:8}),material('#ef647d','gift'));
-  gift.add(heartMesh);root.add(gift);gift.visible=false;
+  for(const [m,parts] of batches){
+    const merged=Mesh.MergeMeshes(parts,false,true,undefined,false,false);
+    if(merged){merged.name='static-batch';merged.material=m;merged.parent=root;merged.isPickable=false;parts.forEach(p=>p.setEnabled(false))}
+  }
+  const gift=group(root);gift.name='gift-heart';gift.billboardMode=TransformNode.BILLBOARDMODE_ALL;
+  const heartMesh=new Mesh('heart-volume',scene);heartGeometry().applyToMesh(heartMesh);heartMesh.material=material('#ef647d','gift');heartMesh.parent=gift;gift.setEnabled(false);
   function sync(s) {
-    for(const [cell,g] of actors)if(!s.encounters[cell]){root.remove(g);actors.delete(cell)}
+    for(const [cell,g] of actors)if(!s.encounters[cell]){g.dispose();actors.delete(cell)}
     for(const [cell,e] of Object.entries(s.encounters)) {
       let actor=actors.get(cell);
-      if(!actor){actor=animal(e.id||'wolf');actor.name=`animal-${cell}`;actors.set(cell,actor);root.add(actor);animated.push(actor)}
+      if(!actor){actor=animal(e.id||'wolf');actor.name=`animal-${cell}`;actors.set(cell,actor)}
       const p=cellPoint(Number(cell),n,13,11);actor.position.set(p.x,0,p.z);
-      actor.visible=s.animalPresent(Number(cell));
+      actor.setEnabled(s.animalPresent(Number(cell)));
     }
     const p=cellPoint(s.pos,n,s.encounters[s.pos]?-14:0,12);player.position.set(p.x,0,p.z);player.rotation.y=headingRotation(s.facing);
-    for(const c of s.chests)chests.get(c.id).userData.lid.rotation.x=c.itemIds.length?0:-1.15;
-    door.rotation.y=s.gateOpen?-Math.PI*.53:0;lock.visible=!s.gateOpen;
+    for(const c of s.chests)chests.get(c.id).metadata.lid.rotation.x=c.itemIds.length?0:-1.15;
+    door.rotation.y=s.gateOpen?-Math.PI*.53:0;lock.isVisible=!s.gateOpen;
   }
   sync(state);
-  return {root,player,actors,chests,door,gift,animated,sync,dispose(){
-    const geometries=new Set(Object.values(forms));root.traverse(o=>{if(o.geometry)geometries.add(o.geometry)});geometries.forEach(g=>g.dispose());root.clear();
+  return {root,player,actors,chests,door,gift,sync,dispose(){
+    root.dispose(false,false);Object.values(forms).forEach(m=>m.dispose());ownedMaterials.forEach(m=>m.dispose());
   }};
+}
+
+// A small extruded heart, with no polygon triangulation dependency.
+export function heartGeometry(){
+  const points=[],positions=[],indices=[],normals=[];
+  const curves=[[[0,-.1],[-.3,.09],[-.12,.28],[0,.13]],[[0,.13],[.12,.28],[.3,.09],[0,-.1]]];
+  for(const c of curves)for(let i=0;i<16;i++){
+    const t=i/16,v=1-t;points.push([0,1].map(k=>v*v*v*c[0][k]+3*v*v*t*c[1][k]+3*v*t*t*c[2][k]+t*t*t*c[3][k]));
+  }
+  const count=points.length;
+  for(const z of [-.025,.025]){positions.push(0,.07,z);for(const [x,y] of points)positions.push(x,y,z)}
+  for(let i=0;i<count;i++){
+    const a=i+1,b=(i+1)%count+1,back=count+1;
+    indices.push(0,b,a,back,back+a,back+b,a,b,back+a,b,back+b,back+a);
+  }
+  VertexData.ComputeNormals(positions,indices,normals,{useRightHandedSystem:true});
+  const result=new VertexData();Object.assign(result,{positions,indices,normals});return result;
 }

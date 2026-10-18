@@ -1,41 +1,38 @@
-# Kafelki 3D — 2.0.0-alpha.1
+# Kafelki 3D — Babylon.js
 
-Gałąź: `v2/tiles-3d`. Punkt wyjścia: `4d90e84cade5c22bfb99990fb95ff8bb7f2f0936`.
-Tag pominięty zgodnie z decyzją użytkownika. `main` i działająca wersja GitHub Pages pozostają na dotychczasowej wersji.
+Gałąź: `v2/tiles-3d`. Bazowa wersja gry: `4d90e84cade5c22bfb99990fb95ff8bb7f2f0936`.
+Tag pominięty zgodnie z decyzją użytkownika. Stabilna gałąź `main` i jej GitHub Pages nie są zmieniane przez tę migrację.
 
-## Uruchomienie
+## Uruchomienie i sterowanie
 
-Otwórz `index.html?view=3d` na serwerze HTTP/HTTPS. Przycisk w nagłówku przełącza 3D/2D bez rozpoczynania nowej gry. Zwykły `index.html` uruchamia mapę 2D i nie pobiera Three.js. Mikrofon wymaga HTTPS lub localhost i obsługi rozpoznawania mowy w przeglądarce, tak jak wcześniej.
+Otwórz `index.html?view=3d` na serwerze HTTP/HTTPS. Przycisk w nagłówku przełącza 3D/2D bez nowej gry. Zwykły `index.html` uruchamia mapę 2D i nie pobiera silnika 3D. Mikrofon wymaga HTTPS lub localhost i obsługi rozpoznawania mowy przez przeglądarkę.
 
-Przeciągnięcie obraca kamerę; kółko myszy, gest dwoma palcami i przyciski +/− zmieniają zoom. Przybliżenie centruje Adama; domek kamery przywraca całą mapę. W trybie 3D ↑ oznacza krok do przodu, ↓ krok do tyłu, a ←/→ obrót Adama o 90° w miejscu. Cofanie zachowuje kierunek patrzenia postaci. Działa to zarówno dla klawiatury, jak i przycisków na ekranie. Obrót kamery jest niezależny od kierunku postaci. Po przełączeniu na 2D strzałki ponownie oznaczają kierunki mapy. Kompas pokazuje północ po obrocie.
+Przeciągnięcie obraca kamerę. Kółko myszy, gest dwoma palcami i przyciski +/− zmieniają zoom. Przybliżenie śledzi Adama; przycisk domku przywraca widok całej mapy. Kompas pokazuje północ po obrocie.
+
+W 3D ↑ oznacza krok do przodu, ↓ krok do tyłu, a ←/→ obrót Adama o 90° w miejscu. Cofanie zachowuje kierunek patrzenia. Klawiatura i przyciski ekranowe działają tak samo. Przytrzymanie klawisza obrotu nie wywołuje serii obrotów. Kamera obraca się niezależnie od postaci. Po przełączeniu na 2D strzałki ponownie oznaczają kierunki mapy.
+
+Menu oferuje plansze 6×6 i 8×8; domyślna plansza ma 6×6 pól. Generator obsługuje 4×4 wyłącznie dla zgodności wcześniejszych testów.
 
 ## Architektura
 
-- Jeden stan gry i jeden generator labiryntu. Adapter `enableForestTiles` przekazuje tylko odczyt stanu i geometrię obecnych ścieżek.
-- `tiles3d/world.mjs`: prawdziwe bryły kafelków, drzew, pagórków, domu, furtki, skrzynek i uproszczonych postaci. Jedno pole = 1 jednostka, Y oznacza wysokość, Z rośnie na południe. Obrót kamery nie zmienia współrzędnych obiektów.
-- `tiles3d/view.mjs`: kamera ortograficzna, światło, animacje, kadrowanie, dotyk, kompas i kotwice dymków. Stała geometria jest łączona według materiałów, aby ograniczyć liczbę wywołań rysowania na telefonie.
-- Mgła używa tego samego nieregularnego, cieniowanego obszaru `seenPath` co 2D. Odkrywanie jest nadal trwałe w obrębie bieżącej gry. Nowa gra resetuje mapę, tak jak wcześniej.
-- Chodzenie, ucieczka wilka i serduszko mają animację 3D; zasady zadań, klucz, plecak i przyznawanie nagród pozostają we wspólnym kodzie.
-- Three.js **0.180.0** jest zapisane lokalnie w `tiles3d/vendor`, wraz z licencją MIT. Brak zależności od CDN podczas gry. Wymagany WebGL 2. W razie braku obsługi lub utraty kontekstu gra wraca do 2D z zachowaniem aktualnego stanu.
+- Jeden stan gry i jeden generator labiryntu. Adapter `enableForestTiles` przekazuje rendererowi odczyt stanu i geometrię ścieżek. Zadania, plecak, klucz, dialogi i nagrody pozostają we wspólnym kodzie.
+- `tiles3d/world.mjs` tworzy natywne obiekty Babylon.js: `Mesh`, `VertexData` i `TransformNode`. Kafelki, drzewa, jeziora, pagórki, dom, furtka, skrzynie i postacie mają geometrię 3D. Jedno pole = jedna jednostka; Y to wysokość, +Z to południe. Scena używa prawoskrętnego układu współrzędnych.
+- `tiles3d/view.mjs` zarządza `Engine`, `Scene`, ortograficzną `FreeCamera`, oświetleniem, dotykiem, animacjami i położeniem dymków. Kamera nie ma własnej obsługi klawiszy ruchu; sterowanie postacią pozostaje w grze.
+- `tiles3d/materials.mjs` rozszerza `StandardMaterial` przez `MaterialPluginBase`. `DynamicTexture` zawiera tę samą nieregularną, rozmytą maskę `seenPath` co widok 2D. Odkryty obszar pozostaje odkryty do rozpoczęcia nowej gry. Obiekty zachowują zapis głębi także podczas łagodnego odsłaniania.
+- Granica planszy przycina powierzchnie ziemi, dróg, wody i cienie. Korony drzew i pozostałe bryły mogą wystawać poza krawędź; ich odkrycie korzysta z najbliższego punktu maski na planszy. Kamera obejmuje pełne korony drzew.
+- Stała geometria jest łączona według materiałów. Chodzenie, ucieczka wilka i serduszko są animowane niezależnie; serduszko korzysta z billboardu Babylon.js. Zmiana mapy zwalnia stare bryły i materiały.
+- Babylon.js **9.31.0** jest dołączony lokalnie w `tiles3d/vendor/babylon.mjs`, wraz z licencją Apache-2.0. Three.js został usunięty. Gra nie pobiera silnika ani shaderów z CDN. Silnik korzysta z WebGL. Błąd inicjalizacji, shadera lub utrata kontekstu przełącza grę do 2D z zachowaniem stanu.
+
+## Odtworzenie biblioteki
+
+W repozytorium uruchom `npm ci`, a następnie `npm run vendor:build`. Przypięte wersje to `@babylonjs/core@9.31.0` i `esbuild@0.28.2`.
+
+`scripts/babylon-exports.mjs` definiuje używane moduły silnika; `scripts/build-babylon.mjs` tworzy lokalny pakiet ESM i kopiuje licencję. Skrypt obsługuje zarówno układ GitHub Pages (pliki gry w katalogu głównym), jak i Sites (`dist/`).
 
 ## Walidacja
 
-Przeszło 203 dotychczasowych testów logiki oraz 11 nowych testów `tests/tiles3d.test.cjs`: mapy 4/6/8, pozycje krajobrazu i obiektów, krzywizna dróg, kamera/zoom, zmiana widoku, ruch i ucieczka wilka. Testy 3D budują rzeczywistą geometrię Three.js w Node, bez GPU. Nie weryfikują kompilacji shaderów ani obrazu w przeglądarce.
+Testy `tests/tiles3d.test.cjs` korzystają z rzeczywistego Babylon.js i `NullEngine`. Sprawdzają pozycje elementów mapy, geometrię dróg, pełne korony drzew, projekcję i zoom, orientację postaci, sterowanie względne, zmianę widoku, animację kroku, przeprowadzkę wilka, stan furtki i skrzyń. Dodatkowy test uruchamia przebieg sceny z materiałami mgły, sprawdza wygenerowany kod shaderów, scaloną geometrię i zwalnianie zasobów. NullEngine nie renderuje obrazu i nie kompiluje shaderów na GPU.
 
-Podgląd Sites w środowisku roboczym pozostaje zablokowany przez wcześniejszy błąd infrastruktury `bwrap: Can't mount proc on /newroot/proc: Operation not permitted`. Nie uruchamiano serwera ani przeglądarki zastępczej. Kontrola wizualna i wydajność na urządzeniu pozostają do wykonania.
+Podgląd przeglądarkowy Sites jest zablokowany przez błąd infrastruktury `bwrap: Can't mount proc on /newroot/proc: Operation not permitted`. Kontrola wizualna, kompilacja shaderów na GPU i wydajność na urządzeniu pozostają niezweryfikowane.
 
-Do sprawdzenia na telefonie: wejście pod link z `?view=3d`, zamknięcie powitania przyciskiem Dalej, obrót i przybliżenie, rozmowa i skrzynka po obrocie, ucieczka wilka, serduszko, zmiana 3D/2D i powrót, nowa mapa 8×8. Modele są pierwszym wariantem 3D; istniejące ilustracje dialogów i finału zachowano.
-
-## Korekta rozmiarów i krawędzi
-
-W tej wersji menu zawiera wyłącznie 6×6 i 8×8; nowa gra domyślnie ma 6×6 pól. Techniczne wsparcie generatora dla 4×4 pozostaje dla zgodności starszych testów, ale plansza nie jest dostępna w interfejsie.
-
-Granica planszy przycina wyłącznie powierzchnie ziemi, dróg, wody i cienie. Bryły drzew, pagórków i postaci mogą naturalnie wystawać poza krawędź. Odkrycie wystających części korzysta z maski przy najbliższej krawędzi, zamiast odcinać je pionową płaszczyzną. Mgła odkrywania pozostaje aktywna.
-
-Po tej poprawce przeszło 12 testów 3D, w tym kontrola pełnych koron drzew na brzegach dla plansz 6×6 i 8×8 przy różnych proporcjach ekranu i obrotach kamery. Sprawdzono także dostępne rozmiary w HTML i składnię modułu. Kontrola wyglądu w przeglądarce nadal oczekuje na działającą infrastrukturę podglądu.
-
-## Sterowanie względem Adama
-
-Kierunek postaci (`facing`) jest wspólny dla sterowania i modelu 3D. Lewo/prawo obraca Adama w miejscu o 90°, przód/tył porusza go względem tego kierunku. Animacja przechowuje oddzielnie kierunek kroku i kierunek patrzenia, więc cofanie nie odwraca postaci. Rozróżnienie działa także bez animacji, przy ograniczeniu ruchu i przy zmianie widoku w trakcie kroku. Klawisze i przyciski ekranowe używają tej samej obsługi; przytrzymanie klawisza obrotu nie wywołuje serii obrotów. Sterowanie w 2D pozostaje zgodne z kierunkami mapy.
-
-Przeszło 46 testów 3D, chodzenia i FPV: cztery kierunki, cofanie, obroty, klawiatura, blokady ścian/furtki/wilka, przełączanie widoku i rzeczywista orientacja bryły postaci. Sprawdzono składnię obu modułów. Kontrola wizualna w przeglądarce pozostaje niedostępna z powodu opisanej wyżej blokady infrastruktury.
+Do sprawdzenia na telefonie: wejście z `?view=3d`, obrót i zoom, pozycja dymków po obrocie, chodzenie do tyłu, ucieczka wilka, przelot serduszka, odkrywanie mapy, zmiana 3D/2D i powrót oraz nowa mapa 8×8. Ilustracje dialogów i finału pozostają zachowane.

@@ -5,7 +5,13 @@ const {pathToFileURL}=require('node:url');
 const {game}=require('./helpers/game.cjs');
 const root=process.env.GAME_ROOT||path.resolve(__dirname,'..');
 const modulePromise=import(pathToFileURL(path.join(root,'tiles3d/world.mjs')));
-const threePromise=import(pathToFileURL(path.join(root,'tiles3d/vendor/three.module.min.js')));
+const babylonPromise=import(pathToFileURL(path.join(root,'tiles3d/vendor/babylon.mjs')));
+async function engineFixture(t){
+  const B=await babylonPromise,engine=new B.NullEngine({renderWidth:600,renderHeight:600,textureSize:512}),scene=new B.Scene(engine);scene.useRightHandedSystem=true;
+  t.after(()=>{scene.dispose();engine.dispose()});
+  function camera(){const c=new B.FreeCamera('test-camera',B.Vector3.Zero(),scene);c.minZ=.05;c.maxZ=100;scene.activeCamera=c;return c}
+  return {scene,engine,camera,B};
+}
 
 function snapshot(g){return g.run(`({maze,pos,facing,encounters,chests:loot.chests,gateOpen,landscape:landscapeObjects(),animalPresent})`)}
 function geometry(g){return g.run('({roadCurve,roadPoint,roadHalfWidth,edgePoint,walkPose,fleePose})')}
@@ -14,59 +20,62 @@ function enable(g){
   g.run(`window.enableForestTiles(()=>({active:false,setActive(value){this.active=value},sync(){},dispose(){}}))`);
   return g;
 }
-for(const size of [4,6,8])test(`3D board ${size}: same cells, landmarks, actors, gate and chest world positions`,async()=>{
-  const {createWorld,cellPoint}=await modulePromise,g=game({size,seed:42}),state=snapshot(g),world=createWorld(state,geometry(g));
-  assert.equal(world.root.children.filter(o=>o.name.startsWith('tile-')).length,size*size);
+for(const size of [4,6,8])test(`3D board ${size}: same cells, landmarks, actors, gate and chest world positions`,async(t)=>{
+  const {createWorld,cellPoint}=await modulePromise,g=game({size,seed:42}),state=snapshot(g),fixture=await engineFixture(t),world=createWorld(state,geometry(g),fixture.scene);
+  assert.equal(world.root.getChildren().filter(o=>o.name.startsWith('tile-')).length,size*size);
   for(const t of state.landscape.filter(t=>['tree','water','hill'].includes(t.type))){
-    const o=world.root.getObjectByName(t.id);assert.ok(o,t.id);assert.equal(o.position.x,t.x/60);assert.equal(o.position.z,t.y/60);
+    const o=fixture.scene.getNodeByName(t.id);assert.ok(o,t.id);assert.equal(o.position.x,t.x/60);assert.equal(o.position.z,t.y/60);
   }
-  for(const [cell,o] of world.actors){const p=cellPoint(Number(cell),size,13,11);assert.equal(o.position.x,p.x);assert.equal(o.position.z,p.z);assert.ok(o.children.length)}
+  for(const [cell,o] of world.actors){const p=cellPoint(Number(cell),size,13,11);assert.equal(o.position.x,p.x);assert.equal(o.position.z,p.z);assert.ok(o.getChildren().length)}
   for(const c of state.chests){const o=world.chests.get(c.id);assert.equal(o.position.x,c.position.x/60);assert.equal(o.position.z,c.position.z/60)}
-  const [x,z]=geometry(g).edgePoint(...state.maze.gate),gate=world.root.getObjectByName('gate');assert.equal(gate.position.x,x/60);assert.equal(gate.position.z,z/60);
-  assert.ok(world.root.getObjectByName('hill-volume'));
+  const [x,z]=geometry(g).edgePoint(...state.maze.gate),gate=fixture.scene.getNodeByName('gate');assert.equal(gate.position.x,x/60);assert.equal(gate.position.z,z/60);
+  assert.ok(fixture.scene.getNodeByName('hill-volume'));
   world.dispose();
 });
-test('rotation and zoom change projection without moving the world or mutating game state',async()=>{
-  const {createWorld,applyCamera,cameraFrame,projectPoint}=await modulePromise,{OrthographicCamera}=await threePromise;
-  const g=game(),state=snapshot(g),world=createWorld(state,geometry(g)),camera=new OrthographicCamera(-4,4,4,-4,.05,100);
+test('rotation and zoom change projection without moving the world or mutating game state',async(t)=>{
+  const {createWorld,applyCamera,cameraFrame,projectPoint}=await modulePromise;
+  const fixture=await engineFixture(t);
+  const g=game(),state=snapshot(g),world=createWorld(state,geometry(g),fixture.scene),camera=fixture.camera();
   const before=world.player.position.clone(),p=world.player.position;
   applyCamera(camera,cameraFrame(4,1,Math.PI/4));const first=projectPoint(camera,p,600,600);
   for(const a of [Math.PI*.75,Math.PI*1.25,Math.PI*1.75]){
     applyCamera(camera,cameraFrame(4,1,a,2));const next=projectPoint(camera,p,600,600);
     assert.ok(Number.isFinite(next.x)&&Number.isFinite(next.y));assert.notDeepEqual(first,next);
-    assert.deepEqual(world.player.position,before);assert.equal(g.run('pos'),state.pos);
+    assert.deepEqual(world.player.position.asArray(),before.asArray());assert.equal(g.run('pos'),state.pos);
   }
   world.dispose();
 });
-test('all board corners fit the camera at default zoom on portrait and landscape screens',async()=>{
-  const {cameraFrame,applyCamera,projectPoint}=await modulePromise,{OrthographicCamera}=await threePromise;
+test('all board corners fit the camera at default zoom on portrait and landscape screens',async(t)=>{
+  const {cameraFrame,applyCamera,projectPoint}=await modulePromise;
+  const fixture=await engineFixture(t);
   for(const n of [4,6,8])for(const aspect of [.5,1,2])for(const angle of [0,Math.PI/4,Math.PI/2,Math.PI]){
-    const camera=new OrthographicCamera(-4,4,4,-4,.05,100);applyCamera(camera,cameraFrame(n,aspect,angle));
+    const camera=fixture.camera();applyCamera(camera,cameraFrame(n,aspect,angle));
     for(const x of [0,n])for(const z of [0,n])for(const y of [-.22,.9]){
       const p=projectPoint(camera,{x,y,z},600*aspect,600);assert.ok(p.x>=0&&p.x<=600*aspect&&p.y>=0&&p.y<=600,JSON.stringify({n,aspect,angle,p}));
     }
   }
 });
-test('3D curved paths join at the original shared edge and retain varying width',async()=>{
+test('3D curved paths join at the original shared edge and retain varying width',async(t)=>{
   const {roadGeometry}=await modulePromise,g=game(),geo=geometry(g),maze=g.run('maze');
   for(const cell of maze.cells)for(const to of cell.links){
-    const road=roadGeometry(cell.id,to,geo),positions=road.attributes.position;
-    const edge=geo.edgePoint(cell.id,to),last=positions.count-2;
-    assert.ok(Math.abs((positions.getX(last)+positions.getX(last+1))/2-edge[0]/60)<1e-6);
-    assert.ok(Math.abs((positions.getZ(last)+positions.getZ(last+1))/2-edge[1]/60)<1e-6);
-    for(const value of positions.array)assert.ok(Number.isFinite(value));road.dispose();
+    const road=roadGeometry(cell.id,to,geo),positions=road.positions;
+    const edge=geo.edgePoint(cell.id,to),last=positions.length/3-2;
+    assert.ok(Math.abs((positions[last*3]+positions[(last+1)*3])/2-edge[0]/60)<1e-6);
+    assert.ok(Math.abs((positions[last*3+2]+positions[(last+1)*3+2])/2-edge[1]/60)<1e-6);
+    for(const value of positions)assert.ok(Number.isFinite(value));
+    for(let i=1;i<road.normals.length;i+=3)assert.ok(road.normals[i]>.99,'road faces the sky');
   }
 });
-test('complete edge tree canopies fit the default camera after rotation',async()=>{
-  const {createWorld,cameraFrame,applyCamera,projectPoint}=await modulePromise,{OrthographicCamera,Box3}=await threePromise;
+test('complete edge tree canopies fit the default camera after rotation',async(t)=>{
+  const {createWorld,cameraFrame,applyCamera,projectPoint}=await modulePromise;
   for(const n of [6,8]){
-    const g=game({size:n,seed:42}),state=snapshot(g),world=createWorld(state,geometry(g));
+    const g=game({size:n,seed:42}),state=snapshot(g),fixture=await engineFixture(t),world=createWorld(state,geometry(g),fixture.scene);
     const edgeTrees=state.landscape.filter(t=>t.type==='tree'&&(t.x<30||t.y<30||t.x>n*60-30||t.y>n*60-30));
     assert.ok(edgeTrees.length>0);
     for(const aspect of [.5,1,2])for(const angle of [0,Math.PI/4,Math.PI/2,Math.PI,Math.PI*1.5]){
-      const camera=new OrthographicCamera(-4,4,4,-4,.05,100);applyCamera(camera,cameraFrame(n,aspect,angle));
+      const camera=fixture.camera();applyCamera(camera,cameraFrame(n,aspect,angle));
       for(const tree of edgeTrees){
-        const bounds=new Box3().setFromObject(world.root.getObjectByName(tree.id));
+        const bounds=fixture.scene.getNodeByName(tree.id).getHierarchyBoundingVectors(true);
         for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]){
           const p=projectPoint(camera,{x,y,z},600*aspect,600);
           assert.ok(p.visible&&p.x>=0&&p.x<=600*aspect&&p.y>=0&&p.y<=600,`${tree.id}: ${JSON.stringify({n,aspect,angle,p})}`);
@@ -76,10 +85,10 @@ test('complete edge tree canopies fit the default camera after rotation',async()
     world.dispose();
   }
 });
-test('world synchronization reflects opened chests and gate',async()=>{
-  const {createWorld}=await modulePromise,g=game(),s=snapshot(g),world=createWorld(s,geometry(g));
+test('world synchronization reflects opened chests and gate',async(t)=>{
+  const {createWorld}=await modulePromise,g=game(),s=snapshot(g),fixture=await engineFixture(t),world=createWorld(s,geometry(g),fixture.scene);
   assert.equal(world.door.rotation.y,0);g.run('gateOpen=true;loot.chests[0].itemIds=[]');world.sync(snapshot(g));
-  assert.ok(world.door.rotation.y<0);assert.ok(world.chests.get(s.chests[0].id).userData.lid.rotation.x<0);world.dispose();
+  assert.ok(world.door.rotation.y<0);assert.ok(world.chests.get(s.chests[0].id).metadata.lid.rotation.x<0);world.dispose();
 });
 test('switching 3D to 2D and back keeps the same map, inventory, hearts and permanent discovery',()=>{
   const g=enable(game()),before=g.run('({maze,loot,hearts,pos,seenPath})');
@@ -97,7 +106,7 @@ test('3D wolf escapes once to another cell without giving a heart',()=>{
   assert.notEqual(destination,g.run('wolf3d'));g.tick(0);g.tick(duration);
   assert.equal(g.run('hearts'),before);assert.equal(g.run('encounters[wolf3d]'),undefined);assert.equal(g.run('isEnemy(encounters['+destination+'])'),true);assert.equal(g.run('fleeing'),null);
 });
-test('zoom is bounded on phones',async()=>{const {clampZoom}=await modulePromise;assert.equal(clampZoom(.01),.8);assert.equal(clampZoom(100),3);assert.equal(clampZoom(1.4),1.4)});
+test('zoom is bounded on phones',async(t)=>{const {clampZoom}=await modulePromise;assert.equal(clampZoom(.01),.8);assert.equal(clampZoom(100),3);assert.equal(clampZoom(1.4),1.4)});
 
 function relativeGame(options={}){
   const g=enable(game({size:6,...options}));
@@ -146,12 +155,44 @@ test('finishing a backward animation during a view change keeps its heading',()=
   assert.equal(g.run('pos'),20);assert.equal(g.run('facing'),0);assert.equal(g.run('walking'),null);
   g.run('setView("tiles")');g.tick(1000);assert.equal(g.run('pos'),20);assert.equal(g.run('facing'),0);
 });
-test('the 3D model visibly faces the game heading while standing in place',async()=>{
-  const {createWorld}=await modulePromise,{Vector3}=await threePromise,g=relativeGame(),s=snapshot(g),world=createWorld(s,geometry(g));
+test('the 3D model visibly faces the game heading while standing in place',async(t)=>{
+  const {createWorld}=await modulePromise,{Vector3}=await babylonPromise,g=relativeGame(),s=snapshot(g),fixture=await engineFixture(t),world=createWorld(s,geometry(g),fixture.scene);
   const initial=world.player.position.clone(),directions=[[0,0,-1],[1,0,0],[0,0,1],[-1,0,0]];
   for(let facing=0;facing<4;facing++){
-    g.run(`facing=${facing}`);world.sync(snapshot(g));const front=new Vector3(0,0,1).applyQuaternion(world.player.quaternion);
-    assert.ok(front.distanceTo(new Vector3(...directions[facing]))<1e-10);assert.deepEqual(world.player.position,initial);
+    g.run(`facing=${facing}`);world.sync(snapshot(g));const front=Vector3.TransformNormal(new Vector3(0,0,1),world.player.computeWorldMatrix(true));
+    assert.ok(Vector3.Distance(front,new Vector3(...directions[facing]))<1e-7);assert.deepEqual(world.player.position.asArray(),initial.asArray());
   }
   world.dispose();
+});
+
+test('Babylon scene processes native fog materials, merged terrain and cleanup', {timeout:15000}, async(t)=>{
+  const {createForestMaterial}=await import(pathToFileURL(path.join(root,'tiles3d/materials.mjs')));
+  const {createWorld,applyCamera,cameraFrame}=await modulePromise;
+  const {scene,engine,camera,B}=await engineFixture(t),g=game({size:6}),state=snapshot(g),materials=new Map(),errors=[];
+  const texture=B.RawTexture.CreateRGBATexture(new Uint8Array([255,255,255,255]),1,1,scene,false,false,B.Texture.NEAREST_SAMPLINGMODE);
+  const makeMaterial=(color,kind='object')=>{
+    const key=color+kind;
+    if(!materials.has(key))materials.set(key,createForestMaterial(scene,color,kind,texture,{value:6},e=>errors.push(e)));
+    return materials.get(key);
+  };
+  const world=createWorld(state,geometry(g),scene,makeMaterial);applyCamera(camera(),cameraFrame(6,1,Math.PI/4));
+  new B.HemisphericLight('test-light',new B.Vector3(0,1,0),scene);
+  const batches=scene.meshes.filter(m=>m.name==='static-batch');assert.ok(batches.length>0&&batches.length<40);
+  assert.ok(batches.every(m=>m.isEnabled()&&m.getTotalVertices()>0));
+  const visible=scene.meshes.filter(m=>m.isEnabled()&&m.material);
+  await Promise.all(visible.map(m=>m.material.forceCompilationAsync(m)));
+  engine.beginFrame();scene.render();engine.endFrame();
+  assert.deepEqual(errors,[]);
+  assert.ok(scene.getActiveMeshes().length>0);
+  for(const kind of ['ground','road','object']){
+    const m=visible.find(m=>m.material.pluginManager.getPlugin('ForestFog').kind===kind);
+    assert.ok(m,kind);
+    const effect=m.subMeshes[0].effect;
+    assert.ok(effect.isReady());
+    assert.match(effect.fragmentSourceCode,/vec2 forestUV = vPositionW.xz \/ forestSize/);
+    assert.match(effect.fragmentSourceCode,/uniform sampler2D revealMap/);
+    assert.equal(m.subMeshes[0].materialDefines.FOREST_CLIP,kind!=='object');
+  }
+  world.dispose();materials.forEach(m=>m.dispose());texture.dispose();
+  assert.equal(scene.meshes.length,0);assert.equal(scene.transformNodes.length,0);assert.equal(scene.materials.length,0);
 });

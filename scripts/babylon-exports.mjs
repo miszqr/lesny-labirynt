@@ -1,0 +1,24 @@
+// Explicit Babylon.js modules keep the offline bundle focused on this game.
+export { Engine } from '@babylonjs/core/Engines/engine.js';
+export { NullEngine } from '@babylonjs/core/Engines/nullEngine.js';
+export { Scene } from '@babylonjs/core/scene.js';
+export { Camera } from '@babylonjs/core/Cameras/camera.js';
+export { FreeCamera } from '@babylonjs/core/Cameras/freeCamera.js';
+export { Vector3, Matrix, Quaternion } from '@babylonjs/core/Maths/math.vector.js';
+export { Color3, Color4 } from '@babylonjs/core/Maths/math.color.js';
+export { Viewport } from '@babylonjs/core/Maths/math.viewport.js';
+export { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight.js';
+export { DirectionalLight } from '@babylonjs/core/Lights/directionalLight.js';
+export { Mesh } from '@babylonjs/core/Meshes/mesh.js';
+export { TransformNode } from '@babylonjs/core/Meshes/transformNode.js';
+export { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData.js';
+export { VertexBuffer } from '@babylonjs/core/Buffers/buffer.js';
+export { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder.js';
+export { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder.js';
+export { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder.js';
+export { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial.js';
+export { Material } from '@babylonjs/core/Materials/material.js';
+export { MaterialPluginBase } from '@babylonjs/core/Materials/materialPluginBase.js';
+export { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture.js';
+export { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture.js';
+export { Texture } from '@babylonjs/core/Materials/Textures/texture.js';
