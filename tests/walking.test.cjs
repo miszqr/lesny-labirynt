@@ -28,7 +28,7 @@ test('conversation icon appears after arrival; clicking it opens the friendly di
   assert.equal($('#event').open,false); tick(0);tick(180); assert.equal($('#event').open,false);
   assert.equal($('#talk').hidden,true);
   tick(360); assert.equal($('#event').open,false); assert.equal($('#talk').hidden,false);
-  $('#talk').onclick(); assert.equal($('#event').open,true); assert.equal($('#description').textContent,'Cześć! Jak ci pomóc?');
+  $('#talk').onclick(); assert.equal($('#event').open,true); assert.equal($('#description').textContent,'Cześć! Jestem kotkiem.');
   assert.equal(run('hearts'),3); assert.equal(run('done.size'),0);
 });
 

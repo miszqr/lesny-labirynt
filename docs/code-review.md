@@ -6,6 +6,12 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Zwierzak rozpoczyna rozmowę — 2026-10-18
+
+Usunięto wstęp Adama „Cześć! Jak ci pomóc?” przy przyjaznych postaciach. Teraz zwierzak najpierw przedstawia się odpowiednio do gatunku, np. „Cześć! Jestem pieskiem.”, a po „Dalej” mówi swoją prośbę. Poszukiwany przedmiot i przycisk oddania pojawiają się na etapie prośby. Posiadacz klucza nadal zaczyna tę prośbę od „Dam ci klucz, jeśli…”. Podziękowania po wykonaniu zadania, wilk, wstęp gry i finał zachowują swoją sekwencję.
+
+Przeszły **43 istniejące testy** dialogów, ikony rozmowy, chodzenia, serduszka i reguł gry (`TEST_SEED=42`; pełne podróże po jednym ziarnie w każdym rozmiarze). Dostosowano oczekiwane powitanie w teście chodzenia i pierwszego mówcę w pomocniku rozgrywek. Osobno odczytano oba etapy dialogu dla wszystkich sześciu gatunków. Podglądu przeglądarkowego nie wykonywano; pozostaje wcześniejsze ograniczenie infrastruktury opisane w T03.
+
 ## Lot serduszka od zwierzaka do Adama — 2026-10-17
 
 Po oddaniu przedmiotu przyjaznej postaci na mapie 2D pojawia się serce, które leci łukiem do Adama i kończy lot delikatnym rozświetleniem. Efekt trwa 900 ms. Nagroda jest zapisywana raz, przed animacją; zakończenie, restart i pominięcie efektu nie zmieniają serc ani przedmiotów. Wilk nie uruchamia lotu ani nie przyznaje serca. Zgodnie z poleceniem użytkownika FPV pominięto. Ograniczenie ruchu i brak RAF zachowują natychmiastową nagrodę.

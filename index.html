@@ -669,6 +669,10 @@ function startFlee(cell){
 let dialogueSteps=[],dialogueIndex=0;
 function closeEvent(){if($('#event').open)$('#event').close();$('#answers').hidden=false;$('#dialogue-actions').hidden=true;$('#dialogue-next').hidden=true;document.querySelectorAll('#map [data-speaking]').forEach(el=>el.removeAttribute('data-speaking'))}
 function npcLine(e){if(isFriendly(e)&&done.has(pos))return pos===keeper?'Dziękuję! Klucz jest twój.':'Dziękuję za pomoc!';return isEnemy(e)?e.text.replace('To groźny wilk. ',''):pos===keeper?`Dam ci klucz, jeśli dasz mi ${itemCatalog[e.answer].word}.`:e.text}
+function npcGreeting(e){
+ const name={cat:'kotkiem',rabbit:'króliczkiem',bear:'misiem',hedgehog:'jeżykiem',dog:'pieskiem',owl:'sową'}[e.id];
+ return name?`Cześć! Jestem ${name}.`:'Cześć!';
+}
 function paintDialogue(){
  // Starting a conversation may turn the camera toward its fixed speaker.
  if(viewMode==='fpv'&&dialogueSteps.some(step=>step.speaker==='animal')&&encounters[pos]&&!ForestFPV.animalPose({maze,pos,facing},pos).visible){facing=1;renderScene();updateControls()}
@@ -684,7 +688,7 @@ if(intro)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:'Mam na imię Adam.
 else if(lost)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:'Nie mam już serduszek. Spróbuję od nowa.'}];
 else if(won)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:'Jestem w domu! Cześć, siostro!'},{speaker:'sister',icon:'👧',name:'Siostra',text:'Dobrze cię widzieć!'}];
 else if(e&&isFriendly(e)&&done.has(pos))steps=[{speaker:'animal',icon:e.icon,name:e.title,text:npcLine(e)}];
-else if(e&&!done.has(pos)){const reply={speaker:'animal',icon:e.icon,name:isEnemy(e)?'Wilk':e.title,text:npcLine(e)};steps=continuing?[reply]:[{speaker:'adam',icon:'👦',name:'Adam',text:isEnemy(e)?'Ojej! To wilk! Jak go ominąć?':'Cześć! Jak ci pomóc?'},reply];}
+else if(e&&!done.has(pos)){const reply={speaker:'animal',icon:e.icon,name:isEnemy(e)?'Wilk':e.title,text:npcLine(e)};const greeting=isFriendly(e)?{...reply,text:npcGreeting(e)}:{speaker:'adam',icon:'👦',name:'Adam',text:'Ojej! To wilk! Jak go ominąć?'};steps=continuing?[reply]:[greeting,reply];}
 else if(maze.gate.includes(pos)&&!gateOpen)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:hasKey?'Mam klucz. Otworzę furtkę.':'Furtka jest zamknięta. Muszę znaleźć klucz.'}];
 if(!steps.length)return;dialogueSteps=steps;dialogueIndex=0;if(!$('#event').open)$('#event').show();paintDialogue();}
 $('#dialogue-next').onclick=()=>{if(!$('#event').open)return;if(dialogueIndex<dialogueSteps.length-1){dialogueIndex++;paintDialogue()}else closeEvent()};

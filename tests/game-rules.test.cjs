@@ -22,7 +22,7 @@ function player(size, seed) {
   function readyTask() {
     run('closeEvent()'); $('#interact').onclick();
     assert.equal($('#event').open, true);
-    assert.equal($('#event').dataset.speaker, 'adam');
+    assert.equal($('#event').dataset.speaker, run('isFriendly(encounters[pos])')?'animal':'adam');
     assert.equal($('#answers').hidden, true);
     $('#dialogue-next').onclick();
     assert.equal($('#event').dataset.speaker, 'animal');
