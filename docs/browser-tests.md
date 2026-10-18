@@ -103,7 +103,7 @@ Przygotowano przypadek „Skocz pięć kroków w górę.” w mapie i FPV. Spraw
 Na Chrome/telefonie otwórz bezpośrednio stronę HTTPS gry. Sprawdź:
 
 1. Przy pierwszym otwarciu pojawia się prośba o mikrofon. Po zgodzie wskaźnik użycia mikrofonu gaśnie; przed kliknięciem „Mówię” gra nie rozpoznaje mowy. Przy zapamiętanej zgodzie pytanie nie musi się powtarzać.
-2. Wilk losuje mowę lub skoki. Jeśli trafią się skoki, wykonaj je i odszukaj wilka ponownie. Na zadaniu głosowym kliknij „Mówię” i powiedz „Uciekaj wilku”. Widać słuchanie i słowa; po rozpoznaniu całości wilk przechodzi w inne miejsce bez dodatkowego serca.
+2. Po zgodzie na mikrofon pierwsze spotkanie z wilkiem ma zadanie głosowe; dopiero następne losują mowę lub skoki. Kliknij „Mówię” i powiedz „Uciekaj wilku”. Widać słuchanie i słowa; po rozpoznaniu całości wilk przechodzi w inne miejsce bez dodatkowego serca.
 3. Inna fraza, cisza i brak internetu nie odbierają serca, nie zaliczają zadania i pozwalają ponowić próbę lub wybrać „Zadanie ze strzałkami”. Przycisk mieści się w dymku w pionie/poziomie, również przy dużym tekście.
 4. Odmów zgody i pozostaw monit bez odpowiedzi w osobnych próbach: nadal można grać, a zadanie głosowe zamienić na skoki. Zmień zgodę w ustawieniach strony i ponów ją przez menu.
 5. Przenieś kartę w tło podczas słuchania i wróć: mikrofon zatrzymany, można zacząć kolejną próbę. Nowa gra i przełączenie widoku nie przyjmują starych wyników.

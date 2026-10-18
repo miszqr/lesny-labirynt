@@ -48,7 +48,7 @@ Projekt jest statyczny: HTML, CSS i JavaScript, bez zależności zewnętrznych. 
 
 ## Zadanie głosowe wilka
 
-Na przeglądarce z obsługą mowy wilk losuje skoki albo zadanie **Powiedz: „Uciekaj wilku”.** (po 50%). Fraza pozostaje taka sama podczas ponawiania próby. Po poprawnym wypowiedzeniu całego zdania wilk przechodzi na inne pole i otrzymuje nowe zadanie; nie przyznaje serduszka. Sama próba głosowa, cisza lub błąd rozpoznawania nie odbierają serc.
+Na przeglądarce z obsługą mowy pierwsze spotkanie z wilkiem zawsze ma zadanie **Powiedz: „Uciekaj wilku”.** Przy następnych spotkaniach wilk losuje mowę lub skoki (po 50%). Odmowa dostępu lub brak mikrofonu pozostawiają możliwość skoków. Fraza pozostaje taka sama podczas ponawiania próby. Po poprawnym wypowiedzeniu całego zdania wilk przechodzi na inne pole i otrzymuje nowe zadanie; nie przyznaje serduszka. Sama próba głosowa, cisza lub błąd rozpoznawania nie odbierają serc.
 
 Gra sprawdza dostęp do mikrofonu od razu po otwarciu. Przeglądarka wyświetla pytanie, jeśli zgoda nie została jeszcze zapamiętana. Strumień użyty do sprawdzenia zgody jest od razu zamykany. Rozpoznawanie zaczyna się dopiero po kliknięciu **„Mówię”** przy wilku. Widać stan słuchania i rozpoznane słowa. Wyniki cząstkowe nie zaliczają zadania; wynik końcowy musi zgadzać się w całości, bez względu na wielkość liter i interpunkcję, z zachowaniem polskich znaków.
 

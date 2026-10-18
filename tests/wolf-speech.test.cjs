@@ -19,6 +19,30 @@ test('startup requests audio once, releases every track and never starts recogni
  assert.equal(g.run('wolfSpeech.permission'),'granted');
  g.run('start();start();wolfSpeech.requestPermission()');await settle();assert.equal(h.permissionCalls,1);
 });
+test('the first generated wolf always offers speech, including after a new game',async()=>{
+ for(const seed of [1,2,3,10,42,123,999]){
+  const h=speechHarness(),g=game({speechHost:h.host,seed});await settle();
+  assert.equal(g.run('Object.values(encounters).find(isEnemy).taskType'),'speech');
+  g.run('closeEvent();pos=Number(Object.keys(encounters).find(id=>isEnemy(encounters[id])));render();showEvent()');
+  g.$('#dialogue-next').onclick();
+  assert.equal(g.$('#description').textContent,'Powiedz: „Uciekaj wilku”.');
+  assert.equal(control(g,'speak').disabled,false);assert.equal(control(g,'submit'),undefined);
+  g.run('start()');assert.equal(g.run('Object.values(encounters).find(isEnemy).taskType'),'speech');
+  assert.equal(h.instances.length,0,'permission does not start listening');assert.equal(h.permissionCalls,1);
+ }
+});
+test('granting the startup permission later enables speech on the existing first wolf',async()=>{
+ const h=speechHarness({deferred:true}),g=game({speechHost:h.host});await settle();
+ assert.equal(g.run('Object.values(encounters).find(isEnemy).taskType'),'speech');
+ g.run('closeEvent();pos=Number(Object.keys(encounters).find(id=>isEnemy(encounters[id])));render();showEvent()');
+ g.$('#dialogue-next').onclick();assert.equal(control(g,'speak').disabled,true);
+ const e=g.run('encounters[pos]');h.grant();await settle();
+ assert.equal(g.run('encounters[pos]'),e);assert.equal(control(g,'speak').disabled,false);
+ assert.equal(control(g,'speak').textContent,'🎤 Mówię');assert.equal(h.stoppedTracks,2);
+ control(g,'speak').onclick();assert.equal(h.instances.length,1);
+ h.instances[0].onresult(results(['Uciekaj wilku',true]));h.instances[0].onend();assert.equal(g.$('#event').open,false);
+ assert.equal(g.run('hearts'),3);
+});
 test('an unanswered permission prompt does not block the game or the arrow alternative',async()=>{
  const h=speechHarness({deferred:true}),g=game({speechHost:h.host});await settle();encounter(g);
  assert.equal(control(g,'speak').disabled,true);control(g,'speech-fallback').onclick();

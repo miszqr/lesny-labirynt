@@ -6,6 +6,12 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Pierwszy wilk zawsze z zadaniem głosowym — 2026-10-18
+
+Test użytkownika ujawnił, że losowanie po 50% również na pierwszym spotkaniu utrudnia znalezienie nowego zadania. Pierwszy wilk w każdej przygodzie wybiera teraz mowę, jeśli przeglądarka ją obsługuje, lista fraz nie jest pusta, a dostęp do mikrofonu nie został odrzucony. Oczekiwanie na zgodę zachowuje zadanie; udzielenie jej odblokowuje „Mówię”. Kolejne spotkania nadal losują mowę/skoki, a przy odmowie lub awarii pozostaje przejście do strzałek. Wyłączenie mikrofonu po sprawdzeniu zgody jest zamierzone; słuchanie zaczyna dopiero przycisk.
+
+Przeszło **48 testów** zadań głosowych, sterowania dialogami i relokacji wilka. Dwa nowe testy sprawdzają rzeczywiście wygenerowane pierwsze spotkanie (bez podmieniania typu zadania), różne ziarna, reset przygody i zgodę udzieloną dopiero po dojściu do wilka. API mowy jest symulowane; fizycznego mikrofonu nie testowano w tym środowisku.
+
 ## Głosowe zadanie wilka — 2026-10-18
 
 Dodano losowane zadanie „Powiedz: Uciekaj wilku”, edytowalny `wolf-phrases.js` i kontroler `speech.js`. Sprawdzenie zgody odbywa się przy otwarciu strony; po sprawdzeniu wszystkie ścieżki mikrofonu są zatrzymywane. Rozpoznawanie zaczyna przycisk „Mówię”. Wypowiedzenie całej frazy relokuje wilka bez serca. Cisza, błędy i inne rozpoznane słowa pozwalają ponowić próbę bez kary. Awaria, odmowa lub ignorowany monit nie blokują rozgrywki: zadanie można zamienić na wymagane skoki. Nowe losowania po odmowie/braku API wybierają skoki.
