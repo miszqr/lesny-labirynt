@@ -42,9 +42,13 @@ export function createTilesView({host,svg,readState,geometry,positionOverlays,on
       shader.vertexShader=shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nforestXZ = (modelMatrix * vec4(transformed, 1.0)).xz;');
       shader.fragmentShader='uniform sampler2D revealMap; uniform float forestSize; varying vec2 forestXZ;\n'+shader.fragmentShader;
       const blend=kind==='ground'?'diffuseColor.rgb = mix(vec3(0.56,0.62,0.46), diffuseColor.rgb, seen);':'diffuseColor.a *= seen; if(diffuseColor.a < 0.025) discard;';
+      // The board bounds trim surfaces, never the volume of a tree or actor.
+      // Overhanging branches inherit discovery at the nearest board edge.
+      const clip=['ground','road','water','shadow'].includes(kind)?'if(forestUV.x < 0.0 || forestUV.y < 0.0 || forestUV.x > 1.0 || forestUV.y > 1.0) discard;':'';
       shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
         vec2 forestUV = forestXZ / forestSize;
-        if(forestUV.x < 0.0 || forestUV.y < 0.0 || forestUV.x > 1.0 || forestUV.y > 1.0) discard;
+        ${clip}
+        forestUV = clamp(forestUV, vec2(0.0), vec2(1.0));
         float seen = texture2D(revealMap, vec2(forestUV.x, 1.0-forestUV.y)).r;
         ${blend}`);
     };

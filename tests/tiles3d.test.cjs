@@ -57,6 +57,25 @@ test('3D curved paths join at the original shared edge and retain varying width'
     for(const value of positions.array)assert.ok(Number.isFinite(value));road.dispose();
   }
 });
+test('complete edge tree canopies fit the default camera after rotation',async()=>{
+  const {createWorld,cameraFrame,applyCamera,projectPoint}=await modulePromise,{OrthographicCamera,Box3}=await threePromise;
+  for(const n of [6,8]){
+    const g=game({size:n,seed:42}),state=snapshot(g),world=createWorld(state,geometry(g));
+    const edgeTrees=state.landscape.filter(t=>t.type==='tree'&&(t.x<30||t.y<30||t.x>n*60-30||t.y>n*60-30));
+    assert.ok(edgeTrees.length>0);
+    for(const aspect of [.5,1,2])for(const angle of [0,Math.PI/4,Math.PI/2,Math.PI,Math.PI*1.5]){
+      const camera=new OrthographicCamera(-4,4,4,-4,.05,100);applyCamera(camera,cameraFrame(n,aspect,angle));
+      for(const tree of edgeTrees){
+        const bounds=new Box3().setFromObject(world.root.getObjectByName(tree.id));
+        for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]){
+          const p=projectPoint(camera,{x,y,z},600*aspect,600);
+          assert.ok(p.visible&&p.x>=0&&p.x<=600*aspect&&p.y>=0&&p.y<=600,`${tree.id}: ${JSON.stringify({n,aspect,angle,p})}`);
+        }
+      }
+    }
+    world.dispose();
+  }
+});
 test('world synchronization reflects opened chests and gate',async()=>{
   const {createWorld}=await modulePromise,g=game(),s=snapshot(g),world=createWorld(s,geometry(g));
   assert.equal(world.door.rotation.y,0);g.run('gateOpen=true;loot.chests[0].itemIds=[]');world.sync(snapshot(g));

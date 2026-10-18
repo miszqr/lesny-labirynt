@@ -25,3 +25,11 @@ Przeszło 203 dotychczasowych testów logiki oraz 11 nowych testów `tests/tiles
 Podgląd Sites w środowisku roboczym pozostaje zablokowany przez wcześniejszy błąd infrastruktury `bwrap: Can't mount proc on /newroot/proc: Operation not permitted`. Nie uruchamiano serwera ani przeglądarki zastępczej. Kontrola wizualna i wydajność na urządzeniu pozostają do wykonania.
 
 Do sprawdzenia na telefonie: wejście pod link z `?view=3d`, zamknięcie powitania przyciskiem Dalej, obrót i przybliżenie, rozmowa i skrzynka po obrocie, ucieczka wilka, serduszko, zmiana 3D/2D i powrót, nowa mapa 8×8. Modele są pierwszym wariantem 3D; istniejące ilustracje dialogów i finału zachowano.
+
+## Korekta rozmiarów i krawędzi
+
+W tej wersji menu zawiera wyłącznie 6×6 i 8×8; nowa gra domyślnie ma 6×6 pól. Techniczne wsparcie generatora dla 4×4 pozostaje dla zgodności starszych testów, ale plansza nie jest dostępna w interfejsie.
+
+Granica planszy przycina wyłącznie powierzchnie ziemi, dróg, wody i cienie. Bryły drzew, pagórków i postaci mogą naturalnie wystawać poza krawędź. Odkrycie wystających części korzysta z maski przy najbliższej krawędzi, zamiast odcinać je pionową płaszczyzną. Mgła odkrywania pozostaje aktywna.
+
+Po tej poprawce przeszło 12 testów 3D, w tym kontrola pełnych koron drzew na brzegach dla plansz 6×6 i 8×8 przy różnych proporcjach ekranu i obrotach kamery. Sprawdzono także dostępne rozmiary w HTML i składnię modułu. Kontrola wyglądu w przeglądarce nadal oczekuje na działającą infrastrukturę podglądu.
