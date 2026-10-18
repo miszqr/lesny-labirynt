@@ -167,7 +167,9 @@ for (const mode of ['map', 'fpv']) {
     await page.locator('#dialogue-next').tap();
     await expect(page.locator('#description')).toHaveText('Skocz pięć kroków w górę.');
     const footer = page.locator('.bubble-footer');
-    const actions = [page.locator('[data-wolf-action="undo"]'), page.locator('[data-wolf-action="submit"]'), page.locator('#dialogue-next')];
+    const actions = [page.locator('[data-wolf-action="undo"]'), page.locator('[data-wolf-action="submit"]')];
+    await expect(page.locator('#dialogue-next')).not.toBeVisible();
+    await expect(page.locator('.wolf-hint')).toHaveCount(0);
     for (const button of actions) { await inside(button, footer); await inside(button, page.locator('#event')); await hitTarget(button); }
     // Force wrapping like a larger text setting; only the body may scroll.
     await page.locator('#description').evaluate(el => { el.style.fontSize = '40px'; });
@@ -181,11 +183,12 @@ for (const mode of ['map', 'fpv']) {
       expect(Math.abs(after.y - before.y)).toBeLessThan(1);
       await inside(page.locator('#event'), page.locator('.map-card'));
     }
-    await page.locator('#dialogue-next').tap();
+    for(let i=0;i<5;i++)await page.locator('[data-wolf-dir="0"]').tap();
+    await page.locator('[data-wolf-action="submit"]').tap();
     await expect(page.locator('#event')).not.toBeVisible();
   });
 
-  test(`${mode}: wilk — dotyk, postęp, cofanie, ponowne otwarcie i zatwierdzenie`, async ({ page }) => {
+  test(`${mode}: wilk — dotyk, postęp, cofanie, obowiązkowe zadanie i zatwierdzenie`, async ({ page }) => {
     await encounterFixture(page, { mode, wolf: true });
     await page.locator('#dialogue-next').tap();
     const arrow = page.locator('[data-wolf-dir="1"]');
@@ -198,12 +201,11 @@ for (const mode of ['map', 'fpv']) {
     await page.locator('#menu-toggle').tap(); // Outside clicks have no effect.
     await expect(page.locator('#event')).toBeVisible();
     await expect(page.locator('#menu')).not.toBeVisible();
-    await page.locator('#dialogue-next').tap();
-    await expect(page.locator('#event')).not.toBeVisible();
+    await expect(page.locator('#dialogue-next')).not.toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#event')).toBeVisible();
     await expect(page.locator('#menu')).not.toBeVisible();
     expect(await page.evaluate(() => pos)).toBe(before);
-    await page.locator('#interact').tap();
-    await page.locator('#dialogue-next').tap();
     await expect(page.locator('.wolf-step')).toHaveCount(2);
     await arrow.tap(); await arrow.tap();
     await expect(page.locator('.wolf-progress')).toHaveAttribute('aria-label', /^Wybrane kroki: 4\./);

@@ -51,17 +51,30 @@ test('Dalej closes an unanswered task without solving it; it can be reopened', (
   assert.equal($('#description').textContent, text);
 });
 
-test('wolf uses Skaczę and keeps the draft when closed with Dalej', () => {
-  const { $, run } = game();
+test('wolf task stays open until completed; Dalej, Escape and native cancel cannot dismiss it', () => {
+  const { $, run, events } = game();
   run('closeEvent();pos=Number(Object.keys(encounters).find(id=>(encounters[id].category==="enemy")));render();showEvent()');
+  assert.equal($('#dialogue-next').hidden, false, 'introduction still advances');
   $('#dialogue-next').onclick();
   const all = node => [node, ...node.children.flatMap(all)];
   const controls = [...all($('#answers')),...all($('#dialogue-actions'))];
+  assert.equal($('#dialogue-next').hidden, true);
+  assert.equal(controls.some(b => b.className === 'wolf-hint'), false);
   assert.equal(controls.find(b => b.dataset.wolfAction === 'submit').textContent, 'Skaczę');
   controls.find(b => b.dataset.wolfDir === '1').onclick();
   $('#dialogue-next').onclick();
-  assert.equal($('#event').open, false);
+  let prevented=0;
+  events.keydown({key:'Escape',target:{tagName:'BUTTON'},preventDefault(){prevented++}});
+  $('#event').oncancel({preventDefault(){prevented++}});
+  assert.equal(prevented, 2);
+  assert.equal($('#event').open, true);
   assert.equal(run('encounters[pos].steps.length'), 1);
+  assert.equal(run('hearts'), 3);
+  controls.find(b => b.dataset.wolfAction === 'undo').onclick();
+  const e=run('encounters[pos]');
+  for(let i=0;i<e.count;i++)controls.find(b=>b.dataset.wolfDir===String(e.direction)).onclick();
+  controls.find(b=>b.dataset.wolfAction==='submit').onclick();
+  assert.equal($('#event').open, false);
   assert.equal(run('hearts'), 3);
 });
 
@@ -104,8 +117,9 @@ for(const mode of ['map','fpv'])test(`${mode}: footer actions follow the dialogu
   const arrow=descendants($('#answers')).find(b=>b.dataset.wolfDir==='0');arrow.onclick();
   const undo=descendants($('#dialogue-actions')).find(b=>b.dataset.wolfAction==='undo');undo.onclick();
   assert.equal(run('encounters[pos].steps.length'),0);
-  $('#dialogue-next').onclick();assert.equal($('#event').open,false);assert.equal($('#dialogue-actions').hidden,true);
-  run('pos=keeper;render();showEvent()');$('#dialogue-next').onclick();
+  assert.equal($('#dialogue-next').hidden,true);
+  $('#dialogue-next').onclick();assert.equal($('#event').open,true);assert.equal($('#dialogue-actions').hidden,false);
+  run('closeEvent();pos=keeper;render();showEvent()');$('#dialogue-next').onclick();
   assert.equal($('#dialogue-actions').children.length,0,'wolf footer does not leak into a friendly conversation');
   run('start()');assert.equal($('#dialogue-actions').children.length,0);assert.equal($('#dialogue-actions').hidden,true);
 });

@@ -6,6 +6,12 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Obowiązkowe okienko zadania wilka — 2026-10-18
+
+Usunięto „Dalej” z etapu wykonywania zadania wilka oraz tekst „Jedno kliknięcie to jeden krok”. W stopce zostają „Cofnij” i „Skaczę”. `requiredTaskOpen()` odróżnia obowiązkowe zadanie przeciwnika od wstępu i zwykłych rozmów. Ukryty przycisk nie działa po wywołaniu starego handlera, a Escape oraz natywne `cancel` nie zamykają zadania. Poprawne wykonanie zamyka je i uruchamia przejście wilka. Błąd pozostawia zadanie otwarte, a utrata wszystkich serc przechodzi do ekranu końca gry z możliwością restartu. Prośby przyjaznych postaci można nadal zamknąć, aby poszukać przedmiotów.
+
+Przeszło **68 testów** dialogów, zadań i relokacji wilka, kategorii oraz lotu serduszka. Dostosowano istniejące przypadki do obowiązkowego okienka i sprawdzono blokadę „Dalej”, Escape/cancel, poprawną odpowiedź, błąd, przegraną i przyjazne rozmowy. Scenariusze przeglądarkowe uwzględniają dwa przyciski stopki i brak instrukcji; sprawdzono ich składnię. Wykonanie w przeglądarce pozostaje niedostępne zgodnie z ograniczeniem podglądu w T03.
+
 ## Zwierzak rozpoczyna rozmowę — 2026-10-18
 
 Usunięto wstęp Adama „Cześć! Jak ci pomóc?” przy przyjaznych postaciach. Teraz zwierzak najpierw przedstawia się odpowiednio do gatunku, np. „Cześć! Jestem pieskiem.”, a po „Dalej” mówi swoją prośbę. Poszukiwany przedmiot i przycisk oddania pojawiają się na etapie prośby. Posiadacz klucza nadal zaczyna tę prośbę od „Dam ci klucz, jeśli…”. Podziękowania po wykonaniu zadania, wilk, wstęp gry i finał zachowują swoją sekwencję.

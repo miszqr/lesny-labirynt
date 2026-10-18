@@ -110,6 +110,7 @@ for (const sequence of [[3, 3], [3, 3, 3, 3], [1, 1, 1], [3, 1, 3]]) {
     assert.equal(run('hearts'), 2); assert.equal(run('encounters[pos].steps.length'), 0);
     assert.equal(run('dangerPending()'), true); assert.equal(control('submit').disabled, true);
     assert.equal($('#answers').hidden, false); assert.match($('#notice').textContent, /Spróbuj jeszcze raz/);
+    assert.equal($('#dialogue-next').hidden, true); assert.equal(run('requiredTaskOpen()'), true);
     for (let i = 0; i < 3; i++) control(3).onclick(); control('submit').onclick();
     assert.equal(run('hearts'), 2); assert.equal(run('dangerPending()'), false);
   });
@@ -124,6 +125,7 @@ test('wolf loss, bounded input, undo to empty, and restarting reset the task', (
   for (let i = 0; i < 3; i++) { control(0).onclick(); control('submit').onclick(); }
   assert.equal(run('hearts'), 0); assert.equal(run('lost'), true);
   assert.equal($('#answers').children.length, 0); assert.equal($('#next').hidden, false);
+  assert.equal(run('requiredTaskOpen()'), false); assert.equal($('#dialogue-next').hidden, false);
   const originalPos = run('pos'); run('closeEvent();move(0)'); assert.equal(run('pos'), originalPos);
   run('start()'); assert.equal(run('lost'), false); assert.equal(run('hearts'), 3);
   assert.equal(run('Object.values(encounters).find(e=>(e.category==="enemy")).steps.length'), 0);

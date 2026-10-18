@@ -49,7 +49,7 @@ Zakres:
 - Cztery przyciski ruchu w oknie, obszary co najmniej 44×44 px i sprawdzenie trafienia dotykiem w ich środek. Sama widoczność DOM nie wystarcza, jeśli dymek zasłania przycisk. Dozwolone są nieaktywne strzałki wynikające z reguł gry.
 - Cztery narożniki mapy 8×8, mapa i FPV; dłuższe naturalne polecenie wilka oraz dodatkowy komunikat po błędzie.
 - Dotyk poza dymkiem nie zamyka go i nie wykonuje akcji w tle. „Dalej” przechodzi przez wypowiedzi i zamyka ostatnią. Osobno dotyk wyłączonej strzałki przy wilku, bez wymuszania zdarzenia `click` w kodzie strony.
-- Dotykowe wpisywanie kroków wilka, postęp, cofanie, zachowanie odpowiedzi po zamknięciu i ponownym otwarciu oraz zatwierdzenie przyciskiem „Skaczę”.
+- Dotykowe wpisywanie kroków wilka, postęp, cofanie, brak „Dalej” i dodatkowej instrukcji o kliknięciach, blokada Escape oraz zamknięcie zadania po poprawnym „Skaczę”.
 - Menu, rozmiar mapy, przełączanie FPV, zmiana orientacji, Tab wewnątrz menu, Escape i powrót fokusu. Klawiaturowy wybór obrazka przez Tab i Enter oraz ruch strzałką po zakończeniu rozmowy przez „Dalej”.
 - Pełny komunikat zamkniętej furtki, z kluczem i bez klucza, oraz jej otwarcie.
 - Chmurka rozmowy przy przyjaznym zwierzaku: granice mapy, trafienie dotykiem, otwieranie przez Tab i Enter, ukrywanie podczas rozmowy i po poprawnej odpowiedzi, w mapie i FPV.
