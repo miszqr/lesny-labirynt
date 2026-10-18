@@ -25,7 +25,7 @@ test('the first generated wolf always offers speech, including after a new game'
   assert.equal(g.run('Object.values(encounters).find(isEnemy).taskType'),'speech');
   g.run('closeEvent();pos=Number(Object.keys(encounters).find(id=>isEnemy(encounters[id])));render();showEvent()');
   g.$('#dialogue-next').onclick();
-  assert.equal(g.$('#description').textContent,'Powiedz: „Uciekaj wilku”.');
+  assert.equal(g.$('#description').textContent,`Powiedz: „${g.run('encounters[pos].phrase')}”.`);
   assert.equal(control(g,'speak').disabled,false);assert.equal(control(g,'submit'),undefined);
   g.run('start()');assert.equal(g.run('Object.values(encounters).find(isEnemy).taskType'),'speech');
   assert.equal(h.instances.length,0,'permission does not start listening');assert.equal(h.permissionCalls,1);
@@ -40,7 +40,7 @@ test('granting the startup permission later enables speech on the existing first
  assert.equal(g.run('encounters[pos]'),e);assert.equal(control(g,'speak').disabled,false);
  assert.equal(control(g,'speak').textContent,'🎤 Mówię');assert.equal(h.stoppedTracks,2);
  control(g,'speak').onclick();assert.equal(h.instances.length,1);
- h.instances[0].onresult(results(['Uciekaj wilku',true]));h.instances[0].onend();assert.equal(g.$('#event').open,false);
+ h.instances[0].onresult(results([e.phrase,true]));h.instances[0].onend();assert.equal(g.$('#event').open,false);
  assert.equal(g.run('hearts'),3);
 });
 test('an unanswered permission prompt does not block the game or the arrow alternative',async()=>{
@@ -68,11 +68,11 @@ test('phrase normalization keeps Polish letters and requires the complete phrase
  assert.notEqual(c.normalize('Idź już'),c.normalize('Idz juz'));
  assert.notEqual(c.normalize('nie uciekaj wilku'),c.normalize('uciekaj wilku'));
 });
-test('both task types and every editable phrase can be drawn; phrases stay stable and do not repeat when alternatives exist',async()=>{
+test('all encounters use speech when available, drawing every editable phrase without consecutive repeats',async()=>{
  const h=speechHarness(),g=game({speechHost:h.host});await settle();
  g.run(`window.ForestWolfPhrases=['Uciekaj wilku','Idź do lasu','Zostaw mnie',null,'  ','!!!'];`);
  const drawn=g.run(`(()=>{const types=new Set(),phrases=new Set();let previous=null;for(let i=0;i<200;i++){const e=createWolf(previous);types.add(e.taskType);if(e.taskType==='speech'){phrases.add(e.phrase);if(previous?.taskType==='speech'&&previous.phrase===e.phrase)throw Error('repeat')}previous=e}return {types:[...types],phrases:[...phrases]}})()`);
- assert.deepEqual([...drawn.types].sort(),['jump','speech']);assert.deepEqual([...drawn.phrases].sort(),['Idź do lasu','Uciekaj wilku','Zostaw mnie']);
+ assert.deepEqual([...drawn.types],['speech']);assert.deepEqual([...drawn.phrases].sort(),['Idź do lasu','Uciekaj wilku','Zostaw mnie']);
  encounter(g);const phrase=g.run('encounters[pos].phrase');g.run('render();showEvent()');assert.equal(g.run('encounters[pos].phrase'),phrase);
  g.run('window.ForestWolfPhrases=[]');assert.equal(g.run('createWolf().taskType'),'jump');
 });
@@ -131,10 +131,43 @@ test('background/page exit releases recognition and lets the player retry',async
 });
 test('switching to arrows cancels speech; a late successful result cannot bypass the new task',async()=>{
  const h=speechHarness(),g=game({speechHost:h.host});await settle();encounter(g);control(g,'speak').onclick();
- const r=h.instances[0],lateResult=r.onresult,lateEnd=r.onend;control(g,'speech-fallback').onclick();
+ const r=h.instances[0],lateResult=r.onresult,lateEnd=r.onend;r.onerror({error:'network'});control(g,'speech-fallback').onclick();
  lateResult(results(['Uciekaj wilku',true]));lateEnd();assert.equal(g.run('done.has(pos)'),false);assert.equal(g.run('hearts'),3);
  assert.equal(g.run('encounters[pos].taskType'),'jump');assert.equal(g.$('#dialogue-next').hidden,true);
  const e=g.run('encounters[pos]'),arrows=descendants(g.$('#answers'));
  for(let i=0;i<e.count;i++)arrows.find(b=>b.dataset.wolfDir===String(e.direction)).onclick();control(g,'submit').onclick();
  assert.equal(g.$('#event').open,false);assert.equal(g.run('hearts'),3);
+});
+
+
+test('default phrase list contains exactly the three requested separate phrases',()=>{
+ const g=game();assert.deepEqual([...g.run('wolfPhrases()')],['Uciekaj wilku','Zmykaj wilku','Idź sobie']);
+});
+test('working microphone hides and disables the arrow fallback, including after a wrong phrase',async()=>{
+ const h=speechHarness(),g=game({speechHost:h.host});await settle();encounter(g);
+ const fallback=control(g,'speech-fallback');assert.equal(fallback.hidden,true);
+ fallback.onclick();assert.equal(g.run('encounters[pos].taskType'),'speech');
+ control(g,'speak').onclick();fallback.onclick();assert.equal(g.run('encounters[pos].taskType'),'speech');
+ h.instances[0].onresult(results(['Inne słowa',true]));h.instances[0].onend();
+ assert.equal(fallback.hidden,true);fallback.onclick();assert.equal(g.run('encounters[pos].taskType'),'speech');
+ control(g,'speak').onclick();h.instances[1].onerror({error:'audio-capture'});
+ assert.equal(fallback.hidden,false);fallback.onclick();assert.equal(g.run('encounters[pos].taskType'),'jump');
+ assert.equal(g.run('hearts'),3);
+});
+test('a recovered microphone changes an earlier automatic jump task to speech',async()=>{
+ const h=speechHarness({permissionError:'NotAllowedError'}),g=game({speechHost:h.host});await settle();
+ g.run('start();closeEvent();pos=Number(Object.keys(encounters).find(id=>isEnemy(encounters[id])));render();showEvent()');
+ g.$('#dialogue-next').onclick();assert.equal(g.run('encounters[pos].taskType'),'jump');
+ h.host.navigator.mediaDevices.getUserMedia=()=>Promise.resolve({getTracks:()=>[]});g.run('wolfSpeech.requestPermission(true)');await settle();
+ assert.equal(g.run('encounters[pos].taskType'),'speech');assert.equal(control(g,'speak').disabled,false);
+ assert.equal(control(g,'speech-fallback').hidden,true);assert.match(g.$('#description').textContent,/^Powiedz:/);
+});
+for(const mode of ['map','fpv'])test(`${mode}: repeated encounters never draw arrows with a working microphone`,async()=>{
+ const h=speechHarness(),g=game({speechHost:h.host});await settle();let previous=null;
+ for(let i=0;i<9;i++){
+  g.run(`closeEvent();pos=Number(Object.keys(encounters).find(id=>isEnemy(encounters[id])));viewMode='${mode}';render();showEvent()`);
+  g.$('#dialogue-next').onclick();const e=g.run('encounters[pos]');assert.equal(e.taskType,'speech');assert.notEqual(e.phrase,previous);
+  assert.equal(control(g,'speech-fallback').hidden,true);control(g,'speak').onclick();const r=h.instances.at(-1);
+  r.onresult(results([e.phrase,true]));r.onend();assert.equal(g.$('#event').open,false);assert.equal(g.run('hearts'),3);previous=e.phrase;
+ }
 });

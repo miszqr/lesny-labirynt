@@ -236,7 +236,9 @@ Po zgłoszeniu uciętego przycisku wilka usunięto stały limit 330 px. `positio
 
 ## Mowa przy wilku — 2026-10-18
 
-`createWolf()` przy pierwszym wilku (bez `previous`) wybiera `taskType: 'speech'`, jeśli API, stan zgody i lista na to pozwalają. Przy kolejnych spotkaniach losuje `'speech'` lub `'jump'` po 50%. Dzięki temu pierwsze zadanie głosowe nie zależy od losowania, także gdy zgoda przy starcie nadal oczekuje. Dla głosu zapisuje `phrase` w spotkaniu; powtórne renderowanie lub rozpoznawanie nie losują jej ponownie. Przy relokacji wybiera nowe zadanie; przy więcej niż jednej frazie unika ostatniej. Nieprawidłowe/puste wpisy listy są pomijane. Brak `taskType` w starych scenach testowych nadal oznacza skoki.
+`createWolf()` wybiera `taskType: 'speech'` przy każdym spotkaniu, jeśli API, stan zgody i lista na to pozwalają. Losowana jest tylko fraza z `wolf-phrases.js`: „Uciekaj wilku”, „Zmykaj wilku” albo „Idź sobie”. Dla głosu zapisuje `phrase` w spotkaniu; powtórne renderowanie lub rozpoznawanie nie losują jej ponownie. Przy relokacji wybiera inną frazę, jeśli lista ma alternatywy. Nieprawidłowe/puste wpisy są pomijane. Skoki powstają tylko bez obsługi/zgody albo jako jawnie wybrane zastępstwo po błędzie (`speechFallback: true`). Automatyczne zadanie skokowe zmienia się na mowę przy odzyskaniu mikrofonu, również jeśli wilk już pokazał dialog. Wybrana po awarii odpowiedź skokowa pozostaje do ukończenia tego spotkania.
+
+Przy działającym mikrofonie i braku błędu przycisk „Zadanie ze strzałkami” jest ukryty; jego stary handler też odmawia zmiany. Inna rozpoznana fraza nie odblokowuje skoków. Brak dostępu lub zdarzenie błędu rozpoznawania pokazuje alternatywę. Rozpoczęcie kolejnej próby głosowej ją ukrywa.
 
 `ForestSpeech.create()` obsługuje standardowe i prefiksowane `SpeechRecognition`. Przy starcie strony `requestPermission()` wywołuje `getUserMedia({audio:true})`, współdzieli oczekującą obietnicę i zamyka wszystkie zwrócone ścieżki. Nie rozpoczyna wtedy rozpoznawania. Oczekująca zgoda nie blokuje gry. Stan zgody (`unknown/pending/granted/denied/error/unavailable`) jest widoczny w menu i zadaniu.
 

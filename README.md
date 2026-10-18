@@ -48,7 +48,7 @@ Projekt jest statyczny: HTML, CSS i JavaScript, bez zależności zewnętrznych. 
 
 ## Zadanie głosowe wilka
 
-Na przeglądarce z obsługą mowy pierwsze spotkanie z wilkiem zawsze ma zadanie **Powiedz: „Uciekaj wilku”.** Przy następnych spotkaniach wilk losuje mowę lub skoki (po 50%). Odmowa dostępu lub brak mikrofonu pozostawiają możliwość skoków. Fraza pozostaje taka sama podczas ponawiania próby. Po poprawnym wypowiedzeniu całego zdania wilk przechodzi na inne pole i otrzymuje nowe zadanie; nie przyznaje serduszka. Sama próba głosowa, cisza lub błąd rozpoznawania nie odbierają serc.
+Przy działającym mikrofonie **każde spotkanie z wilkiem ma zadanie głosowe**. Losuje się tylko fraza: „Uciekaj wilku”, „Zmykaj wilku” albo „Idź sobie”. Skoki są dostępne wyłącznie przy braku dostępu do mikrofonu lub błędzie rozpoznawania. Nie losujemy już typu zadania. Fraza pozostaje taka sama podczas ponawiania próby. Po poprawnym wypowiedzeniu całego zdania wilk przechodzi na inne pole i otrzymuje nowe zadanie; nie przyznaje serduszka. Sama próba głosowa, cisza lub błąd rozpoznawania nie odbierają serc.
 
 Gra sprawdza dostęp do mikrofonu od razu po otwarciu. Przeglądarka wyświetla pytanie, jeśli zgoda nie została jeszcze zapamiętana. Strumień użyty do sprawdzenia zgody jest od razu zamykany. Rozpoznawanie zaczyna się dopiero po kliknięciu **„Mówię”** przy wilku. Widać stan słuchania i rozpoznane słowa. Wyniki cząstkowe nie zaliczają zadania; wynik końcowy musi zgadzać się w całości, bez względu na wielkość liter i interpunkcję, z zachowaniem polskich znaków.
 
@@ -57,13 +57,14 @@ Dopisuj kolejne teksty w pliku [`wolf-phrases.js`](wolf-phrases.js), np.:
 ```js
 window.ForestWolfPhrases = [
   "Uciekaj wilku",
-  "Wracaj do lasu",
+  "Zmykaj wilku",
+  "Idź sobie",
 ];
 ```
 
-Obecnie w grze jest tylko „Uciekaj wilku”; druga linia powyżej to przykład rozszerzenia. Nie trzeba zmieniać kodu zadania. Po publikacji pliku odśwież stronę. Lista jest ładowana synchronicznie przed grą. Pusta lista wyłącza zadania głosowe. Przy kilku zwrotach kolejne zadanie głosowe wybiera inny niż poprzedni.
+To bieżąca lista trzech osobnych fraz. Dopisuj następne jako kolejne wiersze tablicy. Nie trzeba zmieniać kodu zadania. Po publikacji pliku odśwież stronę. Lista jest ładowana synchronicznie przed grą. Pusta lista wyłącza zadania głosowe. Przy kilku zwrotach kolejne zadanie głosowe wybiera inny niż poprzedni.
 
-Bez obsługi mowy lub po odmowie dostępu kolejne losowania wybierają skoki. Jeśli zadanie głosowe pojawiło się przed rozstrzygnięciem zgody, **„Zadanie ze strzałkami”** pozwala je zamienić na zwykłe skoki, bez nagrody ani pominięcia wilka. Menu pozwala ponowić prośbę o mikrofon. Zablokowaną zgodę trzeba zmienić w ustawieniach strony w przeglądarce.
+Bez obsługi mowy lub po odmowie dostępu wilk otrzymuje skoki. Przycisk zamiany na strzałki jest ukryty przy działającym mikrofonie; samo wypowiedzenie innej frazy go nie pokazuje. Pojawia się po błędzie rozpoznawania lub przy braku zgody. Ponowienie próby głosowej znów go ukrywa. Jeśli zadanie głosowe pojawiło się przed rozstrzygnięciem zgody, **„Zadanie ze strzałkami”** pozwala je zamienić na zwykłe skoki, bez nagrody ani pominięcia wilka. Menu pozwala ponowić prośbę o mikrofon. Zablokowaną zgodę trzeba zmienić w ustawieniach strony w przeglądarce.
 
 Do testu użyj strony HTTPS, np. [GitHub Pages](https://miszqr.github.io/lesny-labirynt/), otwartej bezpośrednio w przeglądarce. Obsługa Web Speech API zależy od przeglądarki i może wymagać internetu/usługi jej dostawcy. Gra nie zapisuje ani nie wysyła nagrań do własnego serwera; tekst rozpoznania istnieje tylko w pamięci bieżącego zadania. Przejście strony w tło, restart, zmiana widoku lub zadania przerywają słuchanie. Maksymalny czas jednej próby to 20 sekund, po czym można spróbować ponownie.
 

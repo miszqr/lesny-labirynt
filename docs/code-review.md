@@ -6,6 +6,12 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Wszystkie spotkania głosowe, trzy osobne frazy — 2026-10-18
+
+Na życzenie użytkownika usunięto losowanie typu zadania: działający mikrofon oznacza mowę przy każdym wilku. Lista zawiera osobno „Uciekaj wilku”, „Zmykaj wilku” i „Idź sobie”; nie dodano wcześniejszego, poprawionego przez użytkownika zdania łączonego. Fraza nie powtarza się bezpośrednio po poprzedniej. Skoki pozostają tylko przy braku dostępu lub błędzie rozpoznawania. Ukryto przycisk zamiany na strzałki podczas poprawnego działania mikrofonu i zablokowano jego handler; inna wypowiedziana fraza nie odblokowuje obejścia. Powrót dostępu do mikrofonu zmienia wcześniejsze automatyczne zadanie skokowe w głosowe. Parametr wersji pliku fraz wymusza pobranie aktualnej listy przy otwarciu nowej strony.
+
+Przeszły **53 testy** głosu, dialogów i relokacji wilka (31 testów mowy). Nowe przypadki sprawdzają dokładną listę, ukrycie i blokadę strzałek, błąd mikrofonu, odzyskanie zgody oraz dziewięć kolejnych głosowych spotkań w obu widokach. Użytkownik potwierdził działanie „Uciekaj wilku” na telefonie. W bieżącym środowisku sprawdzono symulowane API, bez realnego mikrofonu/przeglądarki.
+
 ## Pierwszy wilk zawsze z zadaniem głosowym — 2026-10-18
 
 Test użytkownika ujawnił, że losowanie po 50% również na pierwszym spotkaniu utrudnia znalezienie nowego zadania. Pierwszy wilk w każdej przygodzie wybiera teraz mowę, jeśli przeglądarka ją obsługuje, lista fraz nie jest pusta, a dostęp do mikrofonu nie został odrzucony. Oczekiwanie na zgodę zachowuje zadanie; udzielenie jej odblokowuje „Mówię”. Kolejne spotkania nadal losują mowę/skoki, a przy odmowie lub awarii pozostaje przejście do strzałek. Wyłączenie mikrofonu po sprawdzeniu zgody jest zamierzone; słuchanie zaczyna dopiero przycisk.

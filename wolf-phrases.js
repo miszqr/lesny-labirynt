@@ -3,4 +3,6 @@
 // Wystarczy odświeżyć grę po zapisaniu / opublikowaniu pliku.
 window.ForestWolfPhrases = [
   "Uciekaj wilku",
+  "Zmykaj wilku",
+  "Idź sobie",
 ];
