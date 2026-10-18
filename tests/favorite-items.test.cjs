@@ -33,7 +33,7 @@ test('favorite request stays stable; a held item awards the key and one heart on
     assert.equal(correct.attrs['aria-label'],`Daj ${item.word}`);
     assert.equal(correct.children[0].textContent,`Daj ${item.word}`);
     run('closeEvent()');correct.onclick();assert.equal(run('hearts'),3,'closed dialogue rejects stale delivery');
-    run('render();showEvent()');$('#dialogue-next').onclick();
+    run('render();showEvent()');assert.equal($('#answers').hidden,false);
     $('#answers').children.find(b=>b.dataset.item===e.answer).onclick();correct.onclick();
     assert.equal(run('hearts'),4);assert.equal(run('hasKey'),true);assert.equal($('#event').open,false);
     assert.equal(run(`ForestLoot.count(loot,'${e.answer}')`),0);

@@ -47,7 +47,8 @@ test('Dalej closes an unanswered task without solving it; it can be reopened', (
   assert.equal($('#event').open, false);
   assert.equal(run('hasKey'), false);
   assert.equal(run('done.has(pos)'), false);
-  $('#interact').onclick(); $('#dialogue-next').onclick();
+  $('#interact').onclick();
+  assert.equal($('#event').open, true);assert.equal($('#answers').hidden, false);
   assert.equal($('#description').textContent, text);
 });
 

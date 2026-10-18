@@ -49,7 +49,7 @@ const bank=[
 function shuffled(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function createEncounter(animal){
  const answer=animal.favorites[Math.floor(Math.random()*animal.favorites.length)],item=itemCatalog[answer];
- return {...animal,category:CATEGORY.FRIENDLY,text:`Chcę ${item.word}. Daj mi ${item.word}.`,answer};
+ return {...animal,category:CATEGORY.FRIENDLY,greeted:false,text:`Chcę ${item.word}. Daj mi ${item.word}.`,answer};
 }
 function start(){cancelWalk();cancelFlee();cancelHeartFlight();closeStorage();if($('#menu').open)$('#menu').close();maze=generateMaze(Number($('#size').value));pos=maze.start;facing=[0,1,2,3].find(d=>maze.cells[pos].links.includes(target(d)))??0;visited=new Set([pos]);done=new Set;encounters={};won=false;lost=false;hearts=3;hasKey=false;gateOpen=false;keeper=maze.keeper;shuffled(bank).slice(0,3).forEach((e,i)=>encounters[maze.places[i]]=createEncounter(e));addDanger();artSeed=Math.floor(Math.random()*1000000);seenSamples=new Set;seenPath='';terrain=[];for(let vy=0;vy<=maze.n;vy++)for(let vx=0;vx<=maze.n;vx++){terrain.push({x:vx*60,y:vy*60,type:Math.random()<.16?'water':Math.random()<.7?'forest':'meadow',variant:Math.random()})}placeHills();createLoot();terrainCache=terrainArt();$('#reveal').checked=false;closeEvent();render();showEvent(true)}
 function chestSpots(){
@@ -689,7 +689,7 @@ if(intro)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:'Mam na imię Adam.
 else if(lost)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:'Nie mam już serduszek. Spróbuję od nowa.'}];
 else if(won)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:'Jestem w domu! Cześć, siostro!'},{speaker:'sister',icon:'👧',name:'Siostra',text:'Dobrze cię widzieć!'}];
 else if(e&&isFriendly(e)&&done.has(pos))steps=[{speaker:'animal',icon:e.icon,name:e.title,text:npcLine(e)}];
-else if(e&&!done.has(pos)){const reply={speaker:'animal',icon:e.icon,name:isEnemy(e)?'Wilk':e.title,text:npcLine(e)};const greeting=isFriendly(e)?{...reply,text:npcGreeting(e)}:{speaker:'adam',icon:'👦',name:'Adam',text:'Ojej! To wilk! Jak go ominąć?'};steps=continuing?[reply]:[greeting,reply];}
+else if(e&&!done.has(pos)){const reply={speaker:'animal',icon:e.icon,name:isEnemy(e)?'Wilk':e.title,text:npcLine(e)};const greeting=isFriendly(e)?{...reply,text:npcGreeting(e)}:{speaker:'adam',icon:'👦',name:'Adam',text:'Ojej! To wilk! Jak go ominąć?'};steps=continuing||(isFriendly(e)&&e.greeted)?[reply]:[greeting,reply];if(isFriendly(e))e.greeted=true;}
 else if(maze.gate.includes(pos)&&!gateOpen)steps=[{speaker:'adam',icon:'👦',name:'Adam',text:hasKey?'Mam klucz. Otworzę furtkę.':'Furtka jest zamknięta. Muszę znaleźć klucz.'}];
 if(!steps.length)return;dialogueSteps=steps;dialogueIndex=0;if(!$('#event').open)$('#event').show();paintDialogue();}
 $('#dialogue-next').onclick=()=>{if(!$('#event').open||requiredTaskOpen())return;if(dialogueIndex<dialogueSteps.length-1){dialogueIndex++;paintDialogue()}else closeEvent()};

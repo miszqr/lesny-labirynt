@@ -117,6 +117,7 @@ for (const mode of ['map', 'fpv']) {
 
   test(`${mode}: chmurka rozmowy jest przy zwierzaku, działa dotykiem i klawiaturą`, async ({ page }) => {
     await encounterFixture(page, { mode });
+    await expect(page.locator('#description')).toHaveText('Cześć! Jestem kotkiem.');
     await page.locator('#dialogue-next').tap();
     await page.locator('#dialogue-next').tap();
     const icon = page.getByRole('button', { name: 'Porozmawiaj ze zwierzakiem: Kot', exact: true });
@@ -126,12 +127,12 @@ for (const mode of ['map', 'fpv']) {
     await icon.tap();
     await expect(page.locator('#event')).toBeVisible();
     await expect(icon).not.toBeVisible();
-    await page.locator('#dialogue-next').tap();
+    await expect(page.locator('#description')).toHaveText('Chcę mleko. Daj mi mleko.');
     await page.locator('#dialogue-next').tap();
     await tabTo(page, '#talk');
     await page.keyboard.press('Enter');
     await expect(page.locator('#event')).toBeVisible();
-    await page.locator('#dialogue-next').tap();
+    await expect(page.locator('#description')).toHaveText('Chcę mleko. Daj mi mleko.');
     await page.locator('[data-item="milk"]').tap();
     await expect(page.locator('#event')).not.toBeVisible();
     await expect(icon).toBeVisible();
@@ -244,8 +245,7 @@ for (const mode of ['map', 'fpv']) {
     await expect(page.locator('#event')).not.toBeVisible();
     await expect(page.locator('#interact')).toBeFocused();
     await page.keyboard.press('Enter');
-    await tabTo(page, '#dialogue-next');
-    await page.keyboard.press('Enter');
+    await expect(page.locator('#description')).toHaveText('Chcę mleko. Daj mi mleko.');
     await tabTo(page, '[data-item="milk"]');
     await page.keyboard.press('Enter');
     await expect(page.locator('#event')).not.toBeVisible();

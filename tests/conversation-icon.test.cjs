@@ -18,11 +18,14 @@ for (const mode of ['map', 'fpv']) {
     assert.match($('#map').innerHTML, /data-encounter="6"/);
     $('#talk').onclick();
     assert.equal($('#event').open, true);
+    assert.equal($('#description').textContent, 'Cześć! Jestem kotkiem.');
     $('#dialogue-next').onclick();
     assert.match($('#description').textContent, /^Dam ci klucz, jeśli /);
     $('#dialogue-next').onclick();
     assert.equal(run('canTalk()'), true, 'Dalej does not complete the task');
-    $('#talk').onclick(); $('#dialogue-next').onclick();
+    $('#talk').onclick();
+    assert.match($('#description').textContent, /^Dam ci klucz, jeśli /);
+    assert.equal($('#answers').hidden, false);
     const answer = run('encounters[pos].answer');
     $('#answers').children.find(b => b.dataset.item === answer).onclick();
     assert.equal($('#talk').hidden, false);
@@ -34,6 +37,27 @@ for (const mode of ['map', 'fpv']) {
     assert.equal($('#answers').children.length, 0);
   });
 }
+
+for(const mode of ['map','fpv'])test(`${mode}: greetings are remembered per friend, survive leaving and reset with a new adventure`,()=>{
+  const {$,run,events}=game();
+  run(`closeEvent();pos=5;maze.exit=15;maze.gate=[14,15];gateOpen=true;keeper=5;
+    encounters={5:createEncounter(bank[4]),6:createEncounter(bank[0])};done=new Set();
+    maze.cells[5].links=[6];maze.cells[6].links=[5];viewMode='${mode}';render()`);
+  assert.equal(run('encounters[5].greeted'),false,'seeing a friend is not a conversation');
+  $('#talk').onclick();assert.equal($('#description').textContent,'Cześć! Jestem pieskiem.');
+  events.keydown({key:'Escape',target:{tagName:'BUTTON'},preventDefault(){}});
+  run('move(1)');assert.equal(run('pos'),6);
+  $('#talk').onclick();assert.equal($('#description').textContent,'Cześć! Jestem kotkiem.');
+  run('dismissEvent();move(3)');assert.equal(run('pos'),5);
+  run(`setView('${mode==='map'?'fpv':'map'}')`);
+  $('#interact').onclick();
+  assert.match($('#description').textContent,/^Dam ci klucz, jeśli /);
+  assert.equal(run('dialogueSteps.length'),1);assert.equal($('#answers').hidden,false);
+  assert.equal(run('done.has(pos)'),false);assert.equal(run('hasKey'),false);assert.equal(run('hearts'),3);
+  run('start();closeEvent()');assert.equal(run('Object.values(encounters).filter(isFriendly).every(e=>e.greeted===false)'),true);
+  run('pos=keeper;render();showEvent()');assert.match($('#description').textContent,/^Cześć! Jestem /);
+  assert.equal(run('dialogueSteps.length'),2);
+});
 
 test('icon is clamped to the map and hidden for wolves, movement and game end', () => {
   const { $, run } = game();

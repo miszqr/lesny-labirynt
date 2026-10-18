@@ -20,11 +20,12 @@ function player(size, seed) {
   if (seed % 2 === 0) $('#view-toggle').onclick();
 
   function readyTask() {
+    const returning=run('isFriendly(encounters[pos])&&encounters[pos].greeted');
     run('closeEvent()'); $('#interact').onclick();
     assert.equal($('#event').open, true);
     assert.equal($('#event').dataset.speaker, run('isFriendly(encounters[pos])')?'animal':'adam');
-    assert.equal($('#answers').hidden, true);
-    $('#dialogue-next').onclick();
+    assert.equal($('#answers').hidden, !returning);
+    if(!returning)$('#dialogue-next').onclick();
     assert.equal($('#event').dataset.speaker, 'animal');
     assert.equal($('#answers').hidden, false);
   }

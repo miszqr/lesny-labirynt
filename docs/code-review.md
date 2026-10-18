@@ -6,6 +6,12 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Powitanie tylko przy pierwszej rozmowie — 2026-10-18
+
+Każdy przyjazny zwierzak ma osobną flagę `greeted`. Ustawia ją otwarcie pierwszej rozmowy, nie samo zobaczenie postaci ani wejście na jej pole. Drugie i kolejne otwarcia od razu pokazują prośbę, a po ukończeniu zadania podziękowanie. Flaga pozostaje po Escape, odejściu, powrocie oraz zmianie widoku i jest niezależna od nagrody. Nowa gra przywraca powitania przez utworzenie nowych spotkań z `greeted: false`. Wilk zachowuje dotychczasowy wstęp i obowiązkowe zadanie.
+
+Przeszło **78 testów** rozmów, próśb, przedmiotów, reguł i lotu serduszka (`TEST_SEED=42`; pełne podróże po jednym ziarnie w każdym rozmiarze). Dwa nowe przypadki sprawdzają oddzielną pamięć dwóch zwierzaków, przerwane powitanie, odejście i powrót, zmianę widoku oraz reset przygody. Zaktualizowano istniejące przypadki oddawania przedmiotu po ponownych odwiedzinach. Składnia dostosowanych scenariuszy przeglądarkowych jest poprawna; sam podgląd przeglądarkowy pozostaje niedostępny.
+
 ## Obowiązkowe okienko zadania wilka — 2026-10-18
 
 Usunięto „Dalej” z etapu wykonywania zadania wilka oraz tekst „Jedno kliknięcie to jeden krok”. W stopce zostają „Cofnij” i „Skaczę”. `requiredTaskOpen()` odróżnia obowiązkowe zadanie przeciwnika od wstępu i zwykłych rozmów. Ukryty przycisk nie działa po wywołaniu starego handlera, a Escape oraz natywne `cancel` nie zamykają zadania. Poprawne wykonanie zamyka je i uruchamia przejście wilka. Błąd pozostawia zadanie otwarte, a utrata wszystkich serc przechodzi do ekranu końca gry z możliwością restartu. Prośby przyjaznych postaci można nadal zamknąć, aby poszukać przedmiotów.

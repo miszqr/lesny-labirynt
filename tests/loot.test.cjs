@@ -114,7 +114,7 @@ test('without an item only the request is shown; collection enables delivery and
  const request=run('loot.requests.find(r=>r.cell===keeper)'),item=run('Object.values(loot.items).find(i=>i.typeId===encounters[keeper].answer)');
  run(`closeEvent();pos=loot.chests.find(c=>c.itemIds.includes('${item.id}')).cell;render();openStorage(currentChest().id)`);
  all($('#storage-grid')).find(b=>b.dataset.take===item.id).onclick();$('#storage-next').onclick();
- run('pos=keeper;render();showEvent()');$('#dialogue-next').onclick();const give=$('#answers').children.find(b=>b.dataset.item===request.requiredTypeId);
+ run('pos=keeper;render();showEvent()');assert.equal($('#answers').hidden,false);const give=$('#answers').children.find(b=>b.dataset.item===request.requiredTypeId);
  give.onclick();give.onclick();assert.equal(run('hearts'),4);assert.equal(run('hasKey'),true);assert.equal(run('loot.consumedItemIds.length'),1);
  $('#talk').onclick();assert.match($('#description').textContent,/Dziękuję/);assert.equal($('#answers').children.length,0);
  assert.equal(run('hearts'),4);assert.equal(run('ForestLoot.invariant(loot)'),true);
