@@ -729,7 +729,8 @@ function dismissEvent(){if(!requiredTaskOpen())closeEvent()}
 function closeEvent(){cancelWolfSpeech();if($('#event').open)$('#event').close();$('#answers').hidden=false;$('#dialogue-actions').hidden=true;$('#dialogue-next').hidden=true;document.querySelectorAll('#map [data-speaking]').forEach(el=>el.removeAttribute('data-speaking'))}
 function npcLine(e){if(isFriendly(e)&&done.has(pos))return pos===keeper?'Dziękuję! Klucz jest twój.':'Dziękuję za pomoc!';return isEnemy(e)?e.text.replace('To groźny wilk. ',''):pos===keeper?`Dam ci klucz, jeśli dasz mi ${itemCatalog[e.answer].word}.`:e.text}
 function npcGreeting(e){
- const name={cat:'kotkiem',rabbit:'króliczkiem',bear:'misiem',hedgehog:'jeżykiem',dog:'pieskiem',owl:'sową'}[e.id];
+ if(e.id==='rabbit')return 'Cześć, jestem Kicajło Kic Kic Kic.';
+ const name={cat:'kotkiem',bear:'misiem',hedgehog:'jeżykiem',dog:'pieskiem',owl:'sową'}[e.id];
  return name?`Cześć! Jestem ${name}.`:'Cześć!';
 }
 function paintDialogue(){
