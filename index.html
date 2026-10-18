@@ -29,6 +29,7 @@ body:has(dialog[open]) #talk{visibility:hidden;pointer-events:none}
 <dialog id="storage" aria-labelledby="storage-title" aria-describedby="storage-subtitle"><div class="storage-content"><h2 id="storage-title">🎒 Plecak</h2><p id="storage-subtitle"></p><div id="storage-grid" class="storage-grid"></div><section id="storage-backpack" hidden aria-labelledby="storage-backpack-title"><h3 id="storage-backpack-title"></h3><div id="storage-backpack-grid" class="storage-grid"></div></section><p id="storage-notice" role="status" aria-live="polite"></p><div class="storage-actions"><button id="take-all" class="secondary" hidden>Zabierz wszystko</button><button id="storage-next" class="primary">Dalej</button></div></div></dialog>
 <script src="wolf-phrases.js?v=3"></script><script src="speech.js?v=2"></script><script src="characters.js"></script><script src="loot.js"></script><script src="maze.js"></script><script src="fpv.js"></script><script>
 const $=s=>document.querySelector(s);let maze,pos,visited,done,encounters,keeper,scenery={},terrain=[],artSeed=0,terrainCache='',seenSamples=new Set,seenPath='',hasKey=false,gateOpen=false,won=false,lost=false,hearts=3,viewMode='map',facing=0,walking=null,fleeing=null,heartFlight=null,loot=null,storageChestId=null,storageVersion=0;
+let tileRenderer=null,tilesEnabled=false;
 const {CATEGORY,isFriendly,isEnemy,completionHearts}=ForestCharacters;
 const wolfSpeech=ForestSpeech.create();let disposeSpeechView=null;
 function cancelWolfSpeech(){if(disposeSpeechView){disposeSpeechView();disposeSpeechView=null}wolfSpeech.cancel()}
@@ -497,6 +498,7 @@ function sightDefinitions(){
  return `<defs><filter id="sight-feather" filterUnits="userSpaceOnUse" ${bounds}><feGaussianBlur stdDeviation="3.5"/></filter><mask id="visible-area" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" ${bounds} style="mask-type:luminance">${area}</mask></defs>`;
 }
 function draw(){
+ if(tileRenderer?.active){tileRenderer.sync();return}
  const n=maze.n,L=n*60;$('#map').setAttribute('viewBox',`-12 -32 ${L+24} ${L+44}`);
  let out=`<defs><linearGradient id="soil" x2="0" y2="1"><stop stop-color="#ab855a"/><stop offset="1" stop-color="#715d40"/></linearGradient><clipPath id="ground"><rect width="${L}" height="${L}" rx="3"/></clipPath></defs>`;
  out+=sightDefinitions();
@@ -556,6 +558,7 @@ function positionTalk(){
 }
 function renderScene(){
  rememberSight();
+ tileRenderer?.setActive(tilesEnabled&&viewMode==='map'&&!won);
  $('.map-card').dataset.view=won?'map':viewMode;
  if(won)drawHome();
  else if(viewMode==='fpv'){
@@ -567,6 +570,7 @@ function renderScene(){
 }
 function setView(mode){
  if($('#storage').open)return;finishWalk();finishFlee();finishHeartFlight();
+ if(tileRenderer)tilesEnabled=mode==='tiles';
  viewMode=mode==='fpv'?'fpv':'map';$('#view-mode').value=viewMode;
  if($('#menu').open)$('#menu').close();render();if($('#event').open)paintDialogue();
 }
@@ -575,6 +579,7 @@ function updateControls(){
  $('#view-toggle').textContent=fpv?'🗺 Mapa':'👁 FPV';$('#view-toggle').setAttribute('aria-pressed',String(fpv));
  $('#view-toggle').setAttribute('aria-label',fpv?'Włącz mapę z góry':'Włącz widok z oczu Adama');
  $('#fpv-hint').hidden=!fpv||won;$('#interact').disabled=!!walking||!!fleeing||!!heartFlight;positionTalk();positionChest();
+ if(tileRenderer){$('#view-mode').value=tileRenderer.active?'tiles':viewMode;$('#view-toggle').textContent=tileRenderer.active?'Mapa 2D':'Kafelki 3D';$('#view-toggle').setAttribute('aria-label',tileRenderer.active?'Przełącz na mapę 2D':'Przełącz na kafelki 3D');$('#view-toggle').setAttribute('aria-pressed',String(tileRenderer.active))}
  document.querySelectorAll('[data-dir]').forEach(b=>{
   const d=Number(b.dataset.dir),turn=fpv&&(d===1||d===3),world=fpv?(facing+(d===2?2:0))%4:d;
   b.textContent=fpv?['↑','↷','↓','↶'][d]:['↑','→','↓','←'][d];
@@ -649,6 +654,10 @@ function startWalk(to,d){
  // Respect reduced motion, and keep movement usable if animation APIs are absent.
  if(typeof requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){rememberWalk(pos,to);pos=to;facing=d;visited.add(pos);render();showArrivalEvent();return}
  const w=walking={from:pos,to,d,frame:0,started:null};draw();updateControls();
+ if(tileRenderer?.active){
+  const frame=now=>{if(walking!==w)return;if(w.started===null)w.started=now;const t=Math.min(1,(now-w.started)/360);rememberWalk(w.from,w.to,t);if(t>=1){finishWalk();return}w.frame=requestAnimationFrame(frame)};
+  w.frame=requestAnimationFrame(frame);return;
+ }
  const actor=$('#map [data-character="adam"]'),layer=actor?.parentElement;
  const layers=[...document.querySelectorAll('#revealed-scene > [data-depth]')].filter(el=>el!==layer);
  const parts={};for(const name of ['body','shadow','left-leg','right-leg','left-arm','right-arm'])parts[name]=$(`#map [data-character="adam"] [data-walk-part="${name}"]`);
@@ -703,6 +712,10 @@ function startFlee(cell){
  const route=wolfRoute(cell),f=fleeing={cell,route,encounter:encounters[cell],mode:viewMode,frame:0,started:null,duration:Math.max(750,Math.min(2400,(route.length-1)*420))};
  if(typeof requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||(viewMode==='fpv'&&!ForestFPV.animalPose({maze,pos,facing},cell).visible)){finishFlee();return}
  render();
+ if(tileRenderer?.active){
+  const frame=now=>{if(fleeing!==f)return;if(f.started===null)f.started=now;if(now-f.started>=f.duration){finishFlee();return}f.frame=requestAnimationFrame(frame)};
+  f.frame=requestAnimationFrame(frame);return;
+ }
  const wolf=$('#map [data-wolf="true"]');if(!wolf){finishFlee();return}wolf.setAttribute('class','wolf-fleeing');
  const layer=wolf.closest?.(f.mode==='fpv'?'[data-fpv-depth]':'[data-depth]'),container=layer?.parentElement;
  const layers=container?[...container.children].filter(el=>el!==layer&&el.hasAttribute(f.mode==='fpv'?'data-fpv-depth':'data-depth')):[];
@@ -760,7 +773,7 @@ document.addEventListener('click',e=>{const bubble=$('#storage').open?$('#storag
 $('#menu-toggle').onclick=()=>{if($('#storage').open)return;finishWalk();finishFlee();finishHeartFlight();closeEvent();$('#menu').showModal()};$('#menu-close').onclick=()=>$('#menu').close();$('#interact').onclick=()=>{if(heartFlight||$('#storage').open)return;if(canOpenChest()){openStorage(currentChest().id);return}render();showEvent()};
 $('#talk').onclick=()=>{if(!canTalk()||$('#event').open||$('#menu').open||$('#storage').open)return;render();showEvent()};
 $('#backpack-toggle').onclick=()=>openStorage();$('#chest-interact').onclick=()=>{if(canOpenChest())openStorage(currentChest().id)};$('#storage-next').onclick=closeStorage;$('#storage').oncancel=e=>{e.preventDefault();closeStorage()};
-$('#view-toggle').onclick=()=>setView(viewMode==='fpv'?'map':'fpv');$('#view-mode').onchange=()=>setView($('#view-mode').value);
+$('#view-toggle').onclick=()=>setView(tileRenderer?(tileRenderer.active?'map':'tiles'):(viewMode==='fpv'?'map':'fpv'));$('#view-mode').onchange=()=>setView($('#view-mode').value);
 document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>handleDirection(Number(b.dataset.dir)));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#storage').open){e.preventDefault();closeStorage();return}if(e.key==='Escape'&&$('#event').open){e.preventDefault();dismissEvent();return}if($('#event').open||$('#menu').open||$('#storage').open||['SELECT','INPUT','TEXTAREA'].includes(e.target.tagName))return;let d=['ArrowUp','ArrowRight','ArrowDown','ArrowLeft'].indexOf(e.key);if(d>=0){e.preventDefault();if(viewMode==='fpv'&&e.repeat)return;handleDirection(d)}});$('#new').onclick=start;$('#next').onclick=start;$('#size').onchange=start;$('#reveal').onchange=()=>{finishWalk();finishFlee();finishHeartFlight();renderScene()};
 $('#microphone').onclick=()=>wolfSpeech.requestPermission(true);
 wolfSpeech.subscribe(state=>{
@@ -772,4 +785,20 @@ wolfSpeech.subscribe(state=>{
 window.addEventListener('pagehide',()=>wolfSpeech.cancel());
 document.addEventListener('visibilitychange',()=>{if(document.hidden)wolfSpeech.cancel()});
 wolfSpeech.requestPermission();start();
-</script></html>
+// Optional rendering adapter. Rules, quests, inventories and saved discovery
+// remain owned by this game; the renderer can only read their state.
+window.enableForestTiles=createView=>{
+ let cachedMaze=null,cachedLandscape=[];
+ const readState=()=>{if(cachedMaze!==maze){cachedMaze=maze;cachedLandscape=landscapeObjects()}return {maze,pos,encounters,chests:loot?.chests||[],gateOpen,landscape:cachedLandscape,seenPath,reveal:$('#reveal').checked,walking,fleeing,heartFlight,animalPresent}};
+ tileRenderer=createView({host:$('.mapwrap'),svg:$('#map'),readState,geometry:{roadCurve,roadPoint,roadHalfWidth,edgePoint,walkPose,fleePose},positionOverlays,onFailure:window.forestTilesFailure});
+ tilesEnabled=true;viewMode='map';
+ const option=document.createElement('option');option.value='tiles';option.textContent='Kafelki 3D';$('#view-mode').prepend(option);
+ const note=document.createElement('p');note.className='tiles-status';note.textContent='Wersja 3D · obróć mapę przeciągnięciem. Strzałki nadal odpowiadają kierunkom mapy: ↑ północ, → wschód. Kompas wskazuje północ.';$('#view-mode').after(note);
+ finishWalk();finishFlee();finishHeartFlight();render();if($('#event').open)paintDialogue();
+};
+window.forestTilesFailure=error=>{
+ console.warn('Widok 3D jest niedostępny:',error);tileRenderer?.dispose();tileRenderer=null;tilesEnabled=false;viewMode='map';render();if($('#event').open)paintDialogue();
+ let note=$('#tiles-error');if(!note){note=document.createElement('p');note.id='tiles-error';note.className='tiles-status';note.setAttribute('role','status');$('.cardtop').after(note)}
+ note.textContent='Widok 3D jest niedostępny na tym urządzeniu. Możesz kontynuować na mapie 2D.';
+};
+</script><script type="module" src="tiles3d/entry.mjs"></script></html>

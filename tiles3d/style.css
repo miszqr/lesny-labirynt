@@ -1,0 +1,15 @@
+.tiles-active{isolation:isolate;border-radius:16px;background:radial-gradient(ellipse at 50% 70%,#cfdbbc 0,#e7ecdc 68%);overflow:hidden}
+.tiles-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+.tiles-canvas:active{cursor:grabbing}
+.tiles-active #map{position:absolute;inset:0;pointer-events:none;z-index:1}
+.tiles-active #heart-flight{display:none}
+.tiles-active #talk,.tiles-active #chest-interact{z-index:5}
+.tiles-toolbar{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);display:flex;gap:4px;padding:5px;border-radius:16px;background:#fffdf1ed;box-shadow:0 3px 12px #36553c16;z-index:3}
+.tiles-toolbar button{min-width:40px;height:40px;border-radius:11px;background:transparent;color:#244b3f;font-weight:bold;font-size:24px;touch-action:manipulation}
+.tiles-toolbar button:hover{background:#e5ecd8}.tiles-toolbar button:disabled{opacity:.3}
+.tiles-compass{position:absolute;right:12px;top:12px;z-index:2;width:36px;text-align:center;color:#42664d;font-size:12px;font-weight:bold;pointer-events:none}
+.tiles-compass span{display:block}.tiles-compass b{display:block;font:30px/1 Arial,sans-serif;transform-origin:center}
+.tiles-hint{position:absolute;top:7px;left:8px;right:50px;margin:0;color:#5a7152;font-size:10px;pointer-events:none}
+.tiles-status{font-size:12px;margin:8px 0;color:#526c48}
+.tiles-link{font-size:14px;color:#285b42;display:block;text-align:center;padding:10px;border-radius:12px;background:#edf2e2}
+@media(max-height:540px){.tiles-toolbar{bottom:4px;padding:2px}.tiles-toolbar button{height:34px;min-width:34px;font-size:22px}}
