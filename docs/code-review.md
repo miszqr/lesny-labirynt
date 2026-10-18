@@ -6,6 +6,12 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Lot serduszka od zwierzaka do Adama — 2026-10-17
+
+Po oddaniu przedmiotu przyjaznej postaci na mapie 2D pojawia się serce, które leci łukiem do Adama i kończy lot delikatnym rozświetleniem. Efekt trwa 900 ms. Nagroda jest zapisywana raz, przed animacją; zakończenie, restart i pominięcie efektu nie zmieniają serc ani przedmiotów. Wilk nie uruchamia lotu ani nie przyznaje serca. Zgodnie z poleceniem użytkownika FPV pominięto. Ograniczenie ruchu i brak RAF zachowują natychmiastową nagrodę.
+
+Przeszły **83 testy**: 13 nowych przypadków lotu oraz regresje chodzenia, wilka, kategorii, ulubionych przedmiotów, pojemności plecaka, ikony rozmowy i dialogów. Po korekcie obsługi atrybutu `hidden` na SVG ponownie przeszło 13 testów lotu. Obejrzano trzy statyczne fazy na tle mapy: początek przy zwierzaku, łuk i dotarcie do Adama. Nie wykonano podglądu przeglądarkowego, ponieważ jego infrastruktura nadal jest niedostępna; płynność i zachowanie rzeczywistego układu pozostają do kontroli w T03.
+
 ## Przyciski dymka poza przewijaną treścią — 2026-10-17
 
 Zdjęcie użytkownika ujawniło przypadek, w którym przy „Skocz pięć kroków w górę.” dolne akcje wypadały poza widoczny obszar. Dotychczasowy limit 330 px obejmował całą treść razem z przyciskami. Dymek otrzymał limit wynikający z dostępnej wysokości karty oraz osobny pasek akcji, który się nie kurczy. Cofnij/Skaczę/Dalej są poza przewijaną treścią. Etap rozmowy steruje widocznością paska, a inna rozmowa i nowa gra czyszczą akcje wilka.

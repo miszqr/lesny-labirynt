@@ -82,6 +82,16 @@ Obszar widoczności powiększa się wzdłuż drogi postaci i zachowuje wszystkie
 
 Testy z kontrolowanym zegarem sprawdzają ruch, opóźnienie rozmów, blokady, restart, przełączanie widoków i preferencję ograniczenia ruchu. Sprawdzono także statyczne fazy chodu; płynność w prawdziwej przeglądarce pozostaje niezweryfikowana z powodu niedostępnego podglądu.
 
+## Przekazanie serduszka w 2D
+
+Po udanej dostawie `renderDelivery()` zapisuje zużycie przedmiotu, ukończenie prośby, serce i ewentualny klucz, zamyka dymek i uruchamia `startHeartFlight(cell)`. Animacja nie zmienia stanu nagrody. Powtórne kliknięcie ani pominięcie efektu nie przyznaje drugiego serca. Warunek `friendly` wyklucza wilka.
+
+Osobna nakładka SVG `#heart-flight` ma ten sam `viewBox` co mapa i nie przechwytuje kliknięć. `heartFlightPose()` prowadzi serce po łuku od zwierzaka do piersi Adama. Pierwsze 80% z 900 ms to lot, reszta to zmniejszenie serca i delikatne złote rozświetlenie. `requestAnimationFrame` zmienia tylko transformację serca i atrybuty koła. Nakładka skaluje się razem z mapą; jej widoczność sterowana jest atrybutem `hidden` SVG.
+
+Ruch i interakcje są wstrzymane na czas lotu. Menu, zmiana widoku i odsłonięcie mapy sprzątają efekt; nowa gra anuluje oczekującą klatkę. Porównanie tożsamości animacji blokuje stare callbacki. W FPV, przy ograniczeniu ruchu i bez API animacji nagroda jest przyznawana od razu, bez lotu.
+
+Testy sprawdzają jednorazowe przyznanie, zużycie przedmiotu, blokady, trzy rozmiary map, zakończenie i restart. Statyczne fazy SVG obejrzano; płynność w przeglądarce pozostaje niezweryfikowana.
+
 ## Widoczność i ucieczka wilka
 
 W 2D `rememberSight()` dopisuje do `seenPath` zamknięte, nieregularne obszary o promieniu około 67 jednostek wokół Adama (pole ma 60×60). Ich kształt wynika ze stałego ziarna przygody i pozycji, więc nie migocze przy odrysowaniu. Wszystkie kontury mają ten sam kierunek i tworzą sumę obszarów; pamięć tylko rośnie. `rememberWalk()` zapisuje 17 stałych próbek wzdłuż krzywej kroku, stopniowo podczas animacji i w całości przy jej zakończeniu. Identyczna droga jest zapamiętywana przy pominiętych klatkach, ograniczeniu animacji i ruchu FPV. Zbiór `seenSamples` eliminuje powtórzenia podczas wracania tą samą trasą.

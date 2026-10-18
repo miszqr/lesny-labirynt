@@ -11,6 +11,7 @@
 #map .wolf-fleeing .animal-idle{animation:none}
 
 .mapwrap{position:relative}
+#heart-flight{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:visible}
 #talk{position:absolute;z-index:3;width:44px;height:44px;padding:5px;background:transparent;border-radius:12px;touch-action:manipulation}
 #talk svg{width:34px;height:34px;overflow:visible;filter:drop-shadow(0 2px 2px #20392035);pointer-events:none}
 #talk:hover svg{filter:drop-shadow(0 2px 3px #20392060)}
@@ -21,12 +22,12 @@ body:has(dialog[open]) #talk{visibility:hidden;pointer-events:none}
 #storage-backpack{border-top:1px solid #dbe3ce;margin-top:16px;padding-top:12px}#storage-backpack h3{margin:0 0 10px;font-size:18px}#storage[data-mode="backpack"] #storage-grid,#storage-backpack-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.storage-item button:disabled,#take-all:disabled{opacity:.45;cursor:default}.storage-item button.put-back{background:#fffdf2;color:#294d3c;border:1px solid #a8b890;font-size:14px}
 </style>
 <header><div class="brand">👦 Adam w lesie</div><div class="header-actions"><button id="view-toggle" class="secondary" aria-pressed="false" aria-label="Włącz widok z oczu Adama">👁 FPV</button><button id="menu-toggle" class="secondary" aria-label="Otwórz menu" aria-haspopup="dialog" aria-controls="menu">☰</button></div></header>
-<main><div class="layout"><section class="map-card" aria-label="Mapa labiryntu"><div class="cardtop"><span id="room">Twoja mapa</span><span id="explored"></span></div><div class="mapwrap"><svg id="map" role="img" aria-label="Odkrywana mapa labiryntu"></svg><button id="talk" type="button" aria-label="Porozmawiaj ze zwierzakiem" aria-haspopup="dialog" aria-controls="event" title="Porozmawiaj" hidden><svg viewBox="0 0 34 34" aria-hidden="true"><path d="M8 3H26A6 6 0 0 1 32 9V20A6 6 0 0 1 26 26H16L8 32V26A6 6 0 0 1 2 20V9A6 6 0 0 1 8 3Z" fill="#fffdf2" stroke="#476b45" stroke-width="2" stroke-linejoin="round"/><g fill="#476b45"><circle cx="10" cy="15" r="2"/><circle cx="17" cy="15" r="2"/><circle cx="24" cy="15" r="2"/></g></svg></button><button id="chest-interact" type="button" aria-label="Otwórz skrzynkę" aria-haspopup="dialog" aria-controls="storage" title="Otwórz skrzynkę" hidden>📦</button></div><dialog id="event" class="speech-bubble" aria-labelledby="speaker-name" aria-describedby="description"><div class="bubble-scroll"><div class="bubble-heading"><span id="icon" aria-hidden="true"></span><strong id="speaker-name">Adam</strong></div><div class="scene" hidden></div><h2 id="title" hidden></h2><p id="description" aria-live="polite"></p><div class="answers" id="answers"></div><p id="notice" class="notice" role="status" aria-live="polite"></p></div><div class="bubble-footer"><div id="dialogue-actions" hidden></div><button class="primary" id="dialogue-next">Dalej</button><button class="primary" id="next" hidden>Graj dalej →</button></div></dialog><div class="controls"><div class="directions"><button class="up" data-dir="0" aria-label="Idź w górę">↑</button><button class="left" data-dir="3" aria-label="Idź w lewo">←</button><button class="down" data-dir="2" aria-label="Idź w dół">↓</button><button class="right" data-dir="1" aria-label="Idź w prawo">→</button></div><p id="fpv-hint" hidden>↑ przód · ↓ tył · ↶ ↷ obrót</p></div><button class="secondary" id="interact" hidden>Porozmawiaj</button><div class="bottom"><span class="progress" id="keys"></span></div><section class="inventory" aria-label="Plecak i nagrody"><button id="backpack-toggle" type="button" aria-haspopup="dialog" aria-controls="storage"><span aria-hidden="true">🎒</span> Plecak <span id="backpack-count">0 / 2</span></button><ul id="items" aria-live="polite"></ul></section></section>
+<main><div class="layout"><section class="map-card" aria-label="Mapa labiryntu"><div class="cardtop"><span id="room">Twoja mapa</span><span id="explored"></span></div><div class="mapwrap"><svg id="map" role="img" aria-label="Odkrywana mapa labiryntu"></svg><svg id="heart-flight" aria-hidden="true" focusable="false" hidden></svg><button id="talk" type="button" aria-label="Porozmawiaj ze zwierzakiem" aria-haspopup="dialog" aria-controls="event" title="Porozmawiaj" hidden><svg viewBox="0 0 34 34" aria-hidden="true"><path d="M8 3H26A6 6 0 0 1 32 9V20A6 6 0 0 1 26 26H16L8 32V26A6 6 0 0 1 2 20V9A6 6 0 0 1 8 3Z" fill="#fffdf2" stroke="#476b45" stroke-width="2" stroke-linejoin="round"/><g fill="#476b45"><circle cx="10" cy="15" r="2"/><circle cx="17" cy="15" r="2"/><circle cx="24" cy="15" r="2"/></g></svg></button><button id="chest-interact" type="button" aria-label="Otwórz skrzynkę" aria-haspopup="dialog" aria-controls="storage" title="Otwórz skrzynkę" hidden>📦</button></div><dialog id="event" class="speech-bubble" aria-labelledby="speaker-name" aria-describedby="description"><div class="bubble-scroll"><div class="bubble-heading"><span id="icon" aria-hidden="true"></span><strong id="speaker-name">Adam</strong></div><div class="scene" hidden></div><h2 id="title" hidden></h2><p id="description" aria-live="polite"></p><div class="answers" id="answers"></div><p id="notice" class="notice" role="status" aria-live="polite"></p></div><div class="bubble-footer"><div id="dialogue-actions" hidden></div><button class="primary" id="dialogue-next">Dalej</button><button class="primary" id="next" hidden>Graj dalej →</button></div></dialog><div class="controls"><div class="directions"><button class="up" data-dir="0" aria-label="Idź w górę">↑</button><button class="left" data-dir="3" aria-label="Idź w lewo">←</button><button class="down" data-dir="2" aria-label="Idź w dół">↓</button><button class="right" data-dir="1" aria-label="Idź w prawo">→</button></div><p id="fpv-hint" hidden>↑ przód · ↓ tył · ↶ ↷ obrót</p></div><button class="secondary" id="interact" hidden>Porozmawiaj</button><div class="bottom"><span class="progress" id="keys"></span></div><section class="inventory" aria-label="Plecak i nagrody"><button id="backpack-toggle" type="button" aria-haspopup="dialog" aria-controls="storage"><span aria-hidden="true">🎒</span> Plecak <span id="backpack-count">0 / 2</span></button><ul id="items" aria-live="polite"></ul></section></section>
 </div>
 </main><dialog id="menu" aria-labelledby="menu-title"><div class="menu-body"><button id="menu-close" class="secondary" aria-label="Zamknij menu">Zamknij ×</button><h2 id="menu-title">Menu</h2><div class="toolbar"><label for="size">Mapa</label><select id="size"><option value="4">Mała · 4 × 4</option><option value="6">Średnia · 6 × 6</option><option value="8">Duża · 8 × 8</option></select><label class="view-label" for="view-mode">Widok</label><select id="view-mode"><option value="map">Mapa z góry</option><option value="fpv">FPV · oczami Adama</option></select><button class="secondary" id="new">↻ Nowa gra</button></div><label><input id="reveal" type="checkbox"> Pokaż całą mapę</label><div class="legend"><span>👦 Adam</span><span>✦ Spotkanie</span><span>🔒 Furtka</span><span>⌂ Dom</span></div><details><summary>Dla rodzica · jak gramy?</summary><p>Odkrywajcie mapę i pomagajcie leśnym przyjaciołom. Każdy zwierzak ma listę ulubionych przedmiotów. Na początku przygody losuje się jeden z nich. Dziecko odkrywa skrzynki przy ścieżkach i zabiera z nich przedmioty do plecaka, pojedynczo lub wszystkie naraz, jeśli się zmieszczą. Plecak mieści dwa egzemplarze przedmiotów. Przy skrzyni można odłożyć do niej przedmiot z plecaka i zabrać inny. Zawartość jest ustalona na początku gry. Przedmioty można zbierać, zanim pozna się prośbę zwierzaka. Przycisk 🎒 Plecak pokazuje wszystkie zebrane przedmioty i ich liczbę. Po przeczytaniu prośby przycisk „Daj…” przekazuje jeden pasujący egzemplarz. Przedmiot znika z plecaka. Każdy zwierzak daje nagrodę tylko raz. Skrzynkę i plecak zamykamy przyciskiem „Dalej”. Pusta skrzynka pozostaje na miejscu. Wymagane zapasy są zawsze dostępne przed furtką, także gdy zwierzaki proszą o to samo. Jeden losowy zwierzak ma klucz i oddaje go za przysługę. Jego prośba zawiera obietnicę nagrody. Zwierzak z kluczem zawsze jest dostępny przed zamkniętą furtką. Klucz trafia na listę przedmiotów. Furtka blokuje losowe przejście na drodze do domu. Otwórz ją przyciskiem „Otwórz furtkę”, a następnie idź dalej do domu. Samo otwarcie furtki nie kończy gry. Pomoc pozostałym zwierzakom jest dobrowolna. Rozmowy pojawiają się w dymkach obok Adama i zwierząt. Przy przyjaznym zwierzaku pojawia się mała chmurka z trzema kropkami. Kliknij ją, aby rozpocząć rozmowę. Przycisk „Dalej” pokazuje następną wypowiedź, a po ostatniej zamyka rozmowę. Odpowiedzi pojawiają się przy prośbie zwierzaka. Kliknięcie obok dymka niczego nie zmienia. Możesz też zamknąć rozmowę klawiszem Escape. Przy zwierzaku z niewykonanym zadaniem i zamkniętej furtce możesz ponownie otworzyć okienko przyciskiem pod sterowaniem. Po poprawnej odpowiedzi okienko zamyka się. Zwierzak zostaje na mapie i przy kolejnej rozmowie dziękuje za pomoc. Nie ma limitu czasu. Jeśli nie masz jeszcze przedmiotu, możesz zamknąć rozmowę i poszukać go w skrzynkach. Na drodze jest też wilk: odczytaj liczbę kroków i kierunek, kliknij strzałkę odpowiednią liczbę razy i wybierz „Skaczę”. Możesz cofnąć wybrany krok przed zatwierdzeniem. Adam zaczyna z 3 serduszkami. Postacie dzielą się na przyjazne i przeciwników. Pomoc przyjaznemu zwierzakowi daje 1 serduszko. Wilk jest przeciwnikiem: poprawne ominięcie nie dodaje serduszka. Ominięty wilk przechodzi ścieżką na inne pole i czeka z nowym zadaniem. Przy kolejnym spotkaniu trzeba ominąć go ponownie. Błąd u wilka zabiera 1 serduszko i pozwala spróbować ponownie. Przy 0 serduszek gra się kończy. Zamknięcie okienka nie pozwala ominąć tego zadania. Przycisk FPV pokazuje las oczami Adama: ↑ to krok do przodu, ↓ krok do tyłu, a ↶ i ↷ obracają w miejscu. Strzałki klawiatury działają tak samo. Polecenia wilka nadal dotyczą strzałek w jego zadaniu. Kompas pokazuje kierunek patrzenia. Mała mapka po prawej pokazuje odkryte ścieżki i twoją pozycję; północ jest zawsze u góry. Przycisk Mapa wraca do widoku z góry bez utraty postępu. W razie potrzeby odsłoń całą mapę. Nowa przygoda zaczyna grę od początku.</p></details></div></dialog>
 <dialog id="storage" aria-labelledby="storage-title" aria-describedby="storage-subtitle"><div class="storage-content"><h2 id="storage-title">🎒 Plecak</h2><p id="storage-subtitle"></p><div id="storage-grid" class="storage-grid"></div><section id="storage-backpack" hidden aria-labelledby="storage-backpack-title"><h3 id="storage-backpack-title"></h3><div id="storage-backpack-grid" class="storage-grid"></div></section><p id="storage-notice" role="status" aria-live="polite"></p><div class="storage-actions"><button id="take-all" class="secondary" hidden>Zabierz wszystko</button><button id="storage-next" class="primary">Dalej</button></div></div></dialog>
 <script src="characters.js"></script><script src="loot.js"></script><script src="maze.js"></script><script src="fpv.js"></script><script>
-const $=s=>document.querySelector(s);let maze,pos,visited,done,encounters,keeper,scenery={},terrain=[],artSeed=0,terrainCache='',seenSamples=new Set,seenPath='',hasKey=false,gateOpen=false,won=false,lost=false,hearts=3,viewMode='map',facing=0,walking=null,fleeing=null,loot=null,storageChestId=null,storageVersion=0;
+const $=s=>document.querySelector(s);let maze,pos,visited,done,encounters,keeper,scenery={},terrain=[],artSeed=0,terrainCache='',seenSamples=new Set,seenPath='',hasKey=false,gateOpen=false,won=false,lost=false,hearts=3,viewMode='map',facing=0,walking=null,fleeing=null,heartFlight=null,loot=null,storageChestId=null,storageVersion=0;
 const {CATEGORY,isFriendly,isEnemy,completionHearts}=ForestCharacters;
 const facingNames=['północ ↑','wschód →','południe ↓','zachód ←'];
 const itemCatalog={
@@ -50,7 +51,7 @@ function createEncounter(animal){
  const answer=animal.favorites[Math.floor(Math.random()*animal.favorites.length)],item=itemCatalog[answer];
  return {...animal,category:CATEGORY.FRIENDLY,text:`Chcę ${item.word}. Daj mi ${item.word}.`,answer};
 }
-function start(){cancelWalk();cancelFlee();closeStorage();if($('#menu').open)$('#menu').close();maze=generateMaze(Number($('#size').value));pos=maze.start;facing=[0,1,2,3].find(d=>maze.cells[pos].links.includes(target(d)))??0;visited=new Set([pos]);done=new Set;encounters={};won=false;lost=false;hearts=3;hasKey=false;gateOpen=false;keeper=maze.keeper;shuffled(bank).slice(0,3).forEach((e,i)=>encounters[maze.places[i]]=createEncounter(e));addDanger();artSeed=Math.floor(Math.random()*1000000);seenSamples=new Set;seenPath='';terrain=[];for(let vy=0;vy<=maze.n;vy++)for(let vx=0;vx<=maze.n;vx++){terrain.push({x:vx*60,y:vy*60,type:Math.random()<.16?'water':Math.random()<.7?'forest':'meadow',variant:Math.random()})}placeHills();createLoot();terrainCache=terrainArt();$('#reveal').checked=false;closeEvent();render();showEvent(true)}
+function start(){cancelWalk();cancelFlee();cancelHeartFlight();closeStorage();if($('#menu').open)$('#menu').close();maze=generateMaze(Number($('#size').value));pos=maze.start;facing=[0,1,2,3].find(d=>maze.cells[pos].links.includes(target(d)))??0;visited=new Set([pos]);done=new Set;encounters={};won=false;lost=false;hearts=3;hasKey=false;gateOpen=false;keeper=maze.keeper;shuffled(bank).slice(0,3).forEach((e,i)=>encounters[maze.places[i]]=createEncounter(e));addDanger();artSeed=Math.floor(Math.random()*1000000);seenSamples=new Set;seenPath='';terrain=[];for(let vy=0;vy<=maze.n;vy++)for(let vx=0;vx<=maze.n;vx++){terrain.push({x:vx*60,y:vy*60,type:Math.random()<.16?'water':Math.random()<.7?'forest':'meadow',variant:Math.random()})}placeHills();createLoot();terrainCache=terrainArt();$('#reveal').checked=false;closeEvent();render();showEvent(true)}
 function chestSpots(){
  const forbidden=new Set([...Object.keys(encounters).map(Number),...maze.gate,maze.exit]),spots=[];
  for(const cell of maze.cells){
@@ -73,7 +74,7 @@ function createLoot(){
 }
 function chestArt(empty=false){return `<ellipse cy="2" rx="11" ry="4" fill="#435634" opacity=".22"/><path d="M-9-9L4-6V3L-9 0Z" fill="#bd8748" stroke="#76532e" stroke-width=".7"/><path d="M4-6L10-10V-1L4 3Z" fill="#8e5f32" stroke="#76532e" stroke-width=".7"/><path d="M-9-9L-3-13 10-10 4-6Z" fill="#efd094" stroke="#76532e" stroke-width=".7"/>${empty?'<path d="M-9-10L-10-19 4-16 4-7Z" fill="#b58043" stroke="#76532e" stroke-width=".7"/><path d="M-7-10L-3-12 7-10 3-8Z" fill="#64492e"/>':'<path d="M-9-9L-9-13-3-17 10-14V-10L4-6Z" fill="#c99653" stroke="#76532e" stroke-width=".7"/><path d="M-9-13L-3-17 10-14 4-10Z" fill="#e9b76c"/><path d="M-6-12V1M1-10V2" stroke="#f1cf84" stroke-width="2"/><rect x="-3" y="-7" width="3" height="4" rx=".6" fill="#f6d68b"/>'}`}
 function currentChest(){return loot?.chests.find(c=>c.cell===pos)}
-function canOpenChest(){return !!currentChest()&&!won&&!lost&&!walking&&!fleeing&&!dangerPending()}
+function canOpenChest(){return !!currentChest()&&!won&&!lost&&!walking&&!fleeing&&!heartFlight&&!dangerPending()}
 function positionChest(){
  const button=$('#chest-interact'),chest=currentChest();button.hidden=true;
  if(!canOpenChest()||(viewMode==='fpv'&&!ForestFPV.chestPose({maze,pos,facing},chest).visible))return;
@@ -90,7 +91,7 @@ function updateBackpack(){
 }
 function closeStorage(){storageVersion++;storageChestId=null;if($('#storage').open)$('#storage').close();if(canOpenChest())$('#interact').textContent=currentChest().itemIds.length?'📦 Otwórz skrzynkę':'📦 Pusta skrzynka'}
 function openStorage(chestId=null){
- if(walking||fleeing||$('#event').open||$('#menu').open||$('#storage').open)return;
+ if(walking||fleeing||heartFlight||$('#event').open||$('#menu').open||$('#storage').open)return;
  if(chestId&&(!canOpenChest()||currentChest().id!==chestId))return;
  storageChestId=chestId;
  if(chestId&&viewMode==='fpv'){
@@ -150,7 +151,7 @@ function renderDelivery(e){
  const label=document.createElement('strong');label.textContent=`Daj ${item.word}`;button.append(label);
  button.onclick=()=>{if(!isFriendly(e)||state!==loot||pos!==cell||encounters[cell]!==e||lost||done.has(cell)||!$('#event').open||$('#answers').hidden)return;
   const reward=ForestLoot.deliver(loot,request.id);if(!reward)return;
-  done.add(cell);hearts+=completionHearts(e);hasKey=loot.keyIds.includes('forest-key');closeEvent();render();
+  done.add(cell);hearts+=completionHearts(e);hasKey=loot.keyIds.includes('forest-key');closeEvent();render();startHeartFlight(cell);
  };
  $('#answers').append(button);
 }
@@ -482,7 +483,7 @@ if(atGate){icon='🌿';title=gateOpen?'Furtka otwarta!':'Leśna furtka';text=gat
 if(pos===maze.exit){icon='🏡';title='Adam jest w domu!';text='Brawo! Adam jest w domu. Dziękuje za pomoc.';won=true;$('#next').hidden=false}
 if(lost){icon='🐺';title='Koniec gry';text='Nie masz już serduszek. Zagraj od nowa.';$('#answers').replaceChildren();$('#next').hidden=false;$('#next').textContent='Zagraj od nowa';}$('.scene').classList.toggle('at-gate',atGate);$('.scene').classList.toggle('gate-open',gateOpen);
 const canInteract=lost||(!!e&&(isFriendly(e)||!done.has(pos)))||(atGate&&!gateOpen)||pos===maze.exit||canOpenChest();$('#interact').hidden=!canInteract;$('#interact').textContent=lost?'Koniec gry':isEnemy(e)?'Omiń wilka':pos===maze.exit?'Meta':atGate?'Furtka':canOpenChest()?(currentChest().itemIds.length?'📦 Otwórz skrzynkę':'📦 Pusta skrzynka'):done.has(pos)?'Porozmawiaj':'Pomóż';setSceneIcon(icon);$('#title').textContent=title;$('#description').textContent=text;updateBackpack();updateControls();}
-function canTalk(){const e=encounters[pos];return !!e&&isFriendly(e)&&!won&&!lost&&!walking&&!fleeing}
+function canTalk(){const e=encounters[pos];return !!e&&isFriendly(e)&&!won&&!lost&&!walking&&!fleeing&&!heartFlight}
 function showArrivalEvent(){if(!canTalk())showEvent()}
 function positionTalk(){
  const button=$('#talk');button.hidden=true;
@@ -508,7 +509,7 @@ function renderScene(){
  positionTalk();positionChest();
 }
 function setView(mode){
- if($('#storage').open)return;finishWalk();finishFlee();
+ if($('#storage').open)return;finishWalk();finishFlee();finishHeartFlight();
  viewMode=mode==='fpv'?'fpv':'map';$('#view-mode').value=viewMode;
  if($('#menu').open)$('#menu').close();render();if($('#event').open)paintDialogue();
 }
@@ -516,16 +517,16 @@ function updateControls(){
  const fpv=viewMode==='fpv';$('#view-mode').value=viewMode;
  $('#view-toggle').textContent=fpv?'🗺 Mapa':'👁 FPV';$('#view-toggle').setAttribute('aria-pressed',String(fpv));
  $('#view-toggle').setAttribute('aria-label',fpv?'Włącz mapę z góry':'Włącz widok z oczu Adama');
- $('#fpv-hint').hidden=!fpv||won;$('#interact').disabled=!!walking||!!fleeing;positionTalk();positionChest();
+ $('#fpv-hint').hidden=!fpv||won;$('#interact').disabled=!!walking||!!fleeing||!!heartFlight;positionTalk();positionChest();
  document.querySelectorAll('[data-dir]').forEach(b=>{
   const d=Number(b.dataset.dir),turn=fpv&&(d===1||d===3),world=fpv?(facing+(d===2?2:0))%4:d;
   b.textContent=fpv?['↑','↷','↓','↶'][d]:['↑','→','↓','←'][d];
   b.setAttribute('aria-label',fpv?['Idź do przodu','Obróć się w prawo','Idź do tyłu','Obróć się w lewo'][d]:['Idź w górę','Idź w prawo','Idź w dół','Idź w lewo'][d]);
-  b.disabled=!!walking||!!fleeing||won||lost||(!turn&&(dangerPending()||!maze.cells[pos].links.includes(target(world))));
+  b.disabled=!!walking||!!fleeing||!!heartFlight||won||lost||(!turn&&(dangerPending()||!maze.cells[pos].links.includes(target(world))));
  });
 }
 function handleDirection(d){
- if(walking||fleeing)return;
+ if(walking||fleeing||heartFlight)return;
  if(viewMode!=='fpv'){move(d);return}
  if($('#event').open||$('#menu').open||$('#storage').open||won)return;
  if(lost||(dangerPending()&&d!==1&&d!==3)){render();showEvent();return}
@@ -533,7 +534,45 @@ function handleDirection(d){
  else move((facing+(d===2?2:0))%4);
 }
 function target(d){return [pos-maze.n,pos%maze.n<maze.n-1?pos+1:-1,pos+maze.n,pos%maze.n>0?pos-1:-1][d]}
-function move(d){if(walking||fleeing)return;if($('#event').open||$('#menu').open||$('#storage').open)return;if(lost||dangerPending()){render();showEvent();return}const t=target(d);if(!won&&maze.cells[pos].links.includes(t)){if(!gateOpen&&maze.gate.includes(pos)&&maze.gate.includes(t)){render();$('#notice').textContent=hasKey?'Otwórz furtkę kluczem.':'Furtka jest zamknięta. Znajdź klucz.';showEvent();return}if(viewMode==='map'){startWalk(t,d);return}rememberWalk(pos,t);pos=t;visited.add(pos);render();showArrivalEvent()}}
+function move(d){if(walking||fleeing||heartFlight)return;if($('#event').open||$('#menu').open||$('#storage').open)return;if(lost||dangerPending()){render();showEvent();return}const t=target(d);if(!won&&maze.cells[pos].links.includes(t)){if(!gateOpen&&maze.gate.includes(pos)&&maze.gate.includes(t)){render();$('#notice').textContent=hasKey?'Otwórz furtkę kluczem.':'Furtka jest zamknięta. Znajdź klucz.';showEvent();return}if(viewMode==='map'){startWalk(t,d);return}rememberWalk(pos,t);pos=t;visited.add(pos);render();showArrivalEvent()}}
+function heartFlightPose(cell,t){
+ const [cx,cy]=project(cell%maze.n*60+30,Math.floor(cell/maze.n)*60+30);
+ const from={x:cx+13,y:cy+11-20*.72},to={x:cx-14,y:cy+12-25*.72};
+ const progress=Math.min(1,t/.8),u=progress*progress*(3-2*progress),arrival=Math.max(0,(t-.8)/.2);
+ const control={x:(from.x+to.x)/2,y:Math.min(from.y,to.y)-28};
+ return {x:(1-u)**2*from.x+2*(1-u)*u*control.x+u*u*to.x,y:(1-u)**2*from.y+2*(1-u)*u*control.y+u*u*to.y,
+  scale:(.64+Math.sin(progress*Math.PI)*.12)*(1-arrival*.7),opacity:1-arrival,arrival,target:to};
+}
+function cancelHeartFlight(){
+ const flight=heartFlight;heartFlight=null;
+ if(flight&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(flight.frame);
+ const overlay=$('#heart-flight');overlay.setAttribute('hidden','');overlay.innerHTML='';
+}
+function finishHeartFlight(){if(!heartFlight)return;cancelHeartFlight();updateControls()}
+function startHeartFlight(cell){
+ // The delivery already committed its reward. This effect never changes hearts or inventory.
+ if(viewMode!=='map'||!isFriendly(encounters[cell])||!completionHearts(encounters[cell])||!done.has(cell)||pos!==cell||heartFlight||
+  typeof requestAnimationFrame!=='function'||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+ const overlay=$('#heart-flight'),L=maze.n*60,flight=heartFlight={cell,frame:0,started:null,duration:900};
+ overlay.setAttribute('viewBox',`-12 -32 ${L+24} ${L+44}`);
+ overlay.innerHTML=`<defs><linearGradient id="gift-heart-fill" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ff8795"/><stop offset="1" stop-color="#e34160"/></linearGradient></defs>
+ <circle id="heart-arrival" fill="#ffeab0" stroke="#e5b752" stroke-width="1.3" opacity="0"/>
+ <g id="flying-heart"><path d="M0 10C-3 7-12 1-12-5C-12-12-3-14 0-7C3-14 12-12 12-5C12 1 3 7 0 10Z" fill="url(#gift-heart-fill)" stroke="#ac3451" stroke-width="1.2" stroke-linejoin="round"/><path d="M-8-6Q-8-9-5-9" fill="none" stroke="#fff8ee" stroke-width="2.3" stroke-linecap="round"/></g>`;
+ const heart=$('#flying-heart'),ring=$('#heart-arrival');
+ const paint=t=>{
+  const p=heartFlightPose(cell,t);
+  heart.setAttribute('transform',`translate(${p.x} ${p.y}) scale(${p.scale})`);heart.setAttribute('opacity',p.opacity);
+  ring.setAttribute('cx',p.target.x);ring.setAttribute('cy',p.target.y);ring.setAttribute('r',5+p.arrival*12);
+  ring.setAttribute('opacity',Math.sin(p.arrival*Math.PI)*.65);
+ };
+ paint(0);overlay.removeAttribute('hidden');updateControls();
+ const frame=now=>{
+  if(heartFlight!==flight)return;if(flight.started===null)flight.started=now;
+  const t=Math.min(1,(now-flight.started)/flight.duration);
+  if(t>=1){finishHeartFlight();return}paint(t);flight.frame=requestAnimationFrame(frame);
+ };
+ flight.frame=requestAnimationFrame(frame);
+}
 function cancelWalk(){
  const w=walking;walking=null;
  if(w&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(w.frame);
@@ -653,9 +692,9 @@ function positionOverlays(){positionBubble();positionTalk();positionChest()}
 window.addEventListener('resize',positionOverlays);if(typeof ResizeObserver!=='undefined')new ResizeObserver(positionOverlays).observe($('.mapwrap'));
 // Keep the conversation open and consume outside clicks; use Dalej or Escape.
 document.addEventListener('click',e=>{const bubble=$('#storage').open?$('#storage'):$('#event');if(!bubble.open||bubble.contains(e.target))return;e.preventDefault();e.stopImmediatePropagation()},true);
-$('#menu-toggle').onclick=()=>{if($('#storage').open)return;finishWalk();finishFlee();closeEvent();$('#menu').showModal()};$('#menu-close').onclick=()=>$('#menu').close();$('#interact').onclick=()=>{if($('#storage').open)return;if(canOpenChest()){openStorage(currentChest().id);return}render();showEvent()};
+$('#menu-toggle').onclick=()=>{if($('#storage').open)return;finishWalk();finishFlee();finishHeartFlight();closeEvent();$('#menu').showModal()};$('#menu-close').onclick=()=>$('#menu').close();$('#interact').onclick=()=>{if(heartFlight||$('#storage').open)return;if(canOpenChest()){openStorage(currentChest().id);return}render();showEvent()};
 $('#talk').onclick=()=>{if(!canTalk()||$('#event').open||$('#menu').open||$('#storage').open)return;render();showEvent()};
 $('#backpack-toggle').onclick=()=>openStorage();$('#chest-interact').onclick=()=>{if(canOpenChest())openStorage(currentChest().id)};$('#storage-next').onclick=closeStorage;$('#storage').oncancel=e=>{e.preventDefault();closeStorage()};
 $('#view-toggle').onclick=()=>setView(viewMode==='fpv'?'map':'fpv');$('#view-mode').onchange=()=>setView($('#view-mode').value);
-document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>handleDirection(Number(b.dataset.dir)));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#storage').open){e.preventDefault();closeStorage();return}if(e.key==='Escape'&&$('#event').open){e.preventDefault();closeEvent();return}if($('#event').open||$('#menu').open||$('#storage').open||['SELECT','INPUT','TEXTAREA'].includes(e.target.tagName))return;let d=['ArrowUp','ArrowRight','ArrowDown','ArrowLeft'].indexOf(e.key);if(d>=0){e.preventDefault();if(viewMode==='fpv'&&e.repeat)return;handleDirection(d)}});$('#new').onclick=start;$('#next').onclick=start;$('#size').onchange=start;$('#reveal').onchange=()=>{finishWalk();finishFlee();renderScene()};start();
+document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>handleDirection(Number(b.dataset.dir)));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#storage').open){e.preventDefault();closeStorage();return}if(e.key==='Escape'&&$('#event').open){e.preventDefault();closeEvent();return}if($('#event').open||$('#menu').open||$('#storage').open||['SELECT','INPUT','TEXTAREA'].includes(e.target.tagName))return;let d=['ArrowUp','ArrowRight','ArrowDown','ArrowLeft'].indexOf(e.key);if(d>=0){e.preventDefault();if(viewMode==='fpv'&&e.repeat)return;handleDirection(d)}});$('#new').onclick=start;$('#next').onclick=start;$('#size').onchange=start;$('#reveal').onchange=()=>{finishWalk();finishFlee();finishHeartFlight();renderScene()};start();
 </script></html>
