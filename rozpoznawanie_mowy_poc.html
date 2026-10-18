@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>POC – rozpoznawanie mowy PL</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:light}body{margin:0;background:#f1f5f2;color:#193227}main{max-width:560px;margin:28px auto;padding:24px;background:white;border-radius:20px;box-shadow:0 6px 28px #16352612}h1{font-size:1.5rem;margin-top:0}label{font-weight:650;display:block;margin:18px 0 7px}input{width:100%;box-sizing:border-box;padding:13px;font-size:1.2rem;border:1px solid #aabbb0;border-radius:10px}button{background:#226e48;color:white;border:0;border-radius:12px;padding:14px 20px;font-size:1rem;font-weight:650;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}.buttons{display:flex;gap:10px;margin:18px 0;flex-wrap:wrap}#stop{background:#606d67}.panel{background:#f1f6f2;border-radius:12px;padding:16px;margin:12px 0;min-height:36px;overflow-wrap:anywhere}.small{color:#52655a;font-size:.9rem}#result{font-size:1.3rem;font-weight:650}#verdict{font-weight:700}.ok{color:#176b3e}.bad{color:#b03535}code{font-size:.9em}
+</style>
+</head>
+<body><main>
+<h1>🎤 Test rozpoznawania mowy</h1>
+<p>Powiedz wskazane słowo lub zdanie. Test korzysta z rozpoznawania mowy przeglądarki (<code>pl-PL</code>).</p>
+<label for="expected">Co trzeba powiedzieć?</label><input id="expected" value="mama" autocomplete="off">
+<div class="buttons"><button id="start">🎤 Rozpocznij nasłuchiwanie</button><button id="stop" disabled>■ Zatrzymaj</button></div>
+<div class="small">Status</div><div class="panel" id="status" role="status">Sprawdzanie obsługi…</div>
+<div class="small">Rozpoznany tekst</div><div class="panel" id="result" aria-live="polite">—</div>
+<div class="small">Ocena</div><div class="panel" id="verdict" aria-live="polite">—</div>
+<p class="small">Mikrofon wymaga zgody. Najpewniej działa na HTTPS lub localhost. Rozpoznawanie może korzystać z usługi sieciowej przeglądarki. Ten test nie zapisuje ani nie wysyła nagrań przez własny kod.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+const normalize=s=>s.toLocaleLowerCase('pl-PL').normalize('NFKC').replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
+let recognition=null, running=false, finalText='';
+function state(isRunning){running=isRunning;$('start').disabled=isRunning||!Recognition;$('stop').disabled=!isRunning;}
+function compare(text){const expected=normalize($('expected').value),actual=normalize(text);$('verdict').className='panel';if(!expected){$('verdict').textContent='Wpisz oczekiwane słowo.';return;}if(!actual){$('verdict').textContent='Czekam na wynik…';return;}const ok=expected===actual;$('verdict').textContent=ok?'✅ Zgadza się!':'❌ Nie zgadza się. Spróbuj ponownie.';$('verdict').classList.add(ok?'ok':'bad');}
+if(!Recognition){$('status').textContent='❌ Ta przeglądarka nie udostępnia SpeechRecognition.';state(false)}
+else{$('status').textContent='✅ API dostępne. Możesz rozpocząć test.';recognition=new Recognition();recognition.lang='pl-PL';recognition.continuous=false;recognition.interimResults=true;recognition.maxAlternatives=1;
+recognition.onstart=()=>{$('status').textContent='🎧 Słucham…';state(true)};
+recognition.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const text=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=text+' ';else interim+=text;}$('result').textContent=(finalText+interim).trim()||'—';if(finalText.trim())compare(finalText)};
+recognition.onerror=e=>{$('status').textContent='⚠️ Błąd: '+e.error+(e.message?' — '+e.message:'');state(false)};
+recognition.onend=()=>{if(running)$('status').textContent=finalText.trim()?'Zakończono rozpoznawanie.':'Zakończono. Nie uzyskano wyniku.';state(false)};
+$('start').onclick=()=>{finalText='';$('result').textContent='—';$('verdict').textContent='—';$('verdict').className='panel';$('status').textContent='Uruchamianie mikrofonu…';try{recognition.start()}catch(e){$('status').textContent='Błąd uruchomienia: '+e.message;state(false)}};
+$('stop').onclick=()=>{recognition.stop();$('status').textContent='Zatrzymywanie…'};
+$('expected').addEventListener('input',()=>compare(finalText));}
+</script></body></html>
