@@ -26,7 +26,7 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 - Przycisk „Dalej” przechodzi do kolejnej wypowiedzi, a przy ostatniej zamyka rozmowę. „Dalej” oraz przyciski wilka „Cofnij” i „Skaczę” są w osobnym dolnym pasku, poza przewijaną treścią. Dymek dopasowuje wysokość do ekranu. Kliknięcie poza dymkiem nie zamyka go ani nie wykonuje innej akcji. Escape zamyka zwykłe rozmowy. Okienko obowiązkowego zadania wilka nie ma „Dalej” i nie zamyka się przez Escape; po poprawnym „Skaczę” znika, a przy utracie wszystkich serduszek pokazuje koniec gry.
 - Wilk ma wyraźniejsze brwi, bursztynowe spojrzenie, dwa małe kły i kudłatą sylwetkę, w kreskówkowym stylu odpowiednim dla dzieci. Ten sam rysunek jest używany na mapie, w FPV i w dialogu.
 - Wilk losuje od jednego do pięciu kroków oraz kierunek: w górę, w prawo, w dół lub w lewo. Gracz czyta polecenie, klika strzałkę odpowiednią liczbę razy i wybiera „Skaczę”. Rząd strzałek pokazuje wybrane kroki; „Cofnij” usuwa ostatni bez kary. Po poprawnej odpowiedzi wilk przechodzi po ścieżkach na inne pole i czeka tam z nowym poleceniem. Przy kolejnym spotkaniu trzeba ominąć go ponownie. Dotyczy to mapy i FPV.
-- Postacie mają kategorię **przyjazna** albo **przeciwnik**. Kot, królik, miś, jeż, pies i sowa są przyjazne: pomoc daje 1 serduszko tylko raz. Wilk jest przeciwnikiem: poprawne ominięcie nie dodaje serca, błąd odbiera 1. Adam zaczyna z 3 sercami; zero oznacza koniec gry.
+- Postacie mają kategorię **przyjazna** albo **przeciwnik**. Kot, królik, miś, jeż, pies i sowa są przyjazne: pomoc daje 1 serduszko tylko raz. Wilk jest przeciwnikiem: poprawne ominięcie nie dodaje serca, błąd w zadaniu ze skokami odbiera 1. Próba głosowa nie odbiera serca, także gdy rozpoznawanie się pomyli. Adam zaczyna z 3 sercami; zero oznacza koniec gry.
 - W widoku 2D Adam płynnie przechodzi między polami, poruszając nogami i rękami. Chmurka rozmowy pojawia się po dojściu na miejsce; spotkanie z wilkiem otwiera się automatycznie. Ustawienie systemowe ograniczające animacje wyłącza ruch postaci.
 - Dwa widoki tej samej przygody: mapa z góry oraz FPV — oczami Adama. Przełącznik w nagłówku i menu zachowuje cały postęp.
 - Sterowanie mapą: strzałki na klawiaturze lub przyciski pod mapą. W FPV ↑ prowadzi do przodu, ↓ do tyłu, ←/→ obracają o 90° w miejscu. Kompas po lewej pokazuje kierunek patrzenia, a bardzo mała mapka w prawym górnym rogu — odkryte ścieżki i pozycję Adama. Północ mapki pozostaje u góry. Zadanie wilka zachowuje własne strzałki.
@@ -36,6 +36,8 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 ## Pliki
 
 - `index.html`: interfejs, style, ilustracje SVG i logika rozgrywki.
+- `wolf-phrases.js`: edytowalna lista zwrotów do wypowiedzenia wilkowi.
+- `speech.js`: zgoda na mikrofon i pojedyncze sesje rozpoznawania mowy.
 - `characters.js`: kategorie postaci, ich nazwy oraz nagrody; wspólne reguły dla gry i FPV.
 - `loot.js`: egzemplarze przedmiotów, skrzynki, plecak, jednorazowe oddawanie, limit dwóch miejsc, odkładanie do skrzyni, otwieranie furtki i walidator wszystkich kolejności zadań.
 - `maze.js`: generator labiryntu, furtki i położenia zwierzaka z kluczem.
@@ -43,6 +45,27 @@ Następnie otwórz http://localhost:8080. Gra nie wymaga instalowania pakietów 
 - `assets/home-reunion.png`: zaakceptowana ilustracja finałowa — brat i siostra radośnie idą ku sobie.
 
 Projekt jest statyczny: HTML, CSS i JavaScript, bez zależności zewnętrznych. Mapa i postacie korzystają z SVG, finał z ilustracji PNG, a przedmioty i elementy interfejsu również z emoji.
+
+## Zadanie głosowe wilka
+
+Na przeglądarce z obsługą mowy wilk losuje skoki albo zadanie **Powiedz: „Uciekaj wilku”.** (po 50%). Fraza pozostaje taka sama podczas ponawiania próby. Po poprawnym wypowiedzeniu całego zdania wilk przechodzi na inne pole i otrzymuje nowe zadanie; nie przyznaje serduszka. Sama próba głosowa, cisza lub błąd rozpoznawania nie odbierają serc.
+
+Gra sprawdza dostęp do mikrofonu od razu po otwarciu. Przeglądarka wyświetla pytanie, jeśli zgoda nie została jeszcze zapamiętana. Strumień użyty do sprawdzenia zgody jest od razu zamykany. Rozpoznawanie zaczyna się dopiero po kliknięciu **„Mówię”** przy wilku. Widać stan słuchania i rozpoznane słowa. Wyniki cząstkowe nie zaliczają zadania; wynik końcowy musi zgadzać się w całości, bez względu na wielkość liter i interpunkcję, z zachowaniem polskich znaków.
+
+Dopisuj kolejne teksty w pliku [`wolf-phrases.js`](wolf-phrases.js), np.:
+
+```js
+window.ForestWolfPhrases = [
+  "Uciekaj wilku",
+  "Wracaj do lasu",
+];
+```
+
+Obecnie w grze jest tylko „Uciekaj wilku”; druga linia powyżej to przykład rozszerzenia. Nie trzeba zmieniać kodu zadania. Po publikacji pliku odśwież stronę. Lista jest ładowana synchronicznie przed grą. Pusta lista wyłącza zadania głosowe. Przy kilku zwrotach kolejne zadanie głosowe wybiera inny niż poprzedni.
+
+Bez obsługi mowy lub po odmowie dostępu kolejne losowania wybierają skoki. Jeśli zadanie głosowe pojawiło się przed rozstrzygnięciem zgody, **„Zadanie ze strzałkami”** pozwala je zamienić na zwykłe skoki, bez nagrody ani pominięcia wilka. Menu pozwala ponowić prośbę o mikrofon. Zablokowaną zgodę trzeba zmienić w ustawieniach strony w przeglądarce.
+
+Do testu użyj strony HTTPS, np. [GitHub Pages](https://miszqr.github.io/lesny-labirynt/), otwartej bezpośrednio w przeglądarce. Obsługa Web Speech API zależy od przeglądarki i może wymagać internetu/usługi jej dostawcy. Gra nie zapisuje ani nie wysyła nagrań do własnego serwera; tekst rozpoznania istnieje tylko w pamięci bieżącego zadania. Przejście strony w tło, restart, zmiana widoku lub zadania przerywają słuchanie. Maksymalny czas jednej próby to 20 sekund, po czym można spróbować ponownie.
 
 ## Ulubione przedmioty
 
@@ -55,7 +78,7 @@ Projekt jest statyczny: HTML, CSS i JavaScript, bez zależności zewnętrznych. 
 | Pies | ⚽ piłka, 🦴 kość, 👟 but |
 | Sowa | 🗺️ mapa, 📕 książka, 👓 okulary |
 
-Wilk ma osobne zadanie kierunkowe opisane w [ADR-0004](docs/decisions/0004-wolf-directions.md). Przedmioty oraz ich poprawne formy gramatyczne są zdefiniowane w `itemCatalog`, a listy zwierząt w `bank`. Widoczna prośba i poprawna odpowiedź korzystają z tych samych danych.
+Wilk ma osobne zadanie głosowe oraz zadanie kierunkowe opisane w [ADR-0004](docs/decisions/0004-wolf-directions.md). Przedmioty oraz ich poprawne formy gramatyczne są zdefiniowane w `itemCatalog`, a listy zwierząt w `bank`. Widoczna prośba i poprawna odpowiedź korzystają z tych samych danych.
 
 ## Testy
 
@@ -69,6 +92,7 @@ Polecenie uruchamia cały zestaw, w tym testy dodane w T01:
 
 | Obszar | Zakres domyślny |
 | --- | --- |
+| `wolf-speech.test.cjs` | Zgoda przy uruchomieniu, zwolnienie ścieżek mikrofonu, odmowa/brak API, losowanie typów i fraz, wyniki końcowe/cząstkowe, błędy, ponowienia, stare wywołania i przejście do skoków. API przeglądarki jest symulowane. |
 | `maze.test.cjs` | 3000 map: rozmiary 4, 6, 8 i ziarna 1–1000; spójne drzewo, poprawni sąsiedzi, furtka, dostępny klucz i miejsca spotkań. |
 | `character-categories.test.cjs` | Jawne kategorie, zadania przedmiotowe tylko dla przyjaznych postaci, zablokowanie nieaktualnego oddania przeciwnikowi i wielokrotne ominięcia wilka przy jednym sercu. |
 | `wolf-escape.test.cjs` | Powtórne spotkania w mapie i FPV, animacja bez zanikania, nowe zadania, brak nagrody za przeciwnika, restart, ograniczenie ruchu oraz 2400 kolejnych tras na 300 układach z otwartą i zamkniętą furtką. |

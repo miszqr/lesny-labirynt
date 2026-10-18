@@ -95,3 +95,18 @@ Scenariusz skrzyni obejmuje teraz zapełnienie dwóch miejsc, zablokowany trzeci
 ## Ucięte akcje w dymku wilka — 2026-10-17
 
 Przygotowano przypadek „Skocz pięć kroków w górę.” w mapie i FPV. Sprawdza umieszczenie Cofnij/Skaczę/Dalej wewnątrz osobnego paska i dymka, trafienie dotykiem, niezmienne położenie paska przy przewijaniu oraz większy tekst i długi komunikat. Poprawiono też kategorię przyjaznej postaci w starszej scenie przygotowawczej. Sprawdzono składnię scenariuszy, ale nie uruchomiono ich w przeglądarce; blokada podglądu nadal obowiązuje.
+
+## Zadanie głosowe — test na telefonie oczekuje (2026-10-18)
+
+24 testy w `tests/wolf-speech.test.cjs` korzystają z symulowanych API. Dotychczasowy automat przeglądarkowy wyłącza rozpoznawanie w swoim środowisku, aby nie pytać o prawdziwy mikrofon podczas testów geometrii. Nie jest to weryfikacja głosu.
+
+Na Chrome/telefonie otwórz bezpośrednio stronę HTTPS gry. Sprawdź:
+
+1. Przy pierwszym otwarciu pojawia się prośba o mikrofon. Po zgodzie wskaźnik użycia mikrofonu gaśnie; przed kliknięciem „Mówię” gra nie rozpoznaje mowy. Przy zapamiętanej zgodzie pytanie nie musi się powtarzać.
+2. Wilk losuje mowę lub skoki. Jeśli trafią się skoki, wykonaj je i odszukaj wilka ponownie. Na zadaniu głosowym kliknij „Mówię” i powiedz „Uciekaj wilku”. Widać słuchanie i słowa; po rozpoznaniu całości wilk przechodzi w inne miejsce bez dodatkowego serca.
+3. Inna fraza, cisza i brak internetu nie odbierają serca, nie zaliczają zadania i pozwalają ponowić próbę lub wybrać „Zadanie ze strzałkami”. Przycisk mieści się w dymku w pionie/poziomie, również przy dużym tekście.
+4. Odmów zgody i pozostaw monit bez odpowiedzi w osobnych próbach: nadal można grać, a zadanie głosowe zamienić na skoki. Zmień zgodę w ustawieniach strony i ponów ją przez menu.
+5. Przenieś kartę w tło podczas słuchania i wróć: mikrofon zatrzymany, można zacząć kolejną próbę. Nowa gra i przełączenie widoku nie przyjmują starych wyników.
+6. Dopisz drugi zwrot w `wolf-phrases.js`, opublikuj i odśwież. Zadania losują z nowej listy, a ponawianie jednej próby nie zmienia jej tekstu.
+
+Wynik kontroli prawdziwego mikrofonu: **oczekuje**.

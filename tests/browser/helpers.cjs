@@ -5,6 +5,9 @@ const test = base.extend({
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => {
+      // Existing layout tests exercise arrow tasks, never the user's real microphone.
+      Object.defineProperty(window, 'SpeechRecognition', {value:undefined, configurable:true});
+      Object.defineProperty(window, 'webkitSpeechRecognition', {value:undefined, configurable:true});
       let seed = 42;
       Math.random = () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296);
     });

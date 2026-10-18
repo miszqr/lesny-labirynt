@@ -1,6 +1,6 @@
 # Architektura — Adam w lesie
 
-Stan opisany: 2026-10-17. Dokument opisuje obecną implementację. Uzasadnienia wyborów i ich zmiany zapisujemy w [ADR](decisions/README.md).
+Stan opisany: 2026-10-18. Dokument opisuje obecną implementację. Uzasadnienia wyborów i ich zmiany zapisujemy w [ADR](decisions/README.md).
 
 ## Cel i granice systemu
 
@@ -12,6 +12,8 @@ To statyczna aplikacja HTML/CSS/JavaScript uruchamiana w przeglądarce. Nie ma b
 
 | Miejsce | Odpowiedzialność |
 | --- | --- |
+| `wolf-phrases.js` | Lista tekstów zadania głosowego, ładowana przed kodem gry. |
+| `speech.js` | Sprawdzenie zgody, obsługa rozpoznawania `pl-PL`, normalizacja tekstu i anulowanie sesji. |
 | `characters.js` | Kategorie `friendly` / `enemy`, polskie nazwy i nagroda za ukończenie; moduł bez DOM wspólny dla reguł i FPV. |
 | `loot.js` | Niezależny od DOM model przedmiotów, atomowe operacje odbioru/oddania i walidator ukończenia. |
 | `maze.js` | Generowanie grafu labiryntu, wybór domu, bramy i lokalizacji zwierzaka z kluczem. |
@@ -71,7 +73,7 @@ Parametr `random` umożliwia deterministyczne sprawdzanie generatora. Cała gra 
 - Rozmowę z przyjazną postacią zaczyna zwierzak: `npcGreeting()` dobiera powitanie do gatunku, np. „Cześć! Jestem pieskiem.”. Po „Dalej” zwierzak wypowiada prośbę, a wtedy pojawiają się odpowiedzi. `encounters[cell].greeted` zapamiętuje pierwsze otwarcie rozmowy, niezależnie od ukończenia zadania. Kolejne otwarcia pokazują od razu prośbę albo podziękowanie. Samo wejście na pole i zobaczenie zwierzaka nie ustawia flagi. Zamknięcie powitania przez Escape, odejście i zmiana widoku nie kasują pamięci; nowa gra tworzy postacie z `greeted: false`. Przy wilku pozostaje wstęp Adama i zadanie przeciwnika. Dymek to niemodalny element `dialog.show()`; ruch podczas rozmowy blokuje kod gry. Menu nadal używa `showModal()`.
 - Pomoc postaci kategorii `friendly` daje jedno serce tylko raz. Ominięcie postaci `enemy` nie daje serc; wspólny `completionHearts()` zwraca odpowiednio 1 lub 0. Zadanie zwierzaka `keeper` daje dodatkowo klucz. Rozmowa zamyka się bez komunikatu o sukcesie, a zwierzak pozostaje na mapie.
 - Wilk losuje `count` (1–5) i `direction` (góra/prawo/dół/lewo). `renderWolfTask()` buduje cztery strzałki, pasek wybranych kroków, cofanie i zatwierdzanie. `steps` przechowuje kierunki kliknięć, także po zamknięciu dymka. Dopiero zatwierdzenie porównuje długość i wszystkie kierunki z poleceniem. To odpowiedź na zadanie: nie przenosi Adama przez pola labiryntu. Zobacz [ADR-0004](decisions/0004-wolf-directions.md).
-- Bez potrzebnego przedmiotu przyjazny zwierzak pokazuje wskazówkę; nie można ukończyć zadania. Błąd u wilka zabiera jedno; przy zerze gra się kończy. Zamknięcie dymka nie pozwala ominąć nierozwiązanego wilka.
+- Bez potrzebnego przedmiotu przyjazny zwierzak pokazuje wskazówkę; nie można ukończyć zadania. Błąd w skokach u wilka zabiera jedno serce; przy zerze gra się kończy. Zamknięcie dymka nie pozwala ominąć nierozwiązanego wilka.
 - Klucz pozwala otworzyć bramę. Dom uruchamia `drawHome()`: Adam i siostra z radością idą ku sobie, a końcowe kwestie pojawiają się przy postaciach. Finał używa zaakceptowanej ilustracji `assets/home-reunion.png`; przezroczyste obszary SVG nad każdą postacią wyznaczają pozycje dymków. Powitanie siostry brzmi „Dobrze cię widzieć!”.
 
 ## Animacja chodzenia w 2D
@@ -231,3 +233,15 @@ Testy obejmują 3000 układów przedmiotów, również powtarzające się prośb
 Po zgłoszeniu uciętego przycisku wilka usunięto stały limit 330 px. `positionBubble()` wyznacza limit całego dymka z wysokości karty, z marginesem 24 px. Otwarty `#event` jest kolumną flex: `.bubble-scroll` ma `min-height: 0` i przewijanie, natomiast `.bubble-footer` nie kurczy się. Pasek zawiera `#dialogue-actions` (Cofnij/Skaczę), Dalej i przycisk nowej gry. W obowiązkowym zadaniu wilka pasek pokazuje tylko „Cofnij” i „Skaczę”; „Dalej” należy do zwykłych etapów rozmowy. W razie potrzeby pasek zawija się. Przyciski mają co najmniej 44 px wysokości.
 
 `render()` czyści poprzednie akcje. `paintDialogue()` ujawnia je dopiero przy ostatniej kwestii i przewija treść na początek, a `closeEvent()` je ukrywa. Zadanie wilka zachowuje strzałki oraz postęp w przewijanej części. Stare akcje nadal podlegają dotychczasowym zabezpieczeniom. Układ w rzeczywistej przeglądarce pozostaje niezweryfikowany; dopisano scenariusz dokładnego polecenia ze zdjęcia oraz powiększonego tekstu i przewijania.
+
+## Mowa przy wilku — 2026-10-18
+
+`createWolf()` losuje `taskType: 'speech'` lub `'jump'` po 50%, jeśli API, zgoda i lista na to pozwalają. Dla głosu zapisuje `phrase` w spotkaniu; powtórne renderowanie lub rozpoznawanie nie losują jej ponownie. Przy relokacji wybiera nowe zadanie; przy więcej niż jednej frazie unika ostatniej. Nieprawidłowe/puste wpisy listy są pomijane. Brak `taskType` w starych scenach testowych nadal oznacza skoki.
+
+`ForestSpeech.create()` obsługuje standardowe i prefiksowane `SpeechRecognition`. Przy starcie strony `requestPermission()` wywołuje `getUserMedia({audio:true})`, współdzieli oczekującą obietnicę i zamyka wszystkie zwrócone ścieżki. Nie rozpoczyna wtedy rozpoznawania. Oczekująca zgoda nie blokuje gry. Stan zgody (`unknown/pending/granted/denied/error/unavailable`) jest widoczny w menu i zadaniu.
+
+Przycisk „Mówię” rozpoczyna jedną sesję (`pl-PL`, `continuous:false`, `interimResults:true`). Wynik jest odbudowywany z pełnej listy zdarzenia, więc powtórzony event nie dopisuje słów drugi raz. Dopiero `onend` lub limit 20 s zwracają końcową transkrypcję. Błąd kończy sesję bez zaliczenia, nawet jeśli wcześniej pojawił się wynik. Normalizacja NFKC, polska mała litera, usunięcie interpunkcji i złożenie odstępów pozwalają porównać całe zdanie; polskie znaki pozostają znaczące.
+
+`renderWolfSpeech()` sprawdza pole, tożsamość spotkania, `inputVersion`, stan dialogu i rozgrywki. Poprawny wynik wpisuje ukończenie, zamyka dymek i uruchamia istniejące `startFlee()`. Wilk pozostaje przeciwnikiem i nie daje serca. Rozpoznanie innej frazy/cisza/awaria pozwalają ponowić próbę bez kary, ponieważ nie świadczą wiarygodnie o błędzie dziecka. Przycisk zamiany na strzałki tworzy wymagane zadanie skokowe, nie ukończenie.
+
+Zamknięcie dialogu, `render()`, restart i przełączenie widoku usuwają subskrypcję UI i anulują sesję. `pagehide` oraz ukrycie karty przerywają słuchanie, pozostawiając możliwość nowej próby. Anulowanie najpierw unieważnia sesję, odpina handlery i timer, potem wywołuje `abort()`. Stare wyniki/kliknięcia nie zmieniają nowej gry ani nowego zadania. Tekst jest ustawiany przez `textContent`, bez HTML z rozpoznawania. Nie ma zapisu audio/transkrypcji ani backendu mowy; przeglądarka może używać własnej usługi rozpoznawania.

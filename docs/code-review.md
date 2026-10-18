@@ -6,6 +6,14 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Głosowe zadanie wilka — 2026-10-18
+
+Dodano losowane zadanie „Powiedz: Uciekaj wilku”, edytowalny `wolf-phrases.js` i kontroler `speech.js`. Sprawdzenie zgody odbywa się przy otwarciu strony; po sprawdzeniu wszystkie ścieżki mikrofonu są zatrzymywane. Rozpoznawanie zaczyna przycisk „Mówię”. Wypowiedzenie całej frazy relokuje wilka bez serca. Cisza, błędy i inne rozpoznane słowa pozwalają ponowić próbę bez kary. Awaria, odmowa lub ignorowany monit nie blokują rozgrywki: zadanie można zamienić na wymagane skoki. Nowe losowania po odmowie/braku API wybierają skoki.
+
+Przeszły **192 testy, 0 błędów** (`TEST_SEED=42 node --test tests/*.test.cjs`), w tym **24 nowe przypadki** zgody, rozpoznawania i integracji. Sprawdzono oba widoki, prefiksowane API, wyniki cząstkowe i powtórzone końcowe, pełne dopasowanie frazy, brak/odmowę/błąd mikrofonu, timeout, ponowną zgodę, stary wynik po restarcie/przerysowaniu/zmianie widoku oraz przejście do skoków. Pełne podróże uruchomiono dla ziarna 42 w każdym rozmiarze. Mikrofon i Web Speech API są w tych testach symulowane — nie potwierdzają działania rozpoznawania w rzeczywistym Chrome na telefonie.
+
+Podgląd przeglądarkowy nadal jest niedostępny z powodu opisanej blokady infrastruktury. Przygotowano ręczną listę testów HTTPS/telefonu; T03 pozostaje otwarte. Dotychczasowe scenariusze przeglądarkowe jawnie wyłączają API mowy w środowisku testu, żeby rzeczywisty monit o zgodę nie zakłócał geometrii i sterowania.
+
 ## Powitanie tylko przy pierwszej rozmowie — 2026-10-18
 
 Każdy przyjazny zwierzak ma osobną flagę `greeted`. Ustawia ją otwarcie pierwszej rozmowy, nie samo zobaczenie postaci ani wejście na jej pole. Drugie i kolejne otwarcia od razu pokazują prośbę, a po ukończeniu zadania podziękowanie. Flaga pozostaje po Escape, odejściu, powrocie oraz zmianie widoku i jest niezależna od nagrody. Nowa gra przywraca powitania przez utworzenie nowych spotkań z `greeted: false`. Wilk zachowuje dotychczasowy wstęp i obowiązkowe zadanie.

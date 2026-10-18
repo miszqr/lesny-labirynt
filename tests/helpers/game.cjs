@@ -5,8 +5,8 @@ const { seededRandom } = require('./random.cjs');
 const root = process.env.GAME_ROOT || path.resolve(__dirname, '../..');
 
 // Minimal DOM: verifies game state and answer content, not browser layout.
-function game({ animation = false, reducedMotion = false, size = 4, seed = 123 } = {}) {
-  const nodes = new Map(), events = {};
+function game({ animation = false, reducedMotion = false, size = 4, seed = 123, speechHost = {} } = {}) {
+  const nodes = new Map(), events = {}, windowEvents = {};
   const frames = new Map(); let nextFrame = 0;
   function element() {
     return { value: '4', open: false, checked: false, hidden: false, textContent: '', children: [], dataset: {}, attrs: {},
@@ -21,17 +21,17 @@ function game({ animation = false, reducedMotion = false, size = 4, seed = 123 }
   $('#size').value = String(size);
   const math = Object.create(Math);
   math.random = seededRandom(seed);
-  const context = vm.createContext({ Math: math, Set, window: { addEventListener() {}, matchMedia() { return { matches: reducedMotion }; } },
+  const context = vm.createContext({ Math: math, Set, window: { ...speechHost, addEventListener(name,fn) { windowEvents[name]=fn; }, matchMedia() { return { matches: reducedMotion }; } },
     document: { querySelector: $, querySelectorAll: s => s==='[data-dir]'?buttons:[], createElement: element, addEventListener(name,fn) { events[name]=fn; } } });
   if (animation) Object.assign(context, {
     requestAnimationFrame(fn) { const id = ++nextFrame; frames.set(id,fn); return id; },
     cancelAnimationFrame(id) { frames.delete(id); }
   });
-  for(const file of ['characters.js','loot.js','maze.js','fpv.js']) vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context);
+  for(const file of ['wolf-phrases.js','speech.js','characters.js','loot.js','maze.js','fpv.js']) vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context);
   Object.assign(context, context.window);
   const source = fs.readFileSync(path.join(root, 'index.html'), 'utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
   vm.runInContext(source, context);
-  return { $, buttons, events, tick(time) { const pending=[...frames.values()];frames.clear();pending.forEach(fn=>fn(time)); },
+  return { $, buttons, events, windowEvents, tick(time) { const pending=[...frames.values()];frames.clear();pending.forEach(fn=>fn(time)); },
     pendingFrames: () => frames.size, run: code => vm.runInContext(code, context) };
 }
 
