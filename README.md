@@ -50,7 +50,7 @@ Projekt jest statyczny: HTML, CSS i JavaScript, bez zależności zewnętrznych. 
 
 Przy działającym mikrofonie **każde spotkanie z wilkiem ma zadanie głosowe**. Losuje się tylko fraza: „Uciekaj wilku”, „Zmykaj wilku” albo „Idź sobie”. Skoki są dostępne wyłącznie przy braku dostępu do mikrofonu lub błędzie rozpoznawania. Nie losujemy już typu zadania. Fraza pozostaje taka sama podczas ponawiania próby. Po poprawnym wypowiedzeniu całego zdania wilk przechodzi na inne pole i otrzymuje nowe zadanie; nie przyznaje serduszka. Sama próba głosowa, cisza lub błąd rozpoznawania nie odbierają serc.
 
-Gra sprawdza dostęp do mikrofonu od razu po otwarciu. Przeglądarka wyświetla pytanie, jeśli zgoda nie została jeszcze zapamiętana. Strumień użyty do sprawdzenia zgody jest od razu zamykany. Rozpoznawanie zaczyna się dopiero po kliknięciu **„Mówię”** przy wilku. Widać stan słuchania i rozpoznane słowa. Wyniki cząstkowe nie zaliczają zadania; wynik końcowy musi zgadzać się w całości, bez względu na wielkość liter i interpunkcję, z zachowaniem polskich znaków.
+Gra sprawdza dostęp do mikrofonu od razu po otwarciu. Przeglądarka wyświetla pytanie, jeśli zgoda nie została jeszcze zapamiętana. Strumień użyty do sprawdzenia zgody jest od razu zamykany. Rozpoznawanie zaczyna się dopiero po kliknięciu **„Mówię”** przy wilku. Widać stan słuchania i rozpoznane słowa. Wyniki cząstkowe nie zaliczają zadania; wynik końcowy musi zaczynać się całą wymaganą frazą, bez względu na wielkość liter i interpunkcję, z zachowaniem polskich znaków. Dalsze słowa są dozwolone: „Uciekaj wilku do lasu” zalicza „Uciekaj wilku”. Słowa przed frazą lub wydłużenie ostatniego słowa (np. „Uciekaj wilkuś”) nie są zaliczane.
 
 Dopisuj kolejne teksty w pliku [`wolf-phrases.js`](wolf-phrases.js), np.:
 

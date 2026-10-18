@@ -6,6 +6,12 @@ Przeglądana wersja: [`71aa236c8f438b712c8ff2f81a72b5f87d7718ab`](https://github
 
 Raport opisuje stan tego commita. Nie oznacza, że poniższe TODO zostały wdrożone. Przegląd obejmował `index.html`, `maze.js`, README, opis architektury i ADR-y. Zgodność lokalnych plików z GitHubem potwierdzono przez porównanie identyfikatorów blobów Git.
 
+## Dłuższa wypowiedź z poprawnym początkiem — 2026-10-18
+
+Zgodnie z poleceniem użytkownika `ForestSpeech.matchesPhrase()` akceptuje dłuższą wypowiedź zaczynającą się całą wymaganą frazą. Zachowuje normalizację wielkości liter, interpunkcji i odstępów oraz wymaga granicy słowa po frazie. „Uciekaj wilku do lasu” zalicza zadanie, ale „Uciekaj wilkuś” oraz słowa dodane przed frazą nie zaliczają. Wyniki cząstkowe pozostają wyłącznie podglądem. Zmieniono wersję odwołania do `speech.js`, aby nowy HTML pobrał aktualny moduł.
+
+Przeszło **35 testów mowy**. Dodano tabelę 14 poprawnych/niepoprawnych przykładów oraz trzy przypadki pełnej obsługi dłuższej wypowiedzi — po jednym dla każdej frazy — z kontrolą braku zaliczenia wyniku cząstkowego i podwójnego wykonania. API jest symulowane; ta zmiana nie wymagała nowych testów układu strony.
+
 ## Wszystkie spotkania głosowe, trzy osobne frazy — 2026-10-18
 
 Na życzenie użytkownika usunięto losowanie typu zadania: działający mikrofon oznacza mowę przy każdym wilku. Lista zawiera osobno „Uciekaj wilku”, „Zmykaj wilku” i „Idź sobie”; nie dodano wcześniejszego, poprawionego przez użytkownika zdania łączonego. Fraza nie powtarza się bezpośrednio po poprzedniej. Skoki pozostają tylko przy braku dostępu lub błędzie rozpoznawania. Ukryto przycisk zamiany na strzałki podczas poprawnego działania mikrofonu i zablokowano jego handler; inna wypowiedziana fraza nie odblokowuje obejścia. Powrót dostępu do mikrofonu zmienia wcześniejsze automatyczne zadanie skokowe w głosowe. Parametr wersji pliku fraz wymusza pobranie aktualnej listy przy otwarciu nowej strony.

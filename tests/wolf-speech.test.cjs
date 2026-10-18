@@ -171,3 +171,33 @@ for(const mode of ['map','fpv'])test(`${mode}: repeated encounters never draw ar
   r.onresult(results([e.phrase,true]));r.onend();assert.equal(g.$('#event').open,false);assert.equal(g.run('hearts'),3);previous=e.phrase;
  }
 });
+
+
+test('matching accepts whole phrase prefixes, but rejects partial words, earlier words and empty phrases',()=>{
+ const c=controller(speechHarness());
+ const examples=[
+  ['Uciekaj wilku','Uciekaj wilku',true],
+  ['  UCIEKAJ, WILKU! Do lasu.  ','Uciekaj wilku',true],
+  ['Zmykaj wilku i idź sobie','Zmykaj wilku',true],
+  ['Idź sobie stąd','Idź sobie',true],
+  ['Uciekaj wilkuś','Uciekaj wilku',false],
+  ['Zmykaj wilkuś do lasu','Zmykaj wilku',false],
+  ['Idź sobieski','Idź sobie',false],
+  ['Nie uciekaj wilku','Uciekaj wilku',false],
+  ['Proszę idź sobie','Idź sobie',false],
+  ['Uciekaj','Uciekaj wilku',false],
+  ['Idz sobie stąd','Idź sobie',false],
+  ['', 'Uciekaj wilku',false],
+  ['Cokolwiek','',false],
+  ['Cokolwiek','!!!',false],
+ ];
+ for(const [spoken,phrase,accepted] of examples)assert.equal(c.matchesPhrase(spoken,phrase),accepted,JSON.stringify({spoken,phrase}));
+});
+for(const [phrase,spoken] of [['Uciekaj wilku','Uciekaj wilku do lasu'],['Zmykaj wilku','Zmykaj wilku i idź sobie'],['Idź sobie','Idź sobie stąd']])test(`a longer utterance beginning with ${phrase} completes the wolf once, only when final`,async()=>{
+ const h=speechHarness(),g=game({speechHost:h.host});await settle();encounter(g);
+ g.run(`encounters[pos].phrase=${JSON.stringify(phrase)};encounters[pos].text='Powiedz: '+encounters[pos].phrase;render();showEvent()`);
+ control(g,'speak').onclick();const r=h.instances.at(-1),lateEnd=r.onend;
+ r.onresult(results([spoken,false]));assert.equal(g.$('#event').open,true);assert.equal(g.run('done.has(pos)'),false);
+ r.onresult(results([spoken,true]));r.onend();assert.equal(g.$('#event').open,false);assert.equal(g.run('hearts'),3);
+ const state=g.run('JSON.stringify(encounters)');lateEnd();assert.equal(g.run('JSON.stringify(encounters)'),state);
+});

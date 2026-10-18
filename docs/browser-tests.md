@@ -98,12 +98,12 @@ Przygotowano przypadek „Skocz pięć kroków w górę.” w mapie i FPV. Spraw
 
 ## Zadanie głosowe — test na telefonie oczekuje (2026-10-18)
 
-31 testów w `tests/wolf-speech.test.cjs` korzystają z symulowanych API. Dotychczasowy automat przeglądarkowy wyłącza rozpoznawanie w swoim środowisku, aby nie pytać o prawdziwy mikrofon podczas testów geometrii. Nie jest to weryfikacja głosu.
+35 testów w `tests/wolf-speech.test.cjs` korzystają z symulowanych API. Dotychczasowy automat przeglądarkowy wyłącza rozpoznawanie w swoim środowisku, aby nie pytać o prawdziwy mikrofon podczas testów geometrii. Nie jest to weryfikacja głosu.
 
 Na Chrome/telefonie otwórz bezpośrednio stronę HTTPS gry. Sprawdź:
 
 1. Przy pierwszym otwarciu pojawia się prośba o mikrofon. Po zgodzie wskaźnik użycia mikrofonu gaśnie; przed kliknięciem „Mówię” gra nie rozpoznaje mowy. Przy zapamiętanej zgodzie pytanie nie musi się powtarzać.
-2. Po zgodzie na mikrofon każde spotkanie z wilkiem ma zadanie głosowe. Losuje się tylko jedna z trzech fraz: „Uciekaj wilku”, „Zmykaj wilku”, „Idź sobie”. Kliknij „Mówię” i przeczytaj wyświetlone zdanie. Widać słuchanie i słowa; po rozpoznaniu całości wilk przechodzi w inne miejsce bez dodatkowego serca.
+2. Po zgodzie na mikrofon każde spotkanie z wilkiem ma zadanie głosowe. Losuje się tylko jedna z trzech fraz: „Uciekaj wilku”, „Zmykaj wilku”, „Idź sobie”. Kliknij „Mówię” i przeczytaj wyświetlone zdanie. Widać słuchanie i słowa; po rozpoznaniu całej wymaganej frazy na początku wypowiedzi wilk przechodzi w inne miejsce bez dodatkowego serca. Dodatkowe słowa na końcu są dozwolone. Sprawdź np. „Uciekaj wilku do lasu” oraz odrzucenie „Nie uciekaj wilku” i „Uciekaj wilkuś”.
 3. Inna fraza nie odbiera serca i pozwala ponowić próbę głosową, ale przycisk strzałek pozostaje ukryty. Cisza lub błąd połączenia nie zaliczają zadania; po błędzie rozpoznawania pojawia się „Zadanie ze strzałkami”. Przycisk mieści się w dymku w pionie/poziomie, również przy dużym tekście.
 4. Odmów zgody i pozostaw monit bez odpowiedzi w osobnych próbach: nadal można grać, a zadanie głosowe zamienić na skoki. Zmień zgodę w ustawieniach strony i ponów ją przez menu.
 5. Przenieś kartę w tło podczas słuchania i wróć: mikrofon zatrzymany, można zacząć kolejną próbę. Nowa gra i przełączenie widoku nie przyjmują starych wyników.

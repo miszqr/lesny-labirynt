@@ -3,6 +3,12 @@
   const normalize = text => String(text).normalize('NFKC').toLocaleLowerCase('pl-PL')
     .replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
 
+  // Accept extra words only after the complete requested phrase.
+  const matchesPhrase = (text, phrase) => {
+    const spoken = normalize(text), expected = normalize(phrase);
+    return expected.length > 0 && (spoken === expected || spoken.startsWith(expected + ' '));
+  };
+
   function create(host = root) {
     const Recognition = host.SpeechRecognition || host.webkitSpeechRecognition;
     const media = host.navigator?.mediaDevices;
@@ -75,9 +81,9 @@
       } catch (error) { finish({ state: 'error', error: error.name, text: '' }); }
       return true;
     }
-    return { supported, normalize, requestPermission, start, cancel,
+    return { supported, normalize, matchesPhrase, requestPermission, start, cancel,
       get permission() { return permission; }, get listening() { return !!session; },
       subscribe(fn) { listeners.add(fn); fn(permission); return () => listeners.delete(fn); } };
   }
-  root.ForestSpeech = { create, normalize };
+  root.ForestSpeech = { create, normalize, matchesPhrase };
 })(window);
